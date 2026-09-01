@@ -1,0 +1,219 @@
+﻿import { Link, useParams } from "react-router-dom";
+import { repairers } from "@/services/repairerData";
+
+function RepairerProfileSection() {
+  const { slug } = useParams();
+
+  const repairer = repairers.find((item) => item.id === slug);
+
+  if (!repairer) {
+    return (
+      <section className="fixora-container py-20 text-center">
+        <h1 className="text-3xl font-bold text-[#17202a]">
+          Repairer not found
+        </h1>
+
+        <p className="mt-3 text-[#777f86]">
+          The repairer profile you are looking for does not exist.
+        </p>
+
+        <Link
+          to="/repairers"
+          className="mt-6 inline-flex rounded-xl bg-[#b9825f] px-5 py-3 font-semibold text-white"
+        >
+          Back to Repairers
+        </Link>
+      </section>
+    );
+  }
+
+  return (
+    <section className="fixora-container py-10 sm:py-14">
+
+      <Link
+        to="/repairers"
+        className="text-sm font-semibold text-[#777f86] hover:text-[#b9825f]"
+      >
+        â† Back to repairers
+      </Link>
+
+      <div className="mt-6 rounded-3xl border border-[#e4ded7] bg-white shadow-sm">
+
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+
+            <div className="flex items-center gap-5">
+
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#eee7df] text-2xl font-bold text-[#9b806a]">
+                {repairer.initials}
+              </div>
+
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-2xl font-extrabold text-[#17202a]">
+                    {repairer.name}
+                  </h1>
+
+                  {repairer.verified && (
+                    <span className="rounded-full bg-[#edf7f0] px-3 py-1 text-xs font-semibold text-[#28734a]">
+                      Verified
+                    </span>
+                  )}
+                </div>
+
+                <p className="mt-1 text-sm text-[#b9825f]">
+                  {repairer.category}
+                </p>
+
+                <p className="mt-2 text-sm text-[#777f86]">
+                  {repairer.location}
+                </p>
+              </div>
+
+            </div>
+
+            <div>
+              {repairer.available ? (
+                <span className="rounded-xl bg-[#edf7f0] px-4 py-3 text-sm font-semibold text-[#28734a]">
+                  Available now
+                </span>
+              ) : (
+                <span className="rounded-xl bg-[#f3f1ef] px-4 py-3 text-sm font-semibold text-[#777f86]">
+                  Currently busy
+                </span>
+              )}
+            </div>
+
+          </div>
+        </div>
+
+        <div className="grid border-t border-[#eee9e3] sm:grid-cols-3">
+
+          <div className="p-6 text-center">
+            <p className="text-2xl font-extrabold text-[#17202a]">
+              {repairer.experience}+
+            </p>
+            <p className="mt-1 text-sm text-[#90979d]">
+              Years experience
+            </p>
+          </div>
+
+          <div className="border-t border-[#eee9e3] p-6 text-center sm:border-l sm:border-t-0">
+            <p className="text-2xl font-extrabold text-[#17202a]">
+              {repairer.repairs}
+            </p>
+            <p className="mt-1 text-sm text-[#90979d]">
+              Completed repairs
+            </p>
+          </div>
+
+          <div className="border-t border-[#eee9e3] p-6 text-center sm:border-l sm:border-t-0">
+            <p className="text-2xl font-extrabold text-[#17202a]">
+              â˜… {repairer.rating}
+            </p>
+            <p className="mt-1 text-sm text-[#90979d]">
+              {repairer.reviews} reviews
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+
+        <div className="rounded-2xl border border-[#e4ded7] bg-white p-6 lg:col-span-2">
+
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
+            About
+          </p>
+
+          <h2 className="mt-3 text-2xl font-bold text-[#17202a]">
+            About {repairer.name.split(" ")[0]}
+          </h2>
+
+          <p className="mt-4 text-sm leading-7 text-[#777f86]">
+            {repairer.about}
+          </p>
+
+        </div>
+
+        <div className="rounded-2xl border border-[#e4ded7] bg-white p-6">
+
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
+            Services
+          </p>
+
+          <h2 className="mt-3 text-2xl font-bold text-[#17202a]">
+            What I repair
+          </h2>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            {repairer.services.map((service) => (
+              <span
+                key={service}
+                className="rounded-lg bg-[#f3f0ec] px-3 py-2 text-sm text-[#505961]"
+              >
+                {service}
+              </span>
+            ))}
+          </div>
+
+        </div>
+
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-[#e4ded7] bg-white p-6">
+
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
+              Service information
+            </p>
+
+            <h2 className="mt-2 text-2xl font-bold text-[#17202a]">
+              Starting price
+            </h2>
+          </div>
+
+          <p className="text-2xl font-extrabold text-[#17202a]">
+            â‚±{repairer.price}
+          </p>
+
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-3">
+
+          <span className="rounded-lg bg-[#f3f0ec] px-4 py-2 text-sm text-[#505961]">
+            {repairer.category}
+          </span>
+
+          <span className="rounded-lg bg-[#f3f0ec] px-4 py-2 text-sm text-[#505961]">
+            {repairer.repairs} completed repairs
+          </span>
+
+          <span className="rounded-lg bg-[#f3f0ec] px-4 py-2 text-sm text-[#505961]">
+            {repairer.reviews} customer reviews
+          </span>
+
+        </div>
+
+      </div>
+
+      <div className="mt-6 text-center">
+
+        <Link
+          to={`/repairer/${repairer.id}/request`}
+          className="inline-flex rounded-xl bg-[#b9825f] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#a9704e]"
+        >
+          Request Repair
+        </Link>
+
+      </div>
+
+    </section>
+  );
+}
+
+export default RepairerProfileSection;
