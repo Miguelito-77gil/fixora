@@ -1,10 +1,32 @@
-﻿import { Link, useParams } from "react-router-dom";
-import { repairers } from "@/services/repairerData";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { fetchRepairerById, fetchRepairerPortfolio } from "@/services/repairerService";
 
 function RepairerProfileSection() {
   const { slug } = useParams();
+  const [repairer, setRepairer] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [portfolio, setPortfolio] = useState([]);
 
-  const repairer = repairers.find((item) => item.id === slug);
+  useEffect(() => {
+    setLoading(true);
+
+    fetchRepairerById(slug)
+      .then(setRepairer)
+      .finally(() => setLoading(false));
+
+    fetchRepairerPortfolio(slug)
+      .then(setPortfolio)
+      .catch(() => {});
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <section className="fixora-container py-20 text-center">
+        <p className="text-sm text-[#777f86]">Loading...</p>
+      </section>
+    );
+  }
 
   if (!repairer) {
     return (
@@ -49,12 +71,19 @@ function RepairerProfileSection() {
           <div className="p-6 sm:p-8">
 
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-
               <div className="flex items-center gap-4">
 
-                <div className="flex h-18 w-18 shrink-0 items-center justify-center rounded-2xl bg-[#eee7df] text-xl font-extrabold text-[#9b806a] sm:h-20 sm:w-20 sm:text-2xl">
-                  {repairer.initials}
-                </div>
+                {repairer.photo_url ? (
+                  <img
+                    src={`http://localhost:5000${repairer.photo_url}`}
+                    alt={repairer.name}
+                    className="h-18 w-18 shrink-0 rounded-2xl object-cover sm:h-20 sm:w-20"
+                  />
+                ) : (
+                  <div className="flex h-18 w-18 shrink-0 items-center justify-center rounded-2xl bg-[#eee7df] text-xl font-extrabold text-[#9b806a] sm:h-20 sm:w-20 sm:text-2xl">
+                    {repairer.initials}
+                  </div>
+                )}
 
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -176,6 +205,31 @@ function RepairerProfileSection() {
 
         </div>
 
+        {/* CONTACT */}
+        <div className="mt-5 rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm">
+
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
+            Contact
+          </p>
+
+          <h2 className="mt-2 text-xl font-bold text-[#17202a]">
+            Get in touch
+          </h2>
+
+          <div className="mt-4 space-y-2 text-sm text-[#505961]">
+            <p>
+              <span className="font-semibold text-[#26313b]">Phone:</span>{" "}
+              {repairer.phone}
+            </p>
+
+            <p>
+              <span className="font-semibold text-[#26313b]">Email:</span>{" "}
+              {repairer.email}
+            </p>
+          </div>
+
+        </div>
+
         {/* PRICE */}
         <div className="mt-5 rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm">
 
@@ -199,6 +253,38 @@ function RepairerProfileSection() {
 
         </div>
 
+        {portfolio.length > 0 && (
+          <div className="mt-5 rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm">
+
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
+              Portfolio
+            </p>
+
+            <h2 className="mt-2 text-xl font-bold text-[#17202a]">
+              Past work
+            </h2>
+
+            <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {portfolio.map((item) => (
+                <div key={item.id} className="aspect-square overflow-hidden rounded-xl border border-[#e4ded7]">
+                  <img
+                    src={`http://localhost:5000${item.image_url}`}
+                    alt={item.caption || "Portfolio item"}
+                    className="h-full w-full object-cover"
+                  />
+
+                  {item.caption && (
+                    <p className="truncate bg-white px-2 py-1.5 text-xs text-[#505961]">
+                      {item.caption}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+
+          </div>
+        )}
+
         {/* BUTTON */}
         <div className="mt-5 text-center">
 
@@ -218,4 +304,3 @@ function RepairerProfileSection() {
 }
 
 export default RepairerProfileSection;
-

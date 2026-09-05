@@ -3,9 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { registerUser } from "@/services/authService";
+import { useAuth } from "@/context/AuthContext";
 
 function Register() {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
+  const [intent, setIntent] = useState("customer");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,8 +21,14 @@ function Register() {
     setLoading(true);
 
     try {
-      await registerUser({ name, email, password });
-      navigate("/login");
+      const data = await registerUser({ name, email, password });
+      setUser(data.user);
+
+      if (intent === "repairer") {
+        navigate("/become-repairer");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -50,7 +59,39 @@ function Register() {
           </div>
         )}
 
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+        <div className="mt-8">
+          <label className="mb-2 block text-sm font-semibold text-[#26313b]">
+            I want to
+          </label>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setIntent("customer")}
+              className={`rounded-lg border px-4 py-3 text-sm font-semibold transition ${
+                intent === "customer"
+                  ? "border-[#b9825f] bg-[#fdf6f0] text-[#b9825f]"
+                  : "border-[#ddd7d0] bg-white text-[#26313b] hover:bg-[#f5f2ee]"
+              }`}
+            >
+              Find Repairers
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIntent("repairer")}
+              className={`rounded-lg border px-4 py-3 text-sm font-semibold transition ${
+                intent === "repairer"
+                  ? "border-[#b9825f] bg-[#fdf6f0] text-[#b9825f]"
+                  : "border-[#ddd7d0] bg-white text-[#26313b] hover:bg-[#f5f2ee]"
+              }`}
+            >
+              Offer Repair Services
+            </button>
+          </div>
+        </div>
+
+        <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
           <Input
             label="Full name"
             type="text"

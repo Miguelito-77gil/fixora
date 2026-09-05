@@ -1,17 +1,39 @@
-﻿import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SearchBar from "@/components/features/SearchBar";
 import FilterPanel from "@/components/features/FilterPanel";
 import RepairerCard from "@/components/features/RepairerCard";
-import { repairers } from "@/services/repairerData";
+import { fetchRepairers } from "@/services/repairerService";
 
 function RepairerListSection() {
+  const [repairers, setRepairers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("All Locations");
   const [category, setCategory] = useState("All Categories");
   const [minRating, setMinRating] = useState(0);
   const [availableOnly, setAvailableOnly] = useState(false);
   const [sort, setSort] = useState("rating");
+
+  useEffect(() => {
+    loadRepairers();
+  }, []);
+
+  async function loadRepairers() {
+    setLoading(true);
+    setError("");
+
+    try {
+      const data = await fetchRepairers();
+      setRepairers(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const filteredRepairers = useMemo(() => {
     let result = [...repairers];
@@ -79,6 +101,7 @@ function RepairerListSection() {
 
     return result;
   }, [
+    repairers,
     search,
     location,
     category,
@@ -131,7 +154,7 @@ function RepairerListSection() {
 
               <div>
                 <h2 className="font-bold text-[#17202a]">
-                  {filteredRepairers.length} repairers found
+                  {loading ? "Loading..." : `${filteredRepairers.length} repairers found`}
                 </h2>
 
                 <p className="mt-1 text-sm text-[#90979d]">
@@ -159,7 +182,13 @@ function RepairerListSection() {
 
             </div>
 
-            {filteredRepairers.length > 0 ? (
+            {error && (
+              <div className="mb-6 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
+            {!loading && filteredRepairers.length > 0 ? (
               <div className="grid gap-5 md:grid-cols-2">
 
                 {filteredRepairers.map((repairer) => (
@@ -176,7 +205,7 @@ function RepairerListSection() {
                 ))}
 
               </div>
-            ) : (
+            ) : !loading && (
               <div className="rounded-2xl border border-dashed border-[#d8d0c8] bg-white p-8 text-center sm:p-10">
                 <h3 className="text-lg font-bold text-[#26313b]">
                   No repairers found

@@ -59,7 +59,7 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
       {/* HEADER */}
       <div className="mb-8">
 
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-400">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
           Repair Request
         </p>
 
@@ -67,7 +67,7 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
           Request a repair
         </h1>
 
-        <p className="mt-3 leading-7 text-slate-500">
+        <p className="mt-3 leading-7 text-[#777f86]">
           Tell the repairer what needs to be fixed and provide
           enough information to help them understand the problem.
         </p>
@@ -75,15 +75,15 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
       </div>
 
       {/* SELECTED REPAIRER */}
-      <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      <div className="mb-6 rounded-2xl border border-[#e4ded7] bg-white/[0.03] p-5">
 
-        <p className="text-xs font-bold uppercase tracking-[0.15em] text-slate-600">
+        <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#777f86]">
           Repairer
         </p>
 
         <div className="mt-4 flex items-center gap-4">
 
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 font-bold text-blue-300 ring-1 ring-blue-400/20">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#b9825f]/10 font-bold text-[#b9825f] ring-1 ring-[#b9825f]/20">
             {repairer.name
               .split(" ")
               .map((word) => word[0])
@@ -92,17 +92,17 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
           </div>
 
           <div>
-            <p className="font-bold text-white">
+            <p className="font-bold text-[#17202a]">
               {repairer.name}
             </p>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[#777f86]">
               {repairer.specialty}
             </p>
           </div>
 
           {repairer.verified && (
-            <span className="ml-auto rounded-full bg-emerald-400/10 px-3 py-1.5 text-xs font-bold text-emerald-300 ring-1 ring-emerald-400/20">
+            <span className="ml-auto rounded-full bg-green-100 px-3 py-1.5 text-xs font-bold text-green-700 ring-1 ring-green-200">
               Verified
             </span>
           )}
@@ -114,7 +114,7 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
       {/* FORM */}
       <form
         onSubmit={handleSubmit}
-        className="rounded-3xl border border-white/10 bg-slate-900 p-6 sm:p-8"
+        className="rounded-3xl border border-[#e4ded7] bg-white p-6 sm:p-8"
       >
 
         {/* ITEM */}
@@ -122,7 +122,7 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
 
           <label
             htmlFor="itemName"
-            className="text-sm font-semibold text-slate-300"
+            className="text-sm font-semibold text-[#17202a]"
           >
             What needs to be repaired?
           </label>
@@ -133,7 +133,7 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
             value={form.itemName}
             onChange={handleChange}
             placeholder="Example: Samsung 55-inch TV"
-            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-700 focus:border-blue-400/50"
+            className="mt-2 w-full rounded-xl border border-[#e4ded7] bg-[#faf8f5] px-4 py-3 text-[#17202a] outline-none transition placeholder:text-[#a6aaa8] focus:border-[#b9825f]/50"
           />
 
         </div>
@@ -143,7 +143,7 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
 
           <label
             htmlFor="category"
-            className="text-sm font-semibold text-slate-300"
+            className="text-sm font-semibold text-[#17202a]"
           >
             Repair category
           </label>
@@ -153,7 +153,7 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
             name="category"
             value={form.category}
             onChange={handleChange}
-            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-blue-400/50"
+            className="mt-2 w-full rounded-xl border border-[#e4ded7] bg-[#faf8f5] px-4 py-3 text-[#17202a] outline-none transition focus:border-[#b9825f]/50"
           >
 
             <option value="">
@@ -201,7 +201,7 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
 
           <label
             htmlFor="problem"
-            className="text-sm font-semibold text-slate-300"
+            className="text-sm font-semibold text-[#17202a]"
           >
             Describe the problem
           </label>
@@ -213,7 +213,7 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
             onChange={handleChange}
             rows="6"
             placeholder="Explain what happened, what the item is doing, or what stopped working..."
-            className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-slate-950 px-4 py-3 leading-7 text-white outline-none transition placeholder:text-slate-700 focus:border-blue-400/50"
+            className="mt-2 w-full resize-none rounded-xl border border-[#e4ded7] bg-[#faf8f5] px-4 py-3 leading-7 text-[#17202a] outline-none transition placeholder:text-[#a6aaa8] focus:border-[#b9825f]/50"
           />
 
         </div>
@@ -221,19 +221,19 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
         {/* PHOTO */}
         <div className="mt-6">
 
-          <label className="text-sm font-semibold text-slate-300">
+          <label className="text-sm font-semibold text-[#17202a]">
             Photos of the problem
           </label>
 
-          <label className="mt-2 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-slate-950 px-6 text-center transition hover:border-blue-400/40 hover:bg-white/[0.02]">
+          <label className="mt-2 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-[#e4ded7] bg-[#faf8f5] px-6 text-center transition hover:border-[#b9825f]/40 hover:bg-[#f5f1ec]">
 
-            <span className="text-sm font-semibold text-slate-300">
+            <span className="text-sm font-semibold text-[#17202a]">
               {photoName
                 ? photoName
                 : "Choose a photo"}
             </span>
 
-            <span className="mt-2 text-xs text-slate-600">
+            <span className="mt-2 text-xs text-[#777f86]">
               JPG or PNG up to 5MB
             </span>
 
@@ -253,7 +253,7 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
 
           <label
             htmlFor="location"
-            className="text-sm font-semibold text-slate-300"
+            className="text-sm font-semibold text-[#17202a]"
           >
             Repair location
           </label>
@@ -264,10 +264,10 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
             value={form.location}
             onChange={handleChange}
             placeholder="Example: Lapu-Lapu City, Cebu"
-            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-700 focus:border-blue-400/50"
+            className="mt-2 w-full rounded-xl border border-[#e4ded7] bg-[#faf8f5] px-4 py-3 text-[#17202a] outline-none transition placeholder:text-[#a6aaa8] focus:border-[#b9825f]/50"
           />
 
-          <p className="mt-2 text-xs text-slate-600">
+          <p className="mt-2 text-xs text-[#777f86]">
             Provide the general area only. Exact contact
             details can be shared after the repairer accepts.
           </p>
@@ -279,7 +279,7 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
 
           <label
             htmlFor="schedule"
-            className="text-sm font-semibold text-slate-300"
+            className="text-sm font-semibold text-[#17202a]"
           >
             Preferred schedule
           </label>
@@ -290,7 +290,7 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
             type="datetime-local"
             value={form.schedule}
             onChange={handleChange}
-            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-blue-400/50"
+            className="mt-2 w-full rounded-xl border border-[#e4ded7] bg-[#faf8f5] px-4 py-3 text-[#17202a] outline-none transition focus:border-[#b9825f]/50"
           />
 
         </div>
@@ -300,10 +300,10 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
 
           <label
             htmlFor="notes"
-            className="text-sm font-semibold text-slate-300"
+            className="text-sm font-semibold text-[#17202a]"
           >
             Additional notes
-            <span className="ml-2 font-normal text-slate-600">
+            <span className="ml-2 font-normal text-[#777f86]">
               Optional
             </span>
           </label>
@@ -315,18 +315,18 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
             onChange={handleChange}
             rows="4"
             placeholder="Anything else the repairer should know?"
-            className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-slate-950 px-4 py-3 leading-7 text-white outline-none transition placeholder:text-slate-700 focus:border-blue-400/50"
+            className="mt-2 w-full resize-none rounded-xl border border-[#e4ded7] bg-[#faf8f5] px-4 py-3 leading-7 text-[#17202a] outline-none transition placeholder:text-[#a6aaa8] focus:border-[#b9825f]/50"
           />
 
         </div>
 
         {/* ACTIONS */}
-        <div className="mt-8 flex flex-col-reverse gap-3 border-t border-white/10 pt-6 sm:flex-row sm:justify-end">
+        <div className="mt-8 flex flex-col-reverse gap-3 border-t border-[#e4ded7] pt-6 sm:flex-row sm:justify-end">
 
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-xl border border-white/10 px-6 py-3 text-sm font-bold text-slate-400 transition hover:bg-white/5 hover:text-white"
+            className="rounded-xl border border-[#e4ded7] px-6 py-3 text-sm font-bold text-slate-400 transition hover:bg-[#faf8f5] hover:text-[#17202a]"
           >
             Cancel
           </button>
@@ -334,7 +334,7 @@ function RepairRequestForm({ repairer, onSubmit, onCancel, submitting = false })
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl bg-[#b9825f] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#a9704f] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {submitting ? "Submitting..." : "Continue"}
           </button>

@@ -1,12 +1,34 @@
+import { useEffect, useState } from "react";
+
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
 import RepairerCard from "@/components/features/RepairerCard";
-import { repairers } from "@/services/repairerData";
+import { fetchRepairers } from "@/services/repairerService";
 
 function HomeSection() {
-  const featuredRepairers = repairers
-    .filter((repairer) => repairer.verified)
-    .slice(0, 3);
+  const [repairers, setRepairers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadRepairers() {
+      try {
+        const data = await fetchRepairers();
+        setRepairers(
+          data
+            .filter((repairer) => repairer.verified)
+            .slice(0, 3)
+        );
+      } catch (error) {
+        console.error("Failed to load featured repairers:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadRepairers();
+  }, []);
+
+  const featuredRepairers = repairers;
 
   return (
     <>
@@ -34,7 +56,7 @@ function HomeSection() {
                 Find a Repairer
               </Button>
 
-              <Button to="/register" variant="outline">
+              <Button to="/become-repairer" variant="outline">
                 Become a Repairer
               </Button>
             </div>
@@ -76,40 +98,50 @@ function HomeSection() {
               </div>
 
               <div className="divide-y divide-[#eee9e3]">
-                {featuredRepairers.map((repairer) => (
-                  <div
-                    key={repairer.id}
-                    className="flex items-center gap-4 py-5"
-                  >
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#eee7df] font-bold text-[#9b806a]">
-                      {repairer.initials}
+                {loading ? (
+                  <p className="py-8 text-center text-sm text-[#80878d]">
+                    Loading repairers...
+                  </p>
+                ) : featuredRepairers.length > 0 ? (
+                  featuredRepairers.map((repairer) => (
+                    <div
+                      key={repairer.id}
+                      className="flex items-center gap-4 py-5"
+                    >
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#eee7df] font-bold text-[#9b806a]">
+                        {repairer.initials}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <h3 className="truncate font-semibold text-[#26313b]">
+                          {repairer.name}
+                        </h3>
+
+                        <p className="mt-1 text-sm text-[#80878d]">
+                          {repairer.category}
+                        </p>
+
+                        <p className="mt-1 text-sm">
+                          <span className="font-semibold text-[#26313b]">
+                            &#9733; {repairer.rating || 0}
+                          </span>
+
+                          <span className="ml-2 text-[#92989d]">
+                            {repairer.repairs || 0} repairs
+                          </span>
+                        </p>
+                      </div>
+
+                      <span className="hidden text-xs font-semibold text-[#28734a] sm:block">
+                        Verified
+                      </span>
                     </div>
-
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-semibold text-[#26313b]">
-                        {repairer.name}
-                      </h3>
-
-                      <p className="mt-1 text-sm text-[#80878d]">
-                        {repairer.category}
-                      </p>
-
-                      <p className="mt-1 text-sm">
-                        <span className="font-semibold text-[#26313b]">
-                          &#9733; {repairer.rating}
-                        </span>
-
-                        <span className="ml-2 text-[#92989d]">
-                          {repairer.completedRepairs} repairs
-                        </span>
-                      </p>
-                    </div>
-
-                    <span className="hidden text-xs font-semibold text-[#28734a] sm:block">
-                      Verified
-                    </span>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="py-8 text-center text-sm text-[#80878d]">
+                    No verified repairers available.
+                  </p>
+                )}
               </div>
 
               <Button
@@ -178,12 +210,22 @@ function HomeSection() {
           />
 
           <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {featuredRepairers.map((repairer) => (
-              <RepairerCard
-                key={repairer.id}
-                repairer={repairer}
-              />
-            ))}
+            {loading ? (
+              <p className="text-sm text-[#777f86]">
+                Loading repairers...
+              </p>
+            ) : featuredRepairers.length > 0 ? (
+              featuredRepairers.map((repairer) => (
+                <RepairerCard
+                  key={repairer.id}
+                  repairer={repairer}
+                />
+              ))
+            ) : (
+              <p className="text-sm text-[#777f86]">
+                No verified repairers available.
+              </p>
+            )}
           </div>
 
           <div className="mt-8 text-center">

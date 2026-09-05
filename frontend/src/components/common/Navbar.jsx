@@ -21,12 +21,23 @@ function Navbar() {
     navigate("/");
   }
 
+  function getDashboardPath() {
+    if (user?.role === "admin") {
+      return "/admin";
+    }
+
+    if (user?.role === "repairer") {
+      return "/repairer/dashboard";
+    }
+
+    return "/customer/dashboard";
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-[#e7e2dc] bg-[#f7f7f5]/95 backdrop-blur">
       <div className="fixora-container">
         <div className="flex h-18 items-center justify-between">
 
-          {/* Logo + Website Name */}
           <Link
             to="/"
             onClick={() => setOpen(false)}
@@ -35,7 +46,7 @@ function Navbar() {
             <img
               src={logo}
               alt="Fixora logo"
-              className="h-10 w-auto object-contain"
+              className="h-10 w-auto shrink-0 object-contain"
             />
 
             <div className="border-l border-[#ddd7d0] pl-3">
@@ -49,7 +60,6 @@ function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden items-center gap-8 md:flex">
             <NavLink to="/" className={linkClass}>
               Home
@@ -61,9 +71,20 @@ function Navbar() {
 
             {user ? (
               <>
-                <span className="text-sm font-medium text-[#505961]">
+                <NavLink
+                  to={getDashboardPath()}
+                  className={linkClass}
+                >
+                  Dashboard
+                </NavLink>
+
+                <NavLink
+                  to="/profile"
+                  className="text-sm font-medium text-[#505961] transition hover:text-[#b9825f]"
+                >
                   Hi, {user.name}
-                </span>
+                </NavLink>
+
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -88,7 +109,6 @@ function Navbar() {
             )}
           </nav>
 
-          {/* Mobile Menu Button */}
           <button
             type="button"
             onClick={() => setOpen(!open)}
@@ -100,7 +120,6 @@ function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Navigation - Overlay */}
         {open && (
           <nav className="absolute left-0 right-0 top-full border-b border-[#e7e2dc] bg-[#f7f7f5] px-6 py-4 shadow-lg md:hidden">
             <div className="mx-auto max-w-7xl">
@@ -136,9 +155,28 @@ function Navbar() {
 
                 {user ? (
                   <>
-                    <span className="rounded-lg px-4 py-3 text-sm font-medium text-[#505961]">
+                    <NavLink
+                      onClick={() => setOpen(false)}
+                      to={getDashboardPath()}
+                      className={({ isActive }) =>
+                        `rounded-lg px-4 py-3 text-sm font-medium transition ${
+                          isActive
+                            ? "bg-white text-[#b9825f]"
+                            : "text-[#505961] hover:bg-white hover:text-[#b9825f]"
+                        }`
+                      }
+                    >
+                      Dashboard
+                    </NavLink>
+
+                    <NavLink
+                      onClick={() => setOpen(false)}
+                      to="/profile"
+                      className="rounded-lg px-4 py-3 text-sm font-medium text-[#505961] transition hover:bg-white hover:text-[#b9825f]"
+                    >
                       Hi, {user.name}
-                    </span>
+                    </NavLink>
+
                     <button
                       type="button"
                       onClick={handleLogout}
@@ -183,3 +221,4 @@ function Navbar() {
 }
 
 export default Navbar;
+
