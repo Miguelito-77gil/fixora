@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchRepairerById, fetchRepairerPortfolio } from "@/services/repairerService";
 
@@ -75,7 +75,7 @@ function RepairerProfileSection() {
 
                 {repairer.photo_url ? (
                   <img
-                    src={`http://localhost:5000${repairer.photo_url}`}
+                    src={`http://localhost:8000${repairer.photo_url}`}
                     alt={repairer.name}
                     className="h-18 w-18 shrink-0 rounded-2xl object-cover sm:h-20 sm:w-20"
                   />
@@ -268,7 +268,7 @@ function RepairerProfileSection() {
               {portfolio.map((item) => (
                 <div key={item.id} className="aspect-square overflow-hidden rounded-xl border border-[#e4ded7]">
                   <img
-                    src={`http://localhost:5000${item.image_url}`}
+                    src={`http://localhost:8000${item.image_url}`}
                     alt={item.caption || "Portfolio item"}
                     className="h-full w-full object-cover"
                   />

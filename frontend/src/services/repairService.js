@@ -1,4 +1,4 @@
-﻿const API_URL = "http://localhost:5000";
+const API_URL = "http://localhost:8000";
 
 function getToken() {
   return localStorage.getItem("fixora_token");
@@ -53,11 +53,11 @@ export async function fetchMyRepairRequests() {
     "Failed to fetch repair requests"
   );
 
-  if (!Array.isArray(data)) {
-    return [];
-  }
+  const requests = Array.isArray(data)
+    ? data
+    : (Array.isArray(data.requests) ? data.requests : []);
 
-  return data.map((request) => {
+  return requests.map((request) => {
     const description = String(request.description || "");
 
     const getDetail = (label) => {
@@ -167,7 +167,3 @@ export async function fetchRepairerReviews(repairerId) {
 
   return handleResponse(response, "Failed to fetch repairer reviews");
 }
-
-
-
-

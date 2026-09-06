@@ -1,4 +1,4 @@
-﻿const API_URL = "http://localhost:5000";
+﻿const API_URL = "http://localhost:8000";
 
 export async function apiGet(endpoint) {
   const response = await fetch(`${API_URL}${endpoint}`);

@@ -1,4 +1,4 @@
-﻿import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { repairers } from "@/services/repairerData";
 
 function RepairerProfileSection() {
@@ -178,7 +178,7 @@ function RepairerProfileSection() {
           </div>
 
           <p className="text-2xl font-extrabold text-[#17202a]">
-            â‚±{repairer.price}
+            ₱{repairer.price}
           </p>
 
         </div>
