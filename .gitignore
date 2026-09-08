@@ -32,3 +32,9 @@ dist-ssr
 *.db
 *.db-shm
 *.db-wal
+# Ignore local backup files
+*.backup-*
+*.bak
+*.backup
+backup-*/
+*-backup-*/
