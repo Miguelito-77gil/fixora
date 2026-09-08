@@ -37,4 +37,49 @@ class User extends Authenticatable
     {
         return $this->hasOne(RepairerProfile::class);
     }
+
+    public function repairRequestsAsCustomer()
+    {
+        return $this->hasMany(RepairRequest::class, 'customer_id');
+    }
+
+    public function repairRequestsAsRepairer()
+    {
+        return $this->hasMany(RepairRequest::class, 'repairer_id');
+    }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class, 'customer_id');
+    }
+
+    public function recentlyViewed()
+    {
+        return $this->hasMany(RecentlyViewed::class, 'customer_id');
+    }
+
+    public function sentMessages()
+    {
+        return $this->hasMany(ChatMessage::class, 'sender_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(ChatMessage::class, 'receiver_id');
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(FixoraNotification::class);
+    }
+
+    public function repairerServices()
+    {
+        return $this->hasMany(RepairerService::class, 'repairer_id');
+    }
+
+    public function earnings()
+    {
+        return $this->hasMany(RepairerEarning::class, 'repairer_id');
+    }
 }

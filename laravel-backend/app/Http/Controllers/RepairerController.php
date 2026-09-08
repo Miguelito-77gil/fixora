@@ -5,52 +5,54 @@ namespace App\Http\Controllers;
 use App\Models\RepairerProfile;
 use App\Models\RepairRequest;
 use App\Models\Review;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class RepairerController extends Controller
 {
     public function index()
     {
-        $repairers = RepairerProfile::with('user')
-            ->whereHas('user', function ($query) {
-                $query->where('role', 'repairer')
-                    ->where('verification_status', 'verified');
-            })
-            ->get()
-            ->map(function ($profile) {
-                $ratingData = Review::where('repairer_id', $profile->user->id)
-                    ->selectRaw('AVG(rating) as rating, COUNT(*) as reviews')
-                    ->first();
+        $users = User::where('role', 'repairer')
+            ->where('verification_status', 'verified')
+            ->with('repairerProfile')
+            ->get();
 
-                $repairCount = RepairRequest::where('repairer_id', $profile->user->id)
-                    ->where('status', 'completed')
-                    ->count();
+        $repairers = $users->map(function ($user) {
+            $profile = $user->repairerProfile;
 
-                return [
-                    'id' => $profile->user->id,
-                    'name' => $profile->user->name,
-                    'email' => $profile->user->email,
-                    'role' => $profile->user->role,
-                    'verification_status' => $profile->user->verification_status,
-                    'phone' => $profile->phone ?? $profile->user->phone,
-                    'category' => $profile->category,
-                    'bio' => $profile->bio,
-                    'years_experience' => $profile->years_experience,
-                    'location' => $profile->location,
-                    'price' => $profile->price,
-                    'photo_url' => $profile->photo_url,
-                    'available' => $profile->available,
-                    'repairs' => $repairCount,
-                    'rating' => $ratingData && $ratingData->rating !== null
-                        ? round((float) $ratingData->rating, 1)
-                        : 0,
-                    'reviews' => $ratingData
-                        ? (int) $ratingData->reviews
-                        : 0,
-                ];
-            });
+            $ratingData = Review::where('repairer_id', $user->id)
+                ->selectRaw('AVG(rating) as rating, COUNT(*) as reviews')
+                ->first();
 
-        return response()->json($repairers);
+            $repairCount = RepairRequest::where('repairer_id', $user->id)
+                ->where('status', 'completed')
+                ->count();
+
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'verification_status' => $user->verification_status,
+                'phone' => $profile?->phone ?? $user->phone,
+                'category' => $profile?->category ?? 'General Repair',
+                'bio' => $profile?->bio ?? 'No description provided.',
+                'years_experience' => $profile?->years_experience ?? 0,
+                'location' => $profile?->location ?? 'Not specified',
+                'price' => $profile?->price ?? 0,
+                'photo_url' => $profile?->photo_url,
+                'available' => $profile?->available ?? 1,
+                'repairs' => $repairCount,
+                'rating' => $ratingData && $ratingData->rating !== null
+                    ? round((float) $ratingData->rating, 1)
+                    : 0,
+                'reviews' => $ratingData
+                    ? (int) $ratingData->reviews
+                    : 0,
+            ];
+        });
+
+        return response()->json($repairers->values());
     }
 
     public function me(Request $request)

@@ -8,6 +8,7 @@ use App\Http\Controllers\RepairerPhotoController;
 use App\Http\Controllers\RepairRequestController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Api\MarketplaceController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -17,7 +18,10 @@ Route::get('/repairers', [RepairerController::class, 'index']);
 Route::get('/repairers/{repairerId}/portfolio', [PortfolioController::class, 'repairer']);
 Route::get('/repairers/{repairerId}/reviews', [ReviewController::class, 'index']);
 
+Route::get('/marketplace/recommended', [MarketplaceController::class, 'recommended']);
+
 Route::middleware('auth:sanctum')->group(function () {
+
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
@@ -41,4 +45,31 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/admin/repairers', [AdminController::class, 'pendingRepairers']);
     Route::put('/admin/repairers/{id}/verify', [AdminController::class, 'verifyRepairer']);
+
+    # Marketplace features
+    Route::post('/marketplace/favorites/{repairerId}', [MarketplaceController::class, 'favorite']);
+    Route::get('/marketplace/favorites', [MarketplaceController::class, 'favorites']);
+
+    Route::post('/marketplace/recent/{repairerId}', [MarketplaceController::class, 'recentlyViewed']);
+    Route::get('/marketplace/recent', [MarketplaceController::class, 'recent']);
+
+    Route::get('/marketplace/repairers/{repairerId}/services', [MarketplaceController::class, 'services']);
+    Route::post('/marketplace/repairer-services', [MarketplaceController::class, 'addService']);
+    Route::patch('/marketplace/repairer-services/{serviceId}', [MarketplaceController::class, 'updateService']);
+    Route::delete('/marketplace/repairer-services/{serviceId}', [MarketplaceController::class, 'deleteService']);
+
+    Route::get('/marketplace/repairer-dashboard', [MarketplaceController::class, 'dashboard']);
+    Route::get('/marketplace/earnings', [MarketplaceController::class, 'earnings']);
+
+    Route::get('/marketplace/chat/users', [MarketplaceController::class, 'chatUsers']);
+    Route::get('/marketplace/chat/unread', [MarketplaceController::class, 'unreadMessages']);
+    Route::get('/marketplace/chat/{userId}', [MarketplaceController::class, 'messages']);
+    Route::post('/marketplace/chat/{userId}', [MarketplaceController::class, 'sendMessage']);
+
+    Route::get('/marketplace/notifications', [MarketplaceController::class, 'notifications']);
+    Route::patch('/marketplace/notifications/{id}/read', [MarketplaceController::class, 'markNotificationRead']);
+
+    Route::get('/admin/dashboard', [MarketplaceController::class, 'adminDashboard']);
 });
+
+
