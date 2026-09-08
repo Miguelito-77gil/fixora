@@ -1,13 +1,68 @@
-﻿import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import VerificationBadge from "@/components/features/VerificationBadge";
 import Rating from "@/components/features/Rating";
+import {
+  toggleFavorite,
+  fetchFavorites,
+} from "@/services/marketplaceService";
 
 function RepairerCard({ repairer }) {
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadFavorite() {
+      try {
+        const favorites = await fetchFavorites();
+
+        const exists = favorites.some(
+          (item) =>
+            String(item.repairer_id ?? item.repairer?.id) ===
+            String(repairer.id)
+        );
+
+        if (mounted) {
+          setIsFavorite(exists);
+        }
+      } catch {
+        // User may not be logged in.
+      }
+    }
+
+    loadFavorite();
+
+    return () => {
+      mounted = false;
+    };
+  }, [repairer.id]);
+
+  async function handleFavorite() {
+    if (favoriteLoading) return;
+
+    setFavoriteLoading(true);
+
+    try {
+      const result = await toggleFavorite(repairer.id);
+
+      if (result?.favorited !== undefined) {
+        setIsFavorite(Boolean(result.favorited));
+      } else {
+        setIsFavorite((current) => !current);
+      }
+    } catch (error) {
+      console.error("Favorite error:", error);
+    } finally {
+      setFavoriteLoading(false);
+    }
+  }
+
   return (
     <Card className="overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/5">
-      
+
       <div className="h-40 bg-[#eee9e3]">
         <div className="flex h-full items-center justify-center bg-gradient-to-br from-[#efe7df] to-[#dcd5cd]">
           <span className="text-5xl font-bold text-[#9b806a]">
@@ -18,10 +73,10 @@ function RepairerCard({ repairer }) {
 
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
-          
+
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-bold text-[#17202a]">
+              <h3 className="font-semibold text-[#17202a]">
                 {repairer.name}
               </h3>
 
@@ -33,11 +88,23 @@ function RepairerCard({ repairer }) {
             </p>
           </div>
 
-          {repairer.available && (
-            <span className="whitespace-nowrap text-xs font-medium text-[#2b8052]">
-              Available
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {repairer.available && (
+              <span className="whitespace-nowrap text-xs font-medium text-[#2b8052]">
+                Available
+              </span>
+            )}
+
+            <button
+              type="button"
+              onClick={handleFavorite}
+              disabled={favoriteLoading}
+              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-[#ddd6ce] bg-white text-xl text-[#9b806a] transition hover:bg-[#f5f1ed] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isFavorite ? "\u2665" : "\u2661"}
+            </button>
+          </div>
         </div>
 
         <div className="mt-3">
@@ -52,8 +119,8 @@ function RepairerCard({ repairer }) {
             {repairer.repairs} repairs
           </span>
 
-          <span className="font-semibold text-[#26313b]">
-            From ₱{repairer.price}
+          <span className="font-medium text-[#26313b]">
+            From P{repairer.price}
           </span>
         </div>
 
@@ -74,4 +141,3 @@ function RepairerCard({ repairer }) {
 }
 
 export default RepairerCard;
-

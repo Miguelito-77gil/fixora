@@ -59,18 +59,18 @@ function MyProfileSection() {
 
               <div className="flex items-center gap-4">
 
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#eee7df] text-2xl font-extrabold text-[#9b806a]">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#eee7df] text-xl font-semibold text-[#9b806a]">
                   {initials}
                 </div>
 
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-2xl font-extrabold text-[#17202a]">
+                    <h1 className="text-xl font-semibold text-[#17202a] sm:text-2xl">
                       {user.name}
                     </h1>
 
                     {user.role && (
-                      <span className="rounded-full bg-[#f3f0ec] px-2.5 py-1 text-xs font-bold capitalize text-[#777f86]">
+                      <span className="rounded-full bg-[#f3f0ec] px-2.5 py-1 text-xs font-medium capitalize text-[#777f86]">
                         {user.role}
                       </span>
                     )}
@@ -86,7 +86,7 @@ function MyProfileSection() {
               <button
                 type="button"
                 onClick={() => navigate("/edit-profile")}
-                className="self-start rounded-lg border border-[#b9825f] px-4 py-2 text-sm font-semibold text-[#b9825f] transition hover:bg-[#b9825f] hover:text-white sm:self-auto"
+                className="self-start rounded-lg border border-[#b9825f] px-4 py-2 text-sm font-medium text-[#b9825f] transition hover:bg-[#b9825f] hover:text-white sm:self-auto"
               >
                 Edit Profile
               </button>
@@ -97,37 +97,37 @@ function MyProfileSection() {
           <div className="grid border-t border-[#eee9e3] sm:grid-cols-2">
 
             <div className="p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
+              <p className="text-sm font-medium text-[#777f86]">
                 Full Name
               </p>
-              <p className="mt-2 text-base font-semibold text-[#17202a]">
+              <p className="mt-2 text-base font-medium text-[#17202a]">
                 {user.name}
               </p>
             </div>
 
             <div className="border-t border-[#eee9e3] p-6 sm:border-l sm:border-t-0">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
+              <p className="text-sm font-medium text-[#777f86]">
                 Email
               </p>
-              <p className="mt-2 text-base font-semibold text-[#17202a]">
+              <p className="mt-2 text-base font-medium text-[#17202a]">
                 {user.email}
               </p>
             </div>
 
             <div className="border-t border-[#eee9e3] p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
+              <p className="text-sm font-medium text-[#777f86]">
                 Mobile Number
               </p>
-              <p className="mt-2 text-base font-semibold text-[#17202a]">
+              <p className="mt-2 text-base font-medium text-[#17202a]">
                 {user.phone || "Not specified"}
               </p>
             </div>
 
             <div className="border-t border-[#eee9e3] p-6 sm:border-l">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
+              <p className="text-sm font-medium text-[#777f86]">
                 Account Type
               </p>
-              <p className="mt-2 text-base font-semibold capitalize text-[#17202a]">
+              <p className="mt-2 text-base font-medium capitalize text-[#17202a]">
                 {user.role || "Customer"}
               </p>
             </div>

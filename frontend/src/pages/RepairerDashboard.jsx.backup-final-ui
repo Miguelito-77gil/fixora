@@ -1,0 +1,700 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import {
+  fetchMyRepairRequests,
+  updateRepairRequestStatus,
+} from "@/services/repairService";
+
+import {
+  fetchUnreadMessages,
+  fetchNotifications,
+  markNotificationRead,
+  fetchRepairerDashboardStats,
+} from "@/services/marketplaceService";
+
+function RepairerDashboard() {
+  const navigate = useNavigate();
+
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState(null);
+  const [error, setError] = useState("");
+
+  const [messageCount, setMessageCount] = useState(0);
+
+  const [stats, setStats] = useState({
+    pending: 0,
+    active: 0,
+    completed: 0,
+    earnings: 0,
+  });
+
+  const [notifications, setNotifications] = useState([]);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notificationLoading, setNotificationLoading] = useState(false);
+
+  async function loadRequests() {
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await fetchMyRepairRequests();
+      setRequests(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to load repair requests:", err);
+      setError(err.message || "Failed to load repair requests.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadMessageCount() {
+    try {
+      const data = await fetchUnreadMessages();
+      setMessageCount(Number(data?.count || 0));
+    } catch (err) {
+      console.error("Failed to load unread messages:", err);
+      setMessageCount(0);
+    }
+  }
+
+  async function loadStats() {
+    try {
+      const data = await fetchRepairerDashboardStats();
+
+      const source = data?.data || data || {};
+
+      setStats({
+        pending: Number(
+          source.pending ??
+          source.pending_requests ??
+          source.pendingRequests ??
+          0
+        ),
+        active: Number(
+          source.active ??
+          source.active_repairs ??
+          source.activeRepairs ??
+          source.in_progress ??
+          0
+        ),
+        completed: Number(
+          source.completed ??
+          source.completed_repairs ??
+          source.completedRepairs ??
+          0
+        ),
+        earnings: Number(
+          source.earnings ??
+          source.total_earnings ??
+          source.totalEarnings ??
+          0
+        ),
+      });
+    } catch (err) {
+      console.error("Failed to load dashboard stats:", err);
+    }
+  }
+
+  async function loadNotifications() {
+    try {
+      setNotificationLoading(true);
+
+      const data = await fetchNotifications();
+
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data?.notifications)
+            ? data.notifications
+            : [];
+
+      setNotifications(list);
+    } catch (err) {
+      console.error("Failed to load notifications:", err);
+      setNotifications([]);
+    } finally {
+      setNotificationLoading(false);
+    }
+  }
+
+  async function handleNotificationClick(notification) {
+    if (!notification?.is_read && notification?.id) {
+      try {
+        await markNotificationRead(notification.id);
+
+        setNotifications((current) =>
+          current.map((item) =>
+            item.id === notification.id
+              ? { ...item, is_read: true }
+              : item
+          )
+        );
+      } catch (err) {
+        console.error("Failed to mark notification as read:", err);
+      }
+    }
+  }
+
+  async function handleStatusChange(id, status) {
+    try {
+      setUpdatingId(id);
+
+      await updateRepairRequestStatus(id, status);
+
+      await loadRequests();
+      await loadStats();
+    } catch (err) {
+      console.error("Failed to update request:", err);
+      setError(err.message || "Failed to update request.");
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  useEffect(() => {
+    loadRequests();
+    loadMessageCount();
+    loadStats();
+    loadNotifications();
+
+    const interval = setInterval(() => {
+      loadMessageCount();
+      loadStats();
+      loadNotifications();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  function getStatusStyle(status) {
+    switch (status) {
+      case "accepted":
+        return "bg-green-100 text-green-700 border-green-200";
+
+      case "in_progress":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+
+      case "completed":
+        return "bg-emerald-100 text-emerald-700 border-emerald-200";
+
+      case "cancelled":
+        return "bg-red-100 text-red-700 border-red-200";
+
+      default:
+        return "bg-[#f3e5da] text-[#8b5e3c] border-[#dfcabb]";
+    }
+  }
+
+  function formatStatus(status) {
+    return String(status || "pending")
+      .replace("_", " ")
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }
+
+  function formatSchedule(schedule) {
+    if (!schedule) return "Not specified";
+
+    const date = new Date(schedule);
+
+    if (Number.isNaN(date.getTime())) {
+      return schedule;
+    }
+
+    return date.toLocaleString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
+
+  function getDetail(description, label) {
+    const line = String(description || "")
+      .split("\n")
+      .find((item) => item.startsWith(`${label}:`));
+
+    return line ? line.replace(`${label}:`, "").trim() : "";
+  }
+
+  const unreadNotificationCount = notifications.filter(
+    (notification) => !notification?.is_read
+  ).length;
+
+  const statCards = [
+    {
+      label: "Pending",
+      value: stats.pending,
+      description: "Requests waiting for action",
+    },
+    {
+      label: "Active Repairs",
+      value: stats.active,
+      description: "Repairs currently in progress",
+    },
+    {
+      label: "Completed",
+      value: stats.completed,
+      description: "Successfully completed repairs",
+    },
+    {
+      label: "Earnings",
+      value: `₱${stats.earnings.toLocaleString("en-PH")}`,
+      description: "Total repair earnings",
+    },
+  ];
+
+  return (
+    <section className="mx-auto max-w-6xl px-6 py-12 sm:py-20">
+
+      {/* DASHBOARD HEADER */}
+      <div className="flex items-start justify-between gap-6">
+
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
+            Repairer Dashboard
+          </p>
+
+          <h1 className="mt-3 text-4xl font-black tracking-tight text-[#2f241e]">
+            Repair Requests
+          </h1>
+
+          <p className="mt-3 max-w-2xl text-[#75675f]">
+            Manage customer repair requests and update their progress.
+          </p>
+        </div>
+
+        {/* NOTIFICATION BUTTON */}
+        <div className="relative shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              setNotificationOpen((current) => !current);
+              if (!notificationOpen) {
+                loadNotifications();
+              }
+            }}
+            aria-label="Notifications"
+            title="Notifications"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#d8c8bc] bg-white text-[#8b5e3c] shadow-sm transition hover:bg-[#f7eee8]"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="h-5 w-5"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 18.75a3 3 0 0 1-6 0m9-4.5H6a1.5 1.5 0 0 1-1.5-1.5v-.75a7.5 7.5 0 0 1 15 0v.75a1.5 1.5 0 0 1-1.5 1.5Z"
+              />
+            </svg>
+
+            {unreadNotificationCount > 0 && (
+              <span className="absolute -right-1.5 -top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full border border-white bg-[#b9825f] px-1 text-[9px] font-black leading-none text-white shadow-sm">
+                {unreadNotificationCount > 99
+                  ? "99+"
+                  : unreadNotificationCount}
+              </span>
+            )}
+          </button>
+
+          {/* NOTIFICATION DROPDOWN */}
+          {notificationOpen && (
+            <div className="absolute right-0 top-12 z-50 w-80 overflow-hidden rounded-2xl border border-[#e4d9d0] bg-white shadow-xl">
+
+              <div className="flex items-center justify-between border-b border-[#eee5df] px-4 py-3">
+                <h2 className="text-sm font-black text-[#2f241e]">
+                  Notifications
+                </h2>
+
+                {unreadNotificationCount > 0 && (
+                  <span className="text-xs font-bold text-[#b9825f]">
+                    {unreadNotificationCount} new
+                  </span>
+                )}
+              </div>
+
+              <div className="max-h-80 overflow-y-auto">
+                {notificationLoading ? (
+                  <div className="px-4 py-8 text-center text-sm text-[#75675f]">
+                    Loading notifications...
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <div className="px-4 py-8 text-center text-sm text-[#75675f]">
+                    No notifications yet.
+                  </div>
+                ) : (
+                  notifications.map((notification) => (
+                    <button
+                      key={notification.id}
+                      type="button"
+                      onClick={() =>
+                        handleNotificationClick(notification)
+                      }
+                      className={`block w-full border-b border-[#f1e9e3] px-4 py-3 text-left transition hover:bg-[#faf6f2] ${
+                        !notification.is_read ? "bg-[#fdf8f4]" : ""
+                      }`}
+                    >
+                      <div className="flex gap-3">
+                        <span
+                          className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
+                            !notification.is_read
+                              ? "bg-[#b9825f]"
+                              : "bg-[#d8c8bc]"
+                          }`}
+                        />
+
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-[#2f241e]">
+                            {notification.title ||
+                              notification.type ||
+                              "Notification"}
+                          </p>
+
+                          <p className="mt-1 text-xs leading-5 text-[#75675f]">
+                            {notification.message ||
+                              notification.body ||
+                              "You have a new notification."}
+                          </p>
+
+                          {notification.created_at && (
+                            <p className="mt-1 text-[10px] text-[#a28f83]">
+                              {new Date(
+                                notification.created_at
+                              ).toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* DASHBOARD STATS */}
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {statCards.map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-2xl border border-[#e4d9d0] bg-white/80 p-5 shadow-sm"
+          >
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#9a6541]">
+              {stat.label}
+            </p>
+
+            <p className="mt-2 text-3xl font-black text-[#2f241e]">
+              {stat.value}
+            </p>
+
+            <p className="mt-1 text-xs leading-5 text-[#75675f]">
+              {stat.description}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* LOADING */}
+      {loading && (
+        <div className="mt-10 rounded-3xl border border-[#e4d9d0] px-6 py-20 text-center">
+          <p className="text-sm text-[#75675f]">
+            Loading repair requests...
+          </p>
+        </div>
+      )}
+
+      {/* ERROR */}
+      {!loading && error && (
+        <div className="mt-10 rounded-2xl border border-red-300 bg-red-50 px-5 py-4">
+          <p className="text-sm text-red-700">
+            {error}
+          </p>
+
+          <button
+            type="button"
+            onClick={loadRequests}
+            className="mt-4 rounded-xl bg-[#b9825f] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#a9704e]"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
+      {/* NO REQUESTS */}
+      {!loading && !error && requests.length === 0 && (
+        <div className="mt-10 rounded-3xl border border-dashed border-[#d8c8bc] px-6 py-24 text-center">
+          <h2 className="text-xl font-bold text-[#2f241e]">
+            No repair requests yet
+          </h2>
+
+          <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[#75675f]">
+            Customer requests assigned to you will appear here.
+          </p>
+        </div>
+      )}
+
+      {/* REQUESTS */}
+      {!loading && !error && requests.length > 0 && (
+        <div className="mt-10 space-y-6">
+
+          {requests.map((request, index) => {
+            const description = String(request.description || "");
+
+            const item =
+              getDetail(description, "Item") ||
+              request.service ||
+              "Repair Request";
+
+            const category =
+              getDetail(description, "Category") ||
+              "Repair Service";
+
+            const location =
+              getDetail(description, "Location") ||
+              "Not specified";
+
+            const problem =
+              getDetail(description, "Problem") ||
+              "No problem description provided.";
+
+            const notes =
+              getDetail(description, "Additional notes");
+
+            const schedule =
+              getDetail(description, "Preferred schedule");
+
+            const isUpdating = updatingId === request.id;
+
+            return (
+              <article
+                key={request.id}
+                className="rounded-3xl border border-[#e4d9d0] bg-white/80 p-6 shadow-sm"
+              >
+
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
+                      Request #{request.id}
+                    </p>
+
+                    <h2 className="mt-2 text-2xl font-black text-[#2f241e]">
+                      {item}
+                    </h2>
+
+                    <p className="mt-1 text-sm text-[#75675f]">
+                      Customer: {request.customer_name || "Customer"}
+                    </p>
+                  </div>
+
+                  <div className="relative">
+
+                    {/* MESSAGE ICON */}
+                    {index === 0 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate("/messages", {
+                            state: { from: "repairer-dashboard" },
+                          })
+                        }
+                        aria-label="Messages"
+                        title="Messages"
+                        className="absolute -top-16 right-0 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-[#d8c8bc] bg-white text-[#8b5e3c] shadow-sm transition hover:bg-[#f7eee8]"
+                      >
+                        {messageCount > 0 && (
+                          <span className="absolute -right-1.5 -top-1.5 flex min-h-4 min-w-4 items-center justify-center rounded-full border border-white bg-[#b9825f] px-1 text-[9px] font-black leading-none text-white shadow-sm">
+                            {messageCount > 99 ? "99+" : messageCount}
+                          </span>
+                        )}
+
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          className="h-4 w-4"
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M3.75 6.75A2.25 2.25 0 0 1 6 4.5h12a2.25 2.25 0 0 1 2.25 2.25v10.5A2.25 2.25 0 0 1 18 19.5H6a2.25 2.25 0 0 1-2.25-2.25V6.75Z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m4.5 6 7.5 6 7.5-6"
+                          />
+                        </svg>
+                      </button>
+                    )}
+
+                    <span
+                      className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-bold ${getStatusStyle(
+                        request.status
+                      )}`}
+                    >
+                      {formatStatus(request.status)}
+                    </span>
+
+                  </div>
+
+                </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#9a6541]">
+                      Category
+                    </p>
+
+                    <p className="mt-1 text-sm text-[#2f241e]">
+                      {category}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#9a6541]">
+                      Location
+                    </p>
+
+                    <p className="mt-1 text-sm text-[#2f241e]">
+                      {location}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#9a6541]">
+                      Preferred Schedule
+                    </p>
+
+                    <p className="mt-1 text-sm text-[#2f241e]">
+                      {formatSchedule(schedule)}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#9a6541]">
+                      Service
+                    </p>
+
+                    <p className="mt-1 text-sm text-[#2f241e]">
+                      {request.service || category}
+                    </p>
+                  </div>
+
+                </div>
+
+                <div className="mt-6 border-t border-[#eee5df] pt-5">
+
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#9a6541]">
+                    Problem
+                  </p>
+
+                  <p className="mt-2 text-sm leading-7 text-[#4f443d]">
+                    {problem}
+                  </p>
+
+                  {notes && (
+                    <div className="mt-4">
+                      <p className="text-xs font-bold uppercase tracking-wider text-[#9a6541]">
+                        Additional Notes
+                      </p>
+
+                      <p className="mt-2 text-sm leading-7 text-[#4f443d]">
+                        {notes}
+                      </p>
+                    </div>
+                  )}
+
+                </div>
+
+                {request.status === "pending" && (
+                  <div className="mt-6 flex flex-col gap-3 border-t border-[#eee5df] pt-5 sm:flex-row">
+
+                    <button
+                      type="button"
+                      disabled={isUpdating}
+                      onClick={() =>
+                        handleStatusChange(request.id, "accepted")
+                      }
+                      className="rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#a9704e] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isUpdating ? "Updating..." : "Accept Request"}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isUpdating}
+                      onClick={() =>
+                        handleStatusChange(request.id, "cancelled")
+                      }
+                      className="rounded-xl border border-[#d8c8bc] px-5 py-3 text-sm font-bold text-[#8b5e3c] transition hover:bg-[#f7eee8] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Decline Request
+                    </button>
+
+                  </div>
+                )}
+
+                {request.status === "accepted" && (
+                  <div className="mt-6 flex gap-3 border-t border-[#eee5df] pt-5">
+
+                    <button
+                      type="button"
+                      disabled={isUpdating}
+                      onClick={() =>
+                        handleStatusChange(request.id, "in_progress")
+                      }
+                      className="rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#a9704e] disabled:opacity-60"
+                    >
+                      {isUpdating ? "Updating..." : "Start Repair"}
+                    </button>
+
+                  </div>
+                )}
+
+                {request.status === "in_progress" && (
+                  <div className="mt-6 flex gap-3 border-t border-[#eee5df] pt-5">
+
+                    <button
+                      type="button"
+                      disabled={isUpdating}
+                      onClick={() =>
+                        handleStatusChange(request.id, "completed")
+                      }
+                      className="rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#a9704e] disabled:opacity-60"
+                    >
+                      {isUpdating ? "Updating..." : "Mark Completed"}
+                    </button>
+
+                  </div>
+                )}
+
+              </article>
+            );
+          })}
+
+        </div>
+      )}
+
+    </section>
+  );
+}
+
+export default RepairerDashboard;

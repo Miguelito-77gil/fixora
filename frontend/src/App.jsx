@@ -1,3 +1,4 @@
+﻿import Account from "@/pages/Account";
 import { Routes, Route } from "react-router-dom";
 import MainLayout from "@/layouts/MainLayout";
 
@@ -13,6 +14,7 @@ import CustomerDashboard from "@/pages/CustomerDashboard";
 import RepairerDashboard from "@/pages/RepairerDashboard";
 import EditProfile from "@/pages/EditProfile";
 import Profile from "@/pages/Profile";
+import Messages from "@/pages/Messages";
 
 function App() {
   return (
@@ -66,10 +68,30 @@ function App() {
           path="/profile"
           element={<Profile />}
         />
+        <Route
+          path="/messages"
+          element={<Messages />}
+        />
+
+        <Route
+          path="/messages/:userId"
+          element={<Messages />}
+        />
 
       </Route>
+          <Route path="/account" element={<Account />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      
+
+        <Route
+          path="/customer/account"
+          element={<Account />}
+        />
     </Routes>
   );
 }
 
 export default App;
+
+
+

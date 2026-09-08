@@ -10,7 +10,7 @@ function RepairerListSection() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => new URLSearchParams(window.location.search).get("search") || "");
   const [location, setLocation] = useState("All Locations");
   const [category, setCategory] = useState("All Categories");
   const [minRating, setMinRating] = useState(0);
@@ -153,11 +153,11 @@ function RepairerListSection() {
             <div className="mb-5 flex flex-col gap-4 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
 
               <div>
-                <h2 className="font-bold text-[#17202a]">
+                <h2 className="font-semibold text-[#17202a]">
                   {loading ? "Loading..." : `${filteredRepairers.length} repairers found`}
                 </h2>
 
-                <p className="mt-1 text-sm text-[#90979d]">
+                <p className="mt-1 text-sm text-[#777f86]">
                   Compare providers before requesting a service.
                 </p>
               </div>
@@ -207,7 +207,7 @@ function RepairerListSection() {
               </div>
             ) : !loading && (
               <div className="rounded-2xl border border-dashed border-[#d8d0c8] bg-white p-8 text-center sm:p-10">
-                <h3 className="text-lg font-bold text-[#26313b]">
+                <h3 className="text-lg font-semibold text-[#26313b]">
                   No repairers found
                 </h3>
 
@@ -225,3 +225,5 @@ function RepairerListSection() {
 }
 
 export default RepairerListSection;
+
+

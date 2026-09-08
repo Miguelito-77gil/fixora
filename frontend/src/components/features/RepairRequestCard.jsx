@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { createReview } from "@/services/repairService";
 
 function formatSchedule(schedule) {
@@ -38,6 +38,14 @@ function RepairRequestCard({ request }) {
     "bg-[#f3e4d5] text-[#7a4a27] border-[#d8b99b]";
 
   const formattedStatus = status.replace(/_/g, " ");
+
+  const itemName = request.itemName || "Repair Request";
+  const category = request.category || "";
+  const repairerName = request.repairerName || "Not assigned yet";
+
+  const showCategory =
+    category &&
+    category.toLowerCase() !== itemName.toLowerCase();
 
   const [selectedRating, setSelectedRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -79,29 +87,35 @@ function RepairRequestCard({ request }) {
   return (
     <article className="overflow-hidden rounded-2xl border border-[#d8c4b3] bg-[#fffaf5] shadow-[0_4px_18px_rgba(90,60,40,0.08)]">
 
-      {/* Top */}
+      {/* Header */}
       <div className="border-b border-[#eaded4] bg-[#f8eee5] px-5 py-5 sm:px-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a6541]">
-              {request.category || "Repair Service"}
-            </p>
+          <div className="min-w-0">
+            {showCategory && (
+              <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#9a6541]">
+                {category}
+              </p>
+            )}
 
-            <h3 className="mt-2 text-xl font-extrabold text-[#2f241e]">
-              {request.itemName || "Repair Request"}
+            <h3
+              className={`text-xl font-semibold text-[#2f241e] ${
+                showCategory ? "mt-2" : ""
+              }`}
+            >
+              {itemName}
             </h3>
 
             <p className="mt-2 text-sm text-[#685b53]">
-              Repairer:{" "}
-              <span className="font-bold text-[#3a2c24]">
-                {request.repairerName || "Not specified"}
+              Repairer{" "}
+              <span className="font-medium text-[#3a2c24]">
+                {repairerName}
               </span>
             </p>
           </div>
 
           <span
-            className={`w-fit rounded-full border px-3.5 py-1.5 text-xs font-bold capitalize ${badgeStyle}`}
+            className={`w-fit shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium capitalize ${badgeStyle}`}
           >
             {formattedStatus}
           </span>
@@ -113,21 +127,21 @@ function RepairRequestCard({ request }) {
       <div className="grid gap-0 sm:grid-cols-2">
 
         <div className="border-b border-[#eaded4] px-5 py-5 sm:border-r sm:px-6">
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#9a8a7e]">
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#9a8a7e]">
             Location
           </p>
 
-          <p className="mt-2 text-sm font-semibold leading-6 text-[#40332b]">
+          <p className="mt-2 text-sm font-medium leading-6 text-[#40332b]">
             {request.location || "Not specified"}
           </p>
         </div>
 
         <div className="border-b border-[#eaded4] px-5 py-5 sm:px-6">
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#9a8a7e]">
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#9a8a7e]">
             Preferred Schedule
           </p>
 
-          <p className="mt-2 text-sm font-semibold leading-6 text-[#40332b]">
+          <p className="mt-2 text-sm font-medium leading-6 text-[#40332b]">
             {formatSchedule(request.schedule)}
           </p>
         </div>
@@ -137,22 +151,22 @@ function RepairRequestCard({ request }) {
       {/* Problem */}
       <div className="px-5 py-5 sm:px-6">
 
-        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#9a8a7e]">
+        <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#9a8a7e]">
           Problem
         </p>
 
-        <p className="mt-2 whitespace-pre-line text-sm font-medium leading-7 text-[#40332b]">
+        <p className="mt-2 whitespace-pre-line text-sm leading-7 text-[#40332b]">
           {request.problem || "No problem description provided."}
         </p>
 
         {request.notes && (
           <div className="mt-5 rounded-xl border border-[#e5d8ce] bg-[#fdf8f3] px-4 py-3">
 
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#9a8a7e]">
+            <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#9a8a7e]">
               Additional Notes
             </p>
 
-            <p className="mt-1.5 text-sm font-medium leading-6 text-[#40332b]">
+            <p className="mt-1.5 text-sm leading-6 text-[#40332b]">
               {request.notes}
             </p>
 
@@ -168,13 +182,12 @@ function RepairRequestCard({ request }) {
           {reviewSubmitted ? (
             <div className="rounded-xl border border-[#bdd3c1] bg-[#eaf3eb] px-4 py-4">
 
-              <p className="text-sm font-bold text-[#376044]">
+              <p className="text-sm font-medium text-[#376044]">
                 Thank you for your review.
               </p>
 
               <p className="mt-1 text-sm text-[#54705a]">
-                You rated {request.repairerName || "your repairer"}{" "}
-                {selectedRating} out of 5.
+                You rated {repairerName} {selectedRating} out of 5.
               </p>
 
             </div>
@@ -182,13 +195,12 @@ function RepairRequestCard({ request }) {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#9a8a7e]">
+                <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#9a8a7e]">
                   Repair Completed
                 </p>
 
-                <p className="mt-1.5 text-sm font-semibold text-[#40332b]">
-                  How was your experience with{" "}
-                  {request.repairerName || "your repairer"}?
+                <p className="mt-1.5 text-sm font-medium text-[#40332b]">
+                  How was your experience with {repairerName}?
                 </p>
               </div>
 
@@ -198,7 +210,7 @@ function RepairRequestCard({ request }) {
                   setShowRatingForm(true);
                   setReviewError("");
                 }}
-                className="rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#a9704e]"
+                className="rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#a9704e]"
               >
                 Rate Repairer
               </button>
@@ -208,11 +220,11 @@ function RepairRequestCard({ request }) {
             <form onSubmit={handleSubmitReview}>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#9a8a7e]">
+                <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#9a8a7e]">
                   Rate Repairer
                 </p>
 
-                <p className="mt-1.5 text-sm font-semibold text-[#40332b]">
+                <p className="mt-1.5 text-sm font-medium text-[#40332b]">
                   How was your experience?
                 </p>
               </div>
@@ -240,7 +252,7 @@ function RepairRequestCard({ request }) {
                 ))}
 
                 {selectedRating > 0 && (
-                  <span className="ml-2 text-sm font-semibold text-[#685b53]">
+                  <span className="ml-2 text-sm font-medium text-[#685b53]">
                     {selectedRating}/5
                   </span>
                 )}
@@ -252,7 +264,7 @@ function RepairRequestCard({ request }) {
 
                 <label
                   htmlFor={`review-${request.id}`}
-                  className="text-xs font-bold uppercase tracking-[0.12em] text-[#9a8a7e]"
+                  className="text-xs font-medium uppercase tracking-[0.12em] text-[#9a8a7e]"
                 >
                   Review
                 </label>
@@ -279,11 +291,9 @@ function RepairRequestCard({ request }) {
                 <button
                   type="submit"
                   disabled={submittingReview}
-                  className="rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#a9704e] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#a9704e] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {submittingReview
-                    ? "Submitting..."
-                    : "Submit Review"}
+                  {submittingReview ? "Submitting..." : "Submit Review"}
                 </button>
 
                 <button
@@ -293,7 +303,7 @@ function RepairRequestCard({ request }) {
                     setShowRatingForm(false);
                     setReviewError("");
                   }}
-                  className="rounded-xl border border-[#d8c8bc] px-5 py-3 text-sm font-bold text-[#8b5e3c] transition hover:bg-[#f7eee8] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-xl border border-[#d8c8bc] px-5 py-3 text-sm font-medium text-[#8b5e3c] transition hover:bg-[#f7eee8] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Cancel
                 </button>
@@ -310,8 +320,8 @@ function RepairRequestCard({ request }) {
       <div className="border-t border-[#eaded4] bg-[#f8eee5] px-5 py-3.5 sm:px-6">
 
         <p className="text-xs font-medium text-[#8b786b]">
-          Request ID:{" "}
-          <span className="font-bold text-[#604a39]">
+          Request ID{" "}
+          <span className="font-medium text-[#604a39]">
             #{request.id}
           </span>
         </p>

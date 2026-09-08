@@ -1,10 +1,14 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
+import { NavLink } from "react-router-dom";
+import logo from "@/assets/luh.png";
 
 import RepairRequestCard from "@/components/features/RepairRequestCard";
 import { fetchMyRepairRequests } from "@/services/repairService";
 import { fetchMyProfile, updateMyPhone } from "@/services/authService";
+import { useAuth } from "@/context/AuthContext";
 
 function CustomerDashboard() {
+  const { logout } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -16,6 +20,8 @@ function CustomerDashboard() {
   const [savingPhone, setSavingPhone] = useState(false);
   const [profileMessage, setProfileMessage] = useState("");
   const [profileError, setProfileError] = useState("");
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   async function loadRequests() {
     try {
@@ -84,330 +90,246 @@ function CustomerDashboard() {
     }
   }
 
+  function handleLogout() {
+    logout();
+    window.location.href = "/";
+  }
+
   useEffect(() => {
     loadRequests();
     loadProfile();
   }, []);
 
+  const navClass = ({ isActive }) =>
+    `flex items-center rounded-xl px-4 py-3 text-sm font-medium transition ${
+      isActive
+        ? "bg-[#f3eee9] text-[#2f241e] border border-[#d8c8bc]"
+        : "text-[#5f5148] hover:bg-[#f8f5f2]"
+    }`;
+
   return (
-    <section className="mx-auto max-w-6xl px-6 py-12 sm:py-20">
+    <div className="min-h-screen bg-[#f8f5f2] text-[#2f241e]">
 
-      {/* HEADER */}
-      <div>
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#9a6541]">
-          Customer Dashboard
-        </p>
+      {/* MOBILE HEADER */}
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-[#e8dfd8] bg-white/95 px-5 py-4 backdrop-blur lg:hidden">
+        <div>
+          <h2 className="text-lg font-bold tracking-tight text-[#2f241e]">
+            Fixora
+          </h2>
 
-        <h1 className="mt-3 text-4xl font-black tracking-tight text-[#2f241e]">
-          My Repair Requests
-        </h1>
-
-        <p className="mt-3 max-w-2xl text-[#75675f]">
-          Track your repair requests and stay updated on their progress.
-        </p>
-      </div>
-
-      {/* CUSTOMER PROFILE */}
-      <div className="mt-10 rounded-3xl border border-[#d8c8bc] bg-white/70 p-6 shadow-sm backdrop-blur-sm sm:p-8">
-
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a6541]">
-              Customer Profile
-            </p>
-
-            <h2 className="mt-2 text-2xl font-black text-[#2f241e]">
-              Your Information
-            </h2>
-
-            <p className="mt-2 max-w-xl text-sm leading-6 text-[#75675f]">
-              Keep your contact information updated so repairers can reach you
-              when needed.
-            </p>
-          </div>
-
-          {!profileLoading && profile && !editingProfile && (
-            <button
-              type="button"
-              onClick={handleEditProfile}
-              className="w-full rounded-xl border border-[#cdb5a2] bg-white px-5 py-3 text-sm font-bold text-[#8b5e3c] transition hover:bg-[#f3e5da] sm:w-auto"
-            >
-              Edit Profile
-            </button>
-          )}
+          <p className="text-xs text-[#8a7a70]">
+            Customer
+          </p>
         </div>
 
-        {profileLoading ? (
-          <div className="mt-6 rounded-2xl border border-[#e2d5cc] bg-white/50 px-5 py-6">
-            <p className="text-sm text-[#75675f]">
-              Loading your profile...
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(true)}
+          className="rounded-xl border border-[#d8c8bc] bg-white px-4 py-2 text-sm font-medium text-[#5f5148] transition hover:bg-[#f3eee9]"
+          aria-label="Open menu"
+        >
+          Menu
+        </button>
+      </div>
+
+      {/* MOBILE OVERLAY */}
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+        />
+      )}
+
+      {/* SIDEBAR */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-[#e8dfd8] bg-white transition-transform duration-200 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+
+        {/* BRAND */}
+<div
+  className="flex items-center justify-between border-b border-[#eee7e2] px-6 py-0"
+  style={{
+    height: "60px",
+    minHeight: "60px",
+    maxHeight: "60px",
+    boxSizing: "border-box",
+  }}
+>
+  <NavLink
+    to="/"
+    onClick={() => setSidebarOpen(false)}
+    className="inline-flex h-full items-center"
+    aria-label="Go to Fixora home"
+  >
+    <img
+      src={logo}
+      alt="Fixora"
+      className="h-9 w-auto object-contain"
+    />
+  </NavLink>
+
+  <button
+    type="button"
+    onClick={() => setSidebarOpen(false)}
+    className="rounded-lg px-2 py-1 text-sm text-[#8a7a70] hover:bg-[#f3eee9] lg:hidden"
+  >
+    Close
+  </button>
+</div>
+
+        {/* MENU */}
+        <nav className="flex-1 space-y-2 px-4 py-6">
+
+          <NavLink
+            to="/customer/dashboard"
+            onClick={() => setSidebarOpen(false)}
+            className={navClass}
+          >
+            Dashboard
+          </NavLink>
+
+          <NavLink
+            to="/"
+            onClick={() => setSidebarOpen(false)}
+            className={navClass}
+          >
+            Home
+          </NavLink>
+
+          <NavLink
+            to="/repairers"
+            onClick={() => setSidebarOpen(false)}
+            className={navClass}
+          >
+            Find a Repairer
+          </NavLink>
+
+          <NavLink
+            to="/customer/account"
+            onClick={() => setSidebarOpen(false)}
+            className={navClass}
+          >
+            My Account
+          </NavLink>
+
+        </nav>
+
+        {/* LOGOUT */}
+        <div className="border-t border-[#eee7e2] p-4">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex w-full items-center rounded-xl px-4 py-3 text-left text-sm font-medium text-[#5f5148] transition hover:bg-[#f3eee9]"
+          >
+            Log Out
+          </button>
+        </div>
+
+      </aside>
+
+      {/* MAIN CONTENT */}
+      <main className="lg:pl-64">
+        <section className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
+
+          {/* HEADER */}
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#9a6541]">
+              Customer Dashboard
+            </p>
+
+            <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#2f241e] sm:text-4xl">
+              My Repair Requests
+            </h1>
+
+            <p className="mt-3 max-w-2xl text-[#75675f]">
+              Track your repair requests and stay updated on their progress.
             </p>
           </div>
-        ) : profileError && !profile ? (
-          <div className="mt-6 rounded-2xl border border-red-300 bg-red-50 px-5 py-4">
-            <p className="text-sm text-red-700">
-              {profileError}
-            </p>
 
-            <button
-              type="button"
-              onClick={loadProfile}
-              className="mt-4 rounded-xl bg-[#8b5e3c] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#754b2f]"
-            >
-              Try Again
-            </button>
-          </div>
-        ) : editingProfile ? (
-          <form onSubmit={handleSavePhone} className="mt-8">
-
-            <div className="grid gap-5 md:grid-cols-2">
-
-              {/* NAME */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="customer-name"
-                  className="text-sm font-bold text-[#2f241e]"
-                >
-                  Full Name
-                </label>
-
-                <input
-                  id="customer-name"
-                  type="text"
-                  value={profile?.name || ""}
-                  readOnly
-                  className="w-full rounded-2xl border border-[#e0d3ca] bg-[#f7f2ee] px-4 py-3 text-sm text-[#75675f] outline-none"
-                />
-
-                <p className="text-xs text-[#9a8b82]">
-                  Name editing can be enabled from the account settings later.
-                </p>
-              </div>
-
-              {/* EMAIL */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="customer-email"
-                  className="text-sm font-bold text-[#2f241e]"
-                >
-                  Email Address
-                </label>
-
-                <input
-                  id="customer-email"
-                  type="email"
-                  value={profile?.email || ""}
-                  readOnly
-                  className="w-full rounded-2xl border border-[#e0d3ca] bg-[#f7f2ee] px-4 py-3 text-sm text-[#75675f] outline-none"
-                />
-              </div>
-
-              {/* MOBILE */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="customer-phone"
-                  className="text-sm font-bold text-[#2f241e]"
-                >
-                  Mobile Number
-                </label>
-
-                <input
-                  id="customer-phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(event) => {
-                    setPhone(event.target.value);
-                    setProfileMessage("");
-                    setProfileError("");
-                  }}
-                  placeholder="09XXXXXXXXX"
-                  className="w-full rounded-2xl border border-[#cdb5a2] bg-white px-4 py-3 text-sm text-[#2f241e] outline-none transition placeholder:text-[#a89486] focus:border-[#9a6541] focus:ring-2 focus:ring-[#9a6541]/20"
-                  maxLength={20}
-                  required
-                />
-              </div>
-
-              {/* LOCATION */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="customer-location"
-                  className="text-sm font-bold text-[#2f241e]"
-                >
-                  Location
-                </label>
-
-                <input
-                  id="customer-location"
-                  type="text"
-                  value="Cebu, Philippines"
-                  readOnly
-                  className="w-full rounded-2xl border border-[#e0d3ca] bg-[#f7f2ee] px-4 py-3 text-sm text-[#75675f] outline-none"
-                />
-
-                <p className="text-xs text-[#9a8b82]">
-                  Location can be connected to your profile settings later.
-                </p>
-              </div>
-
+          {/* REPAIR REQUESTS */}
+          {loading && (
+            <div className="mt-10 rounded-3xl border border-[#d8c8bc] bg-white/40 px-6 py-20 text-center">
+              <p className="text-sm text-[#75675f]">
+                Loading your repair requests...
+              </p>
             </div>
+          )}
 
-            {profileMessage && (
-              <p className="mt-4 text-sm font-semibold text-green-700">
-                {profileMessage}
+          {!loading && error && (
+            <div className="mt-10 rounded-2xl border border-red-300 bg-red-50 px-5 py-4">
+              <p className="text-sm text-red-700">
+                {error}
               </p>
-            )}
-
-            {profileError && (
-              <p className="mt-4 text-sm font-semibold text-red-700">
-                {profileError}
-              </p>
-            )}
-
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <button
-                type="submit"
-                disabled={savingPhone}
-                className="rounded-xl bg-[#8b5e3c] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#754b2f] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {savingPhone ? "Saving..." : "Save Changes"}
-              </button>
 
               <button
                 type="button"
-                onClick={handleCancelEdit}
-                disabled={savingPhone}
-                className="rounded-xl border border-[#cdb5a2] bg-white px-5 py-3 text-sm font-bold text-[#75675f] transition hover:bg-[#f3e5da] disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={loadRequests}
+                className="mt-4 rounded-xl bg-[#8b5e3c] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#754b2f]"
               >
-                Cancel
+                Try Again
               </button>
             </div>
+          )}
 
-          </form>
-        ) : (
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
+          {!loading && !error && requests.length > 0 && (
+            <div className="mt-10 space-y-6">
 
-            {/* NAME */}
-            <div className="rounded-2xl border border-[#e2d5cc] bg-white/60 p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#9a8b82]">
-                Full Name
-              </p>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#9a6541]">
+                    Repair Activity
+                  </p>
 
-              <p className="mt-2 text-base font-bold text-[#2f241e]">
-                {profile?.name || "Not available"}
-              </p>
+                  <h2 className="mt-2 text-xl font-semibold text-[#2f241e]">
+                    Your Requests
+                  </h2>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={loadRequests}
+                  className="rounded-xl border border-[#cdb5a2] bg-transparent px-4 py-2 text-sm font-medium text-[#8b5e3c] transition hover:bg-[#f3e5da]"
+                >
+                  Refresh
+                </button>
+              </div>
+
+              {requests.map((request) => (
+                <RepairRequestCard
+                  key={request.id}
+                  request={request}
+                />
+              ))}
+
             </div>
+          )}
 
-            {/* EMAIL */}
-            <div className="rounded-2xl border border-[#e2d5cc] bg-white/60 p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#9a8b82]">
-                Email Address
-              </p>
-
-              <p className="mt-2 break-all text-base font-bold text-[#2f241e]">
-                {profile?.email || "Not available"}
-              </p>
-            </div>
-
-            {/* MOBILE */}
-            <div className="rounded-2xl border border-[#e2d5cc] bg-white/60 p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#9a8b82]">
-                Mobile Number
-              </p>
-
-              <p className="mt-2 text-base font-bold text-[#2f241e]">
-                {profile?.phone || "Not added yet"}
-              </p>
-            </div>
-
-            {/* LOCATION */}
-            <div className="rounded-2xl border border-[#e2d5cc] bg-white/60 p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#9a8b82]">
-                Location
-              </p>
-
-              <p className="mt-2 text-base font-bold text-[#2f241e]">
-                Cebu, Philippines
-              </p>
-            </div>
-
-          </div>
-        )}
-
-      </div>
-
-      {/* REQUESTS */}
-      {loading && (
-        <div className="mt-10 rounded-3xl border border-[#d8c8bc] bg-white/40 px-6 py-20 text-center">
-          <p className="text-sm text-[#75675f]">
-            Loading your repair requests...
-          </p>
-        </div>
-      )}
-
-      {!loading && error && (
-        <div className="mt-10 rounded-2xl border border-red-300 bg-red-50 px-5 py-4">
-          <p className="text-sm text-red-700">
-            {error}
-          </p>
-
-          <button
-            type="button"
-            onClick={loadRequests}
-            className="mt-4 rounded-xl bg-[#8b5e3c] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#754b2f]"
-          >
-            Try Again
-          </button>
-        </div>
-      )}
-
-      {!loading && !error && requests.length > 0 && (
-        <div className="mt-10 space-y-6">
-
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#9a6541]">
-                Repair Activity
-              </p>
-
-              <h2 className="mt-2 text-xl font-black text-[#2f241e]">
-                Your Requests
+          {!loading && !error && requests.length === 0 && (
+            <div className="mt-10 rounded-3xl border border-dashed border-[#d8c8bc] bg-white/30 px-6 py-24 text-center">
+              <h2 className="text-lg font-semibold text-[#2f241e]">
+                No repair requests yet
               </h2>
+
+              <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[#75675f]">
+                When you request a repairer, your repair request and its current
+                status will appear here.
+              </p>
             </div>
+          )}
 
-            <button
-              type="button"
-              onClick={loadRequests}
-              className="rounded-xl border border-[#cdb5a2] bg-transparent px-4 py-2 text-sm font-bold text-[#8b5e3c] transition hover:bg-[#f3e5da]"
-            >
-              Refresh
-            </button>
-          </div>
+        </section>
+      </main>
 
-          {requests.map((request) => (
-            <RepairRequestCard
-              key={request.id}
-              request={request}
-            />
-          ))}
-
-        </div>
-      )}
-
-      {!loading && !error && requests.length === 0 && (
-        <div className="mt-10 rounded-3xl border border-dashed border-[#d8c8bc] bg-white/30 px-6 py-24 text-center">
-          <h2 className="text-xl font-bold text-[#2f241e]">
-            No repair requests yet
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[#75675f]">
-            When you request a repairer, your repair request and its current
-            status will appear here.
-          </p>
-        </div>
-      )}
-
-    </section>
+    </div>
   );
 }
 
 export default CustomerDashboard;
+
+
+
+

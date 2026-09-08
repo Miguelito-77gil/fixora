@@ -12,6 +12,12 @@ import {
   addPortfolioItem,
   deletePortfolioItem,
 } from "@/services/repairerService";
+import {
+  fetchRepairerServices,
+  addRepairerService,
+  updateRepairerService,
+  deleteRepairerService,
+} from "@/services/marketplaceService";
 
 const CATEGORIES = [
   "Electronics",
@@ -53,6 +59,21 @@ function EditProfile() {
   const [portfolioUploading, setPortfolioUploading] = useState(false);
   const [portfolioError, setPortfolioError] = useState("");
 
+  const [services, setServices] = useState([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
+  const [serviceName, setServiceName] = useState("");
+  const [serviceDescription, setServiceDescription] = useState("");
+  const [servicePrice, setServicePrice] = useState("");
+  const [serviceSaving, setServiceSaving] = useState(false);
+  const [serviceError, setServiceError] = useState("");
+  const [serviceSuccess, setServiceSuccess] = useState("");
+  const [editingServiceId, setEditingServiceId] = useState(null);
+  const [editingServiceName, setEditingServiceName] = useState("");
+  const [editingServiceDescription, setEditingServiceDescription] = useState("");
+  const [editingServicePrice, setEditingServicePrice] = useState("");
+  const [serviceUpdating, setServiceUpdating] = useState(false);
+  const [serviceDeletingId, setServiceDeletingId] = useState(null);
+
   useEffect(() => {
     if (!user) {
       setLoading(false);
@@ -93,6 +114,24 @@ function EditProfile() {
         .finally(() => setLoading(false));
     }
   }, [user, isRepairer]);
+
+  useEffect(() => {
+    if (!isRepairer || !user?.id) return;
+
+    setServicesLoading(true);
+    setServiceError("");
+
+    fetchRepairerServices(user.id)
+      .then((data) => {
+        setServices(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        setServiceError(err.message);
+      })
+      .finally(() => {
+        setServicesLoading(false);
+      });
+  }, [isRepairer, user?.id]);
 
   if (!user) {
     return (
@@ -158,6 +197,147 @@ function EditProfile() {
     }
   }
 
+  async function handleAddService(e) {
+    e.preventDefault();
+
+    setServiceError("");
+    setServiceSuccess("");
+
+    if (!serviceName.trim()) {
+      setServiceError("Please enter a service name.");
+      return;
+    }
+
+    setServiceSaving(true);
+
+    try {
+      const service = await addRepairerService({
+        name: serviceName.trim(),
+        description: serviceDescription.trim() || null,
+        starting_price: servicePrice ? Number(servicePrice) : null,
+      });
+
+      setServices((prev) =>
+        [...prev, service].sort((a, b) =>
+          String(a.name || "").localeCompare(String(b.name || ""))
+        )
+      );
+
+      setServiceName("");
+      setServiceDescription("");
+      setServicePrice("");
+      setServiceSuccess("Service added successfully.");
+
+      setTimeout(() => {
+        setServiceSuccess("");
+      }, 2500);
+    } catch (err) {
+      setServiceError(err.message);
+    } finally {
+      setServiceSaving(false);
+    }
+  }
+
+  function startEditingService(service) {
+    setServiceError("");
+    setServiceSuccess("");
+    setEditingServiceId(service.id);
+    setEditingServiceName(service.name || "");
+    setEditingServiceDescription(service.description || "");
+    setEditingServicePrice(
+      service.starting_price !== null &&
+      service.starting_price !== undefined
+        ? String(service.starting_price)
+        : ""
+    );
+  }
+
+  function cancelEditingService() {
+    setEditingServiceId(null);
+    setEditingServiceName("");
+    setEditingServiceDescription("");
+    setEditingServicePrice("");
+    setServiceUpdating(false);
+  }
+
+  async function handleUpdateService(e, serviceId) {
+    e.preventDefault();
+
+    setServiceError("");
+    setServiceSuccess("");
+
+    if (!editingServiceName.trim()) {
+      setServiceError("Please enter a service name.");
+      return;
+    }
+
+    setServiceUpdating(true);
+
+    try {
+      const updated = await updateRepairerService(serviceId, {
+        name: editingServiceName.trim(),
+        description: editingServiceDescription.trim() || null,
+        starting_price: editingServicePrice
+          ? Number(editingServicePrice)
+          : null,
+      });
+
+      setServices((prev) =>
+        prev
+          .map((service) =>
+            service.id === serviceId ? updated : service
+          )
+          .sort((a, b) =>
+            String(a.name || "").localeCompare(String(b.name || ""))
+          )
+      );
+
+      cancelEditingService();
+      setServiceSuccess("Service updated successfully.");
+
+      setTimeout(() => {
+        setServiceSuccess("");
+      }, 2500);
+    } catch (err) {
+      setServiceError(err.message);
+    } finally {
+      setServiceUpdating(false);
+    }
+  }
+
+  async function handleDeleteService(serviceId) {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this service?"
+    );
+
+    if (!confirmed) return;
+
+    setServiceError("");
+    setServiceSuccess("");
+    setServiceDeletingId(serviceId);
+
+    try {
+      await deleteRepairerService(serviceId);
+
+      setServices((prev) =>
+        prev.filter((service) => service.id !== serviceId)
+      );
+
+      if (editingServiceId === serviceId) {
+        cancelEditingService();
+      }
+
+      setServiceSuccess("Service deleted successfully.");
+
+      setTimeout(() => {
+        setServiceSuccess("");
+      }, 2500);
+    } catch (err) {
+      setServiceError(err.message);
+    } finally {
+      setServiceDeletingId(null);
+    }
+  }
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -176,6 +356,7 @@ function EditProfile() {
           location,
           price: price ? Number(price) : null,
           phone,
+          available,
         });
       } else {
         await updateMyPhone(phone);
@@ -227,7 +408,6 @@ function EditProfile() {
 
         {!isRepairer ? (
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-
             <Input
               label="Full name"
               type="text"
@@ -262,14 +442,13 @@ function EditProfile() {
             >
               Cancel
             </Button>
-
           </form>
         ) : (
           <>
             <div className="mt-6 flex flex-col items-center gap-3">
               {photoUrl ? (
                 <img
-                  src={`http://localhost:8000${photoUrl}`}
+                  src={`http://127.0.0.1:8000${photoUrl}`}
                   alt="Profile"
                   className="h-24 w-24 rounded-2xl object-cover"
                 />
@@ -296,7 +475,6 @@ function EditProfile() {
             </div>
 
             <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-
               <div>
                 <label className="mb-1.5 block text-sm font-semibold text-[#26313b]">
                   Category
@@ -423,6 +601,233 @@ function EditProfile() {
 
             <div className="mt-10 border-t border-[#e4ded7] pt-8">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
+                Services
+              </p>
+
+              <h2 className="mt-2 text-xl font-bold text-[#17202a]">
+                What you offer
+              </h2>
+
+              <p className="mt-2 text-sm text-[#777f86]">
+                Add the specific repair services customers can request from you.
+              </p>
+
+              {serviceError && (
+                <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {serviceError}
+                </div>
+              )}
+
+              {serviceSuccess && (
+                <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                  {serviceSuccess}
+                </div>
+              )}
+
+              <div className="mt-5 space-y-3">
+                {servicesLoading ? (
+                  <div className="rounded-xl border border-[#e4ded7] bg-[#faf8f5] p-4">
+                    <div className="h-4 w-32 animate-pulse rounded bg-[#e8e0d8]" />
+                    <div className="mt-3 h-3 w-full animate-pulse rounded bg-[#eee8e2]" />
+                    <div className="mt-2 h-3 w-2/3 animate-pulse rounded bg-[#eee8e2]" />
+                  </div>
+                ) : services.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-[#d8cec4] bg-[#faf8f5] px-4 py-6 text-center">
+                    <p className="text-sm font-semibold text-[#505961]">
+                      No services added yet.
+                    </p>
+                    <p className="mt-1 text-xs text-[#8a8f94]">
+                      Add your first service below.
+                    </p>
+                  </div>
+                ) : (
+                  services.map((service) => (
+                    <div
+                      key={service.id}
+                      className="rounded-xl border border-[#e4ded7] bg-white p-4"
+                    >
+                      {editingServiceId === service.id ? (
+                        <form
+                          onSubmit={(e) =>
+                            handleUpdateService(e, service.id)
+                          }
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="text-sm font-bold text-[#26313b]">
+                              Edit service
+                            </p>
+
+                            <button
+                              type="button"
+                              onClick={cancelEditingService}
+                              className="text-xs font-semibold text-[#777f86] hover:text-[#26313b]"
+                              disabled={serviceUpdating}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+
+                          <div className="mt-4 space-y-3">
+                            <Input
+                              label="Service name"
+                              type="text"
+                              value={editingServiceName}
+                              onChange={(e) =>
+                                setEditingServiceName(e.target.value)
+                              }
+                              maxLength={100}
+                            />
+
+                            <div>
+                              <label className="mb-1.5 block text-sm font-semibold text-[#26313b]">
+                                Description
+                              </label>
+
+                              <textarea
+                                value={editingServiceDescription}
+                                onChange={(e) =>
+                                  setEditingServiceDescription(
+                                    e.target.value
+                                  )
+                                }
+                                rows={3}
+                                maxLength={1000}
+                                className="w-full rounded-lg border border-[#ddd7d0] bg-white px-4 py-2.5 text-sm text-[#26313b] focus:border-[#b9825f] focus:outline-none"
+                              />
+                            </div>
+
+                            <Input
+                              label="Starting price (PHP)"
+                              type="number"
+                              min="0"
+                              value={editingServicePrice}
+                              onChange={(e) =>
+                                setEditingServicePrice(e.target.value)
+                              }
+                              placeholder="Example: 500"
+                            />
+
+                            <Button
+                              type="submit"
+                              className="w-full"
+                              disabled={serviceUpdating}
+                            >
+                              {serviceUpdating
+                                ? "Saving..."
+                                : "Save Changes"}
+                            </Button>
+                          </div>
+                        </form>
+                      ) : (
+                        <>
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <h3 className="font-bold text-[#26313b]">
+                                {service.name}
+                              </h3>
+
+                              {service.description && (
+                                <p className="mt-1 text-sm leading-6 text-[#777f86]">
+                                  {service.description}
+                                </p>
+                              )}
+                            </div>
+
+                            {service.starting_price !== null &&
+                              service.starting_price !== undefined && (
+                                <span className="shrink-0 text-sm font-bold text-[#b9825f]">
+                                  PHP{" "}
+                                  {Number(
+                                    service.starting_price
+                                  ).toLocaleString()}
+                                </span>
+                              )}
+                          </div>
+
+                          <div className="mt-4 flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => startEditingService(service)}
+                              className="rounded-lg border border-[#d8cec4] px-3 py-2 text-xs font-bold text-[#505961] transition hover:border-[#b9825f] hover:text-[#b9825f]"
+                              disabled={serviceDeletingId === service.id}
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDeleteService(service.id)
+                              }
+                              disabled={serviceDeletingId === service.id}
+                              className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                            >
+                              {serviceDeletingId === service.id
+                                ? "Deleting..."
+                                : "Delete"}
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+              <form
+                className="mt-6 rounded-xl border border-[#e4ded7] bg-[#faf8f5] p-4"
+                onSubmit={handleAddService}
+              >
+                <p className="text-sm font-bold text-[#26313b]">
+                  Add a service
+                </p>
+
+                <div className="mt-4 space-y-3">
+                  <Input
+                    label="Service name"
+                    type="text"
+                    value={serviceName}
+                    onChange={(e) => setServiceName(e.target.value)}
+                    placeholder="Example: Phone screen replacement"
+                    maxLength={100}
+                  />
+
+                  <div>
+                    <label className="mb-1.5 block text-sm font-semibold text-[#26313b]">
+                      Description
+                    </label>
+
+                    <textarea
+                      value={serviceDescription}
+                      onChange={(e) => setServiceDescription(e.target.value)}
+                      rows={3}
+                      maxLength={1000}
+                      placeholder="Briefly describe what is included."
+                      className="w-full rounded-lg border border-[#ddd7d0] bg-white px-4 py-2.5 text-sm text-[#26313b] focus:border-[#b9825f] focus:outline-none"
+                    />
+                  </div>
+
+                  <Input
+                    label="Starting price (PHP)"
+                    type="number"
+                    min="0"
+                    value={servicePrice}
+                    onChange={(e) => setServicePrice(e.target.value)}
+                    placeholder="Example: 500"
+                  />
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={serviceSaving}
+                  >
+                    {serviceSaving ? "Adding..." : "Add Service"}
+                  </Button>
+                </div>
+              </form>
+            </div>
+
+            <div className="mt-10 border-t border-[#e4ded7] pt-8">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
                 Portfolio
               </p>
 
@@ -447,7 +852,7 @@ function EditProfile() {
                     className="group relative aspect-square overflow-hidden rounded-xl border border-[#e4ded7]"
                   >
                     <img
-                      src={`http://localhost:8000${item.image_url}`}
+                      src={`http://127.0.0.1:8000${item.image_url}`}
                       alt={item.caption || "Portfolio item"}
                       className="h-full w-full object-cover"
                     />
@@ -492,7 +897,6 @@ function EditProfile() {
             </div>
           </>
         )}
-
       </div>
     </section>
   );

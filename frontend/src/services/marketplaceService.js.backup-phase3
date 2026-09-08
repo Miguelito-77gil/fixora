@@ -1,0 +1,123 @@
+﻿const API_URL = "http://127.0.0.1:8000";
+
+function getToken() {
+  return (
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("fixora_token") ||
+    ""
+  );
+}
+
+async function request(path, options = {}) {
+  const token = getToken();
+
+  const headers = {
+    Accept: "application/json",
+    ...(options.body ? { "Content-Type": "application/json" } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers,
+  });
+
+  const contentType = response.headers.get("content-type") || "";
+
+  let data = null;
+
+  if (contentType.includes("application/json")) {
+    data = await response.json();
+  } else {
+    data = await response.text();
+  }
+
+  if (!response.ok) {
+    const message =
+      typeof data === "object" && data?.message
+        ? data.message
+        : typeof data === "object" && data?.error
+          ? data.error
+          : `Request failed with status ${response.status}`;
+
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+export async function toggleFavorite(repairerId) {
+  return request(`/api/marketplace/favorites/${repairerId}`, {
+    method: "POST",
+  });
+}
+
+export async function fetchFavorites() {
+  return request("/api/marketplace/favorites");
+}
+
+export async function trackRecentlyViewed(repairerId) {
+  return request(`/api/marketplace/recent/${repairerId}`, {
+    method: "POST",
+  });
+}
+
+export async function fetchRecentlyViewed() {
+  return request("/api/marketplace/recent");
+}
+
+export async function fetchRepairerServices(repairerId) {
+  return request(`/api/marketplace/repairers/${repairerId}/services`);
+}
+
+export async function fetchChatUsers() {
+  return request("/api/marketplace/chat/users");
+}
+
+
+export async function fetchUnreadMessages() {
+  return request("/api/marketplace/chat/unread");
+}
+export async function fetchMessages(userId) {
+  return request(`/api/marketplace/chat/${userId}`);
+}
+
+export async function sendMessage(userId, message, repairRequestId = null) {
+  return request(`/api/marketplace/chat/${userId}`, {
+    method: "POST",
+    body: JSON.stringify({
+      message,
+      repair_request_id: repairRequestId,
+    }),
+  });
+}
+
+export async function fetchNotifications() {
+  return request("/api/marketplace/notifications");
+}
+
+export async function markNotificationRead(id) {
+  return request(`/api/marketplace/notifications/${id}/read`, {
+    method: "PATCH",
+  });
+}
+
+export async function fetchRepairerDashboardStats() {
+  return request("/api/marketplace/repairer-dashboard");
+}
+
+export async function fetchRepairerEarnings() {
+  return request("/api/marketplace/earnings");
+}
+
+export async function fetchRecommendedRepairers() {
+  return request("/api/marketplace/recommended");
+}
+
+export async function fetchAdminMarketplaceStats() {
+  return request("/api/marketplace/admin-dashboard");
+}
+
+
