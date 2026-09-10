@@ -89,7 +89,14 @@ export async function fetchCurrentUserFromServer() {
   return data.user;
 }
 
-export async function applyAsRepairer({ category, bio, years_experience }) {
+export async function applyAsRepairer({
+  category,
+  bio,
+  years_experience,
+  location,
+  price,
+  phone,
+}) {
   const token = getToken();
 
   if (!token) {
@@ -100,15 +107,23 @@ export async function applyAsRepairer({ category, bio, years_experience }) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Accept: "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ category, bio, years_experience }),
+    body: JSON.stringify({
+      category,
+      bio,
+      years_experience,
+      location,
+      price,
+      phone,
+    }),
   });
 
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || "Application failed");
+    throw new Error(data.error || data.message || "Application failed");
   }
 
   return data;
@@ -151,3 +166,4 @@ export async function updateMyPhone(phone) {
 
   return data.user || data;
 }
+

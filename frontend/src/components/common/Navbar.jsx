@@ -8,14 +8,12 @@ function Navbar() {
   const { user } = useAuth();
   const location = useLocation();
 
-  const isCustomerDashboard = location.pathname === "/customer/dashboard";
+  const isCustomerDashboard =
+    location.pathname === "/customer/dashboard";
 
-  const linkClass = ({ isActive }) =>
-    `text-sm font-medium transition ${
-      isActive
-        ? "text-[#b9825f]"
-        : "text-[#505961] hover:text-[#b9825f]"
-    }`;
+  const isRepairerProfile =
+    location.pathname.startsWith("/repairer/") &&
+    user?.role === "repairer";
 
   function getAccountPath() {
     if (user?.role === "admin") {
@@ -33,10 +31,20 @@ function Navbar() {
     setOpen(false);
   }
 
+  const linkClass = ({ isActive }) =>
+    `text-sm font-semibold transition ${
+      isActive
+        ? "text-[#b9825f]"
+        : "text-[#505961] hover:text-[#b9825f]"
+    }`;
+
   return (
     <header className="sticky top-0 z-50 border-b border-[#e7e2dc] bg-[#f7f7f5]/95 backdrop-blur">
       <div className="fixora-container">
-        <div className="flex items-center justify-between" style={{ height: "64px" }}>
+        <div
+          className="flex items-center justify-between"
+          style={{ height: "64px" }}
+        >
           <Link
             to="/"
             onClick={closeMenu}
@@ -65,9 +73,11 @@ function Navbar() {
                 Home
               </NavLink>
 
-              <NavLink to="/repairers" className={linkClass}>
-                Find a Repairer
-              </NavLink>
+              {!isRepairerProfile && (
+                <NavLink to="/repairers" className={linkClass}>
+                  Find a Repairer
+                </NavLink>
+              )}
 
               {user ? (
                 <NavLink to={getAccountPath()} className={linkClass}>
@@ -84,7 +94,7 @@ function Navbar() {
           {!isCustomerDashboard && (
             <button
               type="button"
-              onClick={() => setOpen(!open)}
+              onClick={() => setOpen((current) => !current)}
               aria-label="Toggle navigation menu"
               aria-expanded={open}
               className="rounded-lg border border-[#ddd7d0] bg-white px-3 py-2 text-sm font-semibold text-[#26313b] transition hover:bg-[#f3eee9] md:hidden"
@@ -102,7 +112,7 @@ function Navbar() {
                   onClick={closeMenu}
                   to="/"
                   className={({ isActive }) =>
-                    `rounded-lg px-4 py-3 text-sm font-medium transition ${
+                    `rounded-lg px-4 py-3 text-sm font-semibold transition ${
                       isActive
                         ? "bg-white text-[#b9825f]"
                         : "text-[#505961] hover:bg-white hover:text-[#b9825f]"
@@ -112,26 +122,28 @@ function Navbar() {
                   Home
                 </NavLink>
 
-                <NavLink
-                  onClick={closeMenu}
-                  to="/repairers"
-                  className={({ isActive }) =>
-                    `rounded-lg px-4 py-3 text-sm font-medium transition ${
-                      isActive
-                        ? "bg-white text-[#b9825f]"
-                        : "text-[#505961] hover:bg-white hover:text-[#b9825f]"
-                    }`
-                  }
-                >
-                  Find a Repairer
-                </NavLink>
+                {!isRepairerProfile && (
+                  <NavLink
+                    onClick={closeMenu}
+                    to="/repairers"
+                    className={({ isActive }) =>
+                      `rounded-lg px-4 py-3 text-sm font-semibold transition ${
+                        isActive
+                          ? "bg-white text-[#b9825f]"
+                          : "text-[#505961] hover:bg-white hover:text-[#b9825f]"
+                      }`
+                    }
+                  >
+                    Find a Repairer
+                  </NavLink>
+                )}
 
                 {user ? (
                   <NavLink
                     onClick={closeMenu}
                     to={getAccountPath()}
                     className={({ isActive }) =>
-                      `rounded-lg px-4 py-3 text-sm font-medium transition ${
+                      `rounded-lg px-4 py-3 text-sm font-semibold transition ${
                         isActive
                           ? "bg-white text-[#b9825f]"
                           : "text-[#505961] hover:bg-white hover:text-[#b9825f]"
@@ -145,7 +157,7 @@ function Navbar() {
                     onClick={closeMenu}
                     to="/login"
                     className={({ isActive }) =>
-                      `rounded-lg px-4 py-3 text-sm font-medium transition ${
+                      `rounded-lg px-4 py-3 text-sm font-semibold transition ${
                         isActive
                           ? "bg-white text-[#b9825f]"
                           : "text-[#505961] hover:bg-white hover:text-[#b9825f]"
@@ -165,5 +177,4 @@ function Navbar() {
 }
 
 export default Navbar;
-
 

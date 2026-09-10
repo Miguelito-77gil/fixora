@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import VerificationBadge from "@/components/features/VerificationBadge";
@@ -7,6 +7,8 @@ import {
   toggleFavorite,
   fetchFavorites,
 } from "@/services/marketplaceService";
+
+const API_URL = "http://127.0.0.1:8000";
 
 function RepairerCard({ repairer }) {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -60,20 +62,43 @@ function RepairerCard({ repairer }) {
     }
   }
 
+  function getPhotoUrl() {
+    if (!repairer.photo_url) {
+      return null;
+    }
+
+    if (
+      repairer.photo_url.startsWith("http://") ||
+      repairer.photo_url.startsWith("https://")
+    ) {
+      return repairer.photo_url;
+    }
+
+    return `${API_URL}${repairer.photo_url}`;
+  }
+
+  const photoUrl = getPhotoUrl();
+
   return (
     <Card className="overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/5">
-
       <div className="h-40 bg-[#eee9e3]">
-        <div className="flex h-full items-center justify-center bg-gradient-to-br from-[#efe7df] to-[#dcd5cd]">
-          <span className="text-5xl font-bold text-[#9b806a]">
-            {repairer.initials}
-          </span>
-        </div>
+        {photoUrl ? (
+          <img
+            src={photoUrl}
+            alt={`${repairer.name} profile`}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center bg-gradient-to-br from-[#efe7df] to-[#dcd5cd]">
+            <span className="text-5xl font-bold text-[#9b806a]">
+              {repairer.initials}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
-
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="font-semibold text-[#17202a]">
@@ -99,7 +124,11 @@ function RepairerCard({ repairer }) {
               type="button"
               onClick={handleFavorite}
               disabled={favoriteLoading}
-              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+              aria-label={
+                isFavorite
+                  ? "Remove from favorites"
+                  : "Add to favorites"
+              }
               className="flex h-9 w-9 items-center justify-center rounded-full border border-[#ddd6ce] bg-white text-xl text-[#9b806a] transition hover:bg-[#f5f1ed] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isFavorite ? "\u2665" : "\u2661"}

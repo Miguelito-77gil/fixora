@@ -219,65 +219,48 @@ function HomeSection() {
         </div>
       </section>
 
-      {/* HOW FIXORA WORKS */}
-      <section className="fixora-container px-2 py-14 sm:px-4 sm:py-16 lg:px-6 lg:py-20">
-        <SectionHeading
-          eyebrow="How Fixora works"
-          title="Find someone who can actually solve the problem."
-          description="Instead of choosing a repairer blindly, compare experience, ratings, services, location, and previous work before contacting them."
-        />
+     {/* HOW FIXORA WORKS */}
+<section className="fixora-container px-2 py-14 sm:px-4 sm:py-16 lg:px-6 lg:py-20">
+  <SectionHeading
+    eyebrow="How Fixora works"
+    title="Find someone who can actually solve the problem."
+    description="Instead of choosing a repairer blindly, compare experience, ratings, services, location, and previous work before contacting them."
+  />
 
-        <div className="mt-10 overflow-hidden rounded-3xl border border-[#e4ded7] bg-[#f7f7f5]">
-          {[
-            {
-              number: "01",
-              title: "Describe the problem",
-              text: "Search for the type of repair or service you need.",
-            },
-            {
-              number: "02",
-              title: "Compare repairers",
-              text: "Review their experience, ratings, verification, and previous work.",
-            },
-            {
-              number: "03",
-              title: "Contact the right person",
-              text: "Choose a repairer and request their service directly.",
-            },
-          ].map((item, index) => (
-            <div
-              key={item.number}
-              className={`group flex flex-col gap-5 px-6 py-7 transition hover:bg-white sm:flex-row sm:items-center sm:px-8 ${
-                index !== 2
-                  ? "border-b border-[#e4ded7]"
-                  : ""
-              }`}
-            >
-              <span className="text-4xl font-black tracking-tight text-[#d8d0c8] transition group-hover:text-[#b9825f] sm:w-20">
-                {item.number}
-              </span>
+  <div className="mt-10 grid gap-5 md:grid-cols-3">
+    {[
+      {
+        title: "Describe the problem",
+        text: "Search for the type of repair or service you need.",
+      },
+      {
+        title: "Compare repairers",
+        text: "Review their experience, ratings, verification, and previous work.",
+      },
+      {
+        title: "Contact the right person",
+        text: "Choose a repairer and request their service directly.",
+      },
+    ].map((item, index) => (
+      <div
+        key={item.title}
+        className="group rounded-2xl border border-[#e4ded7] bg-[#f7f7f5] p-6 transition duration-200 hover:-translate-y-1 hover:bg-white hover:shadow-md"
+      >
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#b9825f]">
+          Step {index + 1}
+        </p>
 
-              <div className="flex-1">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
-                  Step {index + 1}
-                </p>
+        <h3 className="mt-4 text-lg font-bold tracking-tight text-[#17202a]">
+          {item.title}
+        </h3>
 
-                <h3 className="mt-1 text-xl font-bold text-[#17202a]">
-                  {item.title}
-                </h3>
-
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#777f86]">
-                  {item.text}
-                </p>
-              </div>
-
-              <span className="hidden text-2xl text-[#c8c0b8] transition group-hover:translate-x-1 group-hover:text-[#b9825f] sm:block">
-                ?
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
+        <p className="mt-2 text-sm leading-6 text-[#777f86]">
+          {item.text}
+        </p>
+      </div>
+    ))}
+  </div>
+</section>
 
       {/* FEATURED REPAIRERS */}
       <section className="bg-white py-16">

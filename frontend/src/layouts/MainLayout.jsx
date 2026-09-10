@@ -1,17 +1,19 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "@/components/common/Navbar";
-import Footer from "@/components/common/Footer";
 
 function MainLayout() {
-  return (
-    <div className="flex min-h-screen flex-col bg-[#f6f5f2] text-[#17202a]">
-      <Navbar />
+  const location = useLocation();
 
-      <main className="min-w-0 flex-1">
+  // Hide the top Navbar ONLY on Repairer Dashboard
+  const hideNavbar = location.pathname === "/repairer/dashboard";
+
+  return (
+    <div className="min-h-screen">
+      {!hideNavbar && <Navbar />}
+
+      <main>
         <Outlet />
       </main>
-
-      <Footer />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 
 function CustomerDashboard() {
   const { logout } = useAuth();
+
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -101,37 +102,26 @@ function CustomerDashboard() {
   }, []);
 
   const navClass = ({ isActive }) =>
-    `flex items-center rounded-xl px-4 py-3 text-sm font-medium transition ${
+    `group flex items-center rounded-lg px-4 py-3 text-sm font-medium transition ${
       isActive
-        ? "bg-[#f3eee9] text-[#2f241e] border border-[#d8c8bc]"
-        : "text-[#5f5148] hover:bg-[#f8f5f2]"
+        ? "bg-[#f3eee9] text-[#8b5e3c]"
+        : "text-[#505961] hover:bg-[#f3eee9] hover:text-[#8b5e3c]"
     }`;
 
   return (
-    <div className="min-h-screen bg-[#f8f5f2] text-[#2f241e]">
+    <div className="min-h-0 bg-[#f6f5f2] text-[#17202a]">
 
       {/* MOBILE HEADER */}
-      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-[#e8dfd8] bg-white/95 px-5 py-4 backdrop-blur lg:hidden">
-        <div>
-          <h2 className="text-lg font-bold tracking-tight text-[#2f241e]">
-            Fixora
-          </h2>
-
-          <p className="text-xs text-[#8a7a70]">
-            Customer
-          </p>
-        </div>
-
+      <div className="flex h-16 items-center justify-end border-b border-[#e7e2dc] bg-[#f7f7f5] px-5 lg:hidden">
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
-          className="rounded-xl border border-[#d8c8bc] bg-white px-4 py-2 text-sm font-medium text-[#5f5148] transition hover:bg-[#f3eee9]"
+          className="rounded-lg border border-[#ddd7d0] bg-white px-4 py-2 text-sm font-semibold text-[#26313b] transition hover:bg-[#f3eee9]"
           aria-label="Open menu"
         >
           Menu
         </button>
       </div>
-
       {/* MOBILE OVERLAY */}
       {sidebarOpen && (
         <button
@@ -142,193 +132,195 @@ function CustomerDashboard() {
         />
       )}
 
-      {/* SIDEBAR */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-[#e8dfd8] bg-white transition-transform duration-200 lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
+      {/* DASHBOARD AREA */}
+      <div className="grid min-h-0 lg:h-[calc(100vh-121px)] lg:grid-cols-[250px_minmax(0,1fr)]">
 
-        {/* BRAND */}
-<div
-  className="flex items-center justify-between border-b border-[#eee7e2] px-6 py-0"
-  style={{
-    height: "60px",
-    minHeight: "60px",
-    maxHeight: "60px",
-    boxSizing: "border-box",
-  }}
->
-  <NavLink
-    to="/"
-    onClick={() => setSidebarOpen(false)}
-    className="inline-flex h-full items-center"
-    aria-label="Go to Fixora home"
-  >
-    <img
-      src={logo}
-      alt="Fixora"
-      className="h-9 w-auto object-contain"
-    />
-  </NavLink>
+        {/* SIDEBAR */}
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 flex w-[250px] flex-col border-r border-[#e7e2dc] bg-[#f7f7f5] transition-transform duration-200 lg:static lg:h-full lg:translate-x-0 ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
 
-  <button
-    type="button"
-    onClick={() => setSidebarOpen(false)}
-    className="rounded-lg px-2 py-1 text-sm text-[#8a7a70] hover:bg-[#f3eee9] lg:hidden"
-  >
-    Close
-  </button>
-</div>
+          {/* SIDEBAR NAVIGATION */}
+          <nav className="flex-1 px-4 py-6">
 
-        {/* MENU */}
-        <nav className="flex-1 space-y-2 px-4 py-6">
-
-          <NavLink
-            to="/customer/dashboard"
-            onClick={() => setSidebarOpen(false)}
-            className={navClass}
-          >
-            Dashboard
-          </NavLink>
-
-          <NavLink
-            to="/"
-            onClick={() => setSidebarOpen(false)}
-            className={navClass}
-          >
-            Home
-          </NavLink>
-
-          <NavLink
-            to="/repairers"
-            onClick={() => setSidebarOpen(false)}
-            className={navClass}
-          >
-            Find a Repairer
-          </NavLink>
-
-          <NavLink
-            to="/customer/account"
-            onClick={() => setSidebarOpen(false)}
-            className={navClass}
-          >
-            My Account
-          </NavLink>
-
-        </nav>
-
-        {/* LOGOUT */}
-        <div className="border-t border-[#eee7e2] p-4">
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex w-full items-center rounded-xl px-4 py-3 text-left text-sm font-medium text-[#5f5148] transition hover:bg-[#f3eee9]"
-          >
-            Log Out
-          </button>
-        </div>
-
-      </aside>
-
-      {/* MAIN CONTENT */}
-      <main className="lg:pl-64">
-        <section className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
-
-          {/* HEADER */}
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#9a6541]">
-              Customer Dashboard
+            <p className="px-4 pb-3 text-[9px] font-bold uppercase tracking-[0.18em] text-[#a08f83]">
+              Menu
             </p>
 
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#2f241e] sm:text-4xl">
-              My Repair Requests
-            </h1>
+            <div className="space-y-1">
 
-            <p className="mt-3 max-w-2xl text-[#75675f]">
-              Track your repair requests and stay updated on their progress.
-            </p>
-          </div>
+              <NavLink
+                to="/customer/dashboard"
+                onClick={() => setSidebarOpen(false)}
+                className={navClass}
+              >
+                Dashboard
+              </NavLink>
 
-          {/* REPAIR REQUESTS */}
-          {loading && (
-            <div className="mt-10 rounded-3xl border border-[#d8c8bc] bg-white/40 px-6 py-20 text-center">
-              <p className="text-sm text-[#75675f]">
-                Loading your repair requests...
-              </p>
-            </div>
-          )}
+              <NavLink
+                to="/"
+                onClick={() => setSidebarOpen(false)}
+                className={navClass}
+              >
+                Home
+              </NavLink>
 
-          {!loading && error && (
-            <div className="mt-10 rounded-2xl border border-red-300 bg-red-50 px-5 py-4">
-              <p className="text-sm text-red-700">
-                {error}
-              </p>
+              <NavLink
+                to="/repairers"
+                onClick={() => setSidebarOpen(false)}
+                className={navClass}
+              >
+                Find a Repairer
+              </NavLink>              
+             <NavLink
+                to="/messages"
+                state={{ from: "customer-dashboard" }}
+               onClick={() => setSidebarOpen(false)}
+              className={navClass}
+              >
+               Messages
+              </NavLink>
+
+              <NavLink 
+                to="/customer/account" 
+                onClick={() => setSidebarOpen(false)} 
+                className={navClass} 
+              > 
+                My Account 
+              </NavLink>
 
               <button
                 type="button"
-                onClick={loadRequests}
-                className="mt-4 rounded-xl bg-[#8b5e3c] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#754b2f]"
+              onClick={handleLogout}
+              className="group flex w-full items-center rounded-lg px-4 py-3 text-left text-sm font-medium text-[#505961] transition hover:bg-[#f3eee9] hover:text-[#8b5e3c]"
               >
-                Try Again
-              </button>
+                   Log Out
+          </button>
+
             </div>
-          )}
+          </nav>
+        </aside>
 
-          {!loading && !error && requests.length > 0 && (
-            <div className="mt-10 space-y-6">
+        {/* MAIN CONTENT */}
+        <main className="min-h-0 min-w-0 overflow-y-auto bg-[#f6f5f2]">
 
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#9a6541]">
-                    Repair Activity
-                  </p>
+          <section className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-12 lg:px-12">
 
-                  <h2 className="mt-2 text-xl font-semibold text-[#2f241e]">
-                    Your Requests
-                  </h2>
-                </div>
+            {/* PAGE HEADER */}
+            <div>
+
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9a6541]">
+                Customer Dashboard
+              </p>
+
+              <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#17202a] sm:text-4xl">
+                My Repair Requests
+              </h1>
+
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#75675f]">
+                Track your repair requests and stay updated on their progress.
+              </p>
+
+            </div>
+
+            {/* LOADING */}
+            {loading && (
+              <div className="mt-10 rounded-2xl border border-[#e1d5ca] bg-[#faf9f7] px-6 py-20 text-center">
+                <p className="text-sm text-[#75675f]">
+                  Loading your repair requests...
+                </p>
+              </div>
+            )}
+
+            {/* ERROR */}
+            {!loading && error && (
+              <div className="mt-10 rounded-2xl border border-red-200 bg-red-50 px-5 py-5">
+
+                <p className="text-sm text-red-700">
+                  {error}
+                </p>
 
                 <button
                   type="button"
                   onClick={loadRequests}
-                  className="rounded-xl border border-[#cdb5a2] bg-transparent px-4 py-2 text-sm font-medium text-[#8b5e3c] transition hover:bg-[#f3e5da]"
+                  className="mt-4 rounded-lg bg-[#8b5e3c] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#754b2f]"
                 >
-                  Refresh
+                  Try Again
                 </button>
+
               </div>
+            )}
 
-              {requests.map((request) => (
-                <RepairRequestCard
-                  key={request.id}
-                  request={request}
-                />
-              ))}
+            {/* REQUESTS */}
+            {!loading && !error && requests.length > 0 && (
+              <div className="mt-10">
 
-            </div>
-          )}
+                <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 
-          {!loading && !error && requests.length === 0 && (
-            <div className="mt-10 rounded-3xl border border-dashed border-[#d8c8bc] bg-white/30 px-6 py-24 text-center">
-              <h2 className="text-lg font-semibold text-[#2f241e]">
-                No repair requests yet
-              </h2>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#9a6541]">
+                      Repair Activity
+                    </p>
 
-              <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[#75675f]">
-                When you request a repairer, your repair request and its current
-                status will appear here.
-              </p>
-            </div>
-          )}
+                    <h2 className="mt-2 text-xl font-semibold tracking-tight text-[#17202a]">
+                      Your Requests
+                    </h2>
+                  </div>
 
-        </section>
-      </main>
+                  <button
+                    type="button"
+                    onClick={loadRequests}
+                    className="self-start rounded-lg border border-[#d6c5b7] bg-transparent px-4 py-2 text-sm font-medium text-[#8b5e3c] transition hover:bg-[#f1e8e1] sm:self-auto"
+                  >
+                    Refresh
+                  </button>
 
+                </div>
+
+                <div className="space-y-5">
+                  {requests.map((request) => (
+                    <RepairRequestCard
+                      key={request.id}
+                      request={request}
+                    />
+                  ))}
+                </div>
+
+              </div>
+            )}
+
+            {/* EMPTY STATE */}
+            {!loading && !error && requests.length === 0 && (
+              <div className="mt-10 rounded-2xl border border-dashed border-[#d8c8bc] bg-[#faf9f7] px-6 py-24 text-center">
+
+                <h2 className="text-lg font-semibold text-[#17202a]">
+                  No repair requests yet
+                </h2>
+
+                <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[#75675f]">
+                  When you request a repairer, your repair request and its current
+                  status will appear here.
+                </p>
+
+              </div>
+            )}
+
+          </section>
+
+        </main>
+
+      </div>
     </div>
   );
 }
 
 export default CustomerDashboard;
+
+
+
+
 
 
 

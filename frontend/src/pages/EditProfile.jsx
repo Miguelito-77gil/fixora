@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
-import { fetchMyProfile, updateMyPhone } from "@/services/authService";
+import {
+  fetchMyProfile,
+  updateMyPhone,
+} from "@/services/authService";
 import {
   fetchMyRepairerProfile,
   updateMyRepairerProfile,
@@ -12,12 +15,6 @@ import {
   addPortfolioItem,
   deletePortfolioItem,
 } from "@/services/repairerService";
-import {
-  fetchRepairerServices,
-  addRepairerService,
-  updateRepairerService,
-  deleteRepairerService,
-} from "@/services/marketplaceService";
 
 const CATEGORIES = [
   "Electronics",
@@ -26,18 +23,22 @@ const CATEGORIES = [
   "Electrical",
   "Automotive",
   "Furniture",
-  "Other",
 ];
+
+const API_URL = "http://127.0.0.1:8000";
 
 function EditProfile() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const isRepairer = user?.role === "repairer" || user?.role === "admin";
+  const isRepairer =
+    user?.role === "repairer" ||
+    user?.role === "admin";
 
   const [profile, setProfile] = useState(null);
 
   const [category, setCategory] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
   const [bio, setBio] = useState("");
   const [yearsExperience, setYearsExperience] = useState("");
   const [location, setLocation] = useState("");
@@ -50,29 +51,15 @@ function EditProfile() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const [photoUrl, setPhotoUrl] = useState(null);
+  const [photoUrl, setPhotoUrl] = useState("");
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState("");
 
   const [portfolio, setPortfolio] = useState([]);
   const [portfolioCaption, setPortfolioCaption] = useState("");
-  const [portfolioUploading, setPortfolioUploading] = useState(false);
+  const [portfolioUploading, setPortfolioUploading] =
+    useState(false);
   const [portfolioError, setPortfolioError] = useState("");
-
-  const [services, setServices] = useState([]);
-  const [servicesLoading, setServicesLoading] = useState(false);
-  const [serviceName, setServiceName] = useState("");
-  const [serviceDescription, setServiceDescription] = useState("");
-  const [servicePrice, setServicePrice] = useState("");
-  const [serviceSaving, setServiceSaving] = useState(false);
-  const [serviceError, setServiceError] = useState("");
-  const [serviceSuccess, setServiceSuccess] = useState("");
-  const [editingServiceId, setEditingServiceId] = useState(null);
-  const [editingServiceName, setEditingServiceName] = useState("");
-  const [editingServiceDescription, setEditingServiceDescription] = useState("");
-  const [editingServicePrice, setEditingServicePrice] = useState("");
-  const [serviceUpdating, setServiceUpdating] = useState(false);
-  const [serviceDeletingId, setServiceDeletingId] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -80,89 +67,108 @@ function EditProfile() {
       return;
     }
 
-    setLoading(true);
-    setError("");
+    async function loadProfile() {
+      try {
+        setLoading(true);
+        setError("");
 
-    if (isRepairer) {
-      Promise.all([
-        fetchMyProfile(),
-        fetchMyRepairerProfile(),
-        fetchMyPortfolio(),
-      ])
-        .then(([userData, repairerData, portfolioData]) => {
-          setProfile(userData);
+        const userData = await fetchMyProfile();
+        setProfile(userData);
 
-          setCategory(repairerData.category || "");
-          setBio(repairerData.bio || "");
-          setYearsExperience(repairerData.years_experience ?? "");
-          setLocation(repairerData.location || "");
-          setPrice(repairerData.price ?? "");
-          setPhone(repairerData.phone || userData.phone || "");
-          setAvailable(repairerData.available !== 0);
-          setPhotoUrl(repairerData.photo_url || null);
-          setPortfolio(portfolioData || []);
-        })
-        .catch((err) => setError(err.message))
-        .finally(() => setLoading(false));
-    } else {
-      fetchMyProfile()
-        .then((data) => {
-          setProfile(data);
-          setPhone(data.phone || "");
-        })
-        .catch((err) => setError(err.message))
-        .finally(() => setLoading(false));
+        setPhone(userData?.phone || "");
+
+        if (isRepairer) {
+          const [repairerData, portfolioData] =
+            await Promise.all([
+              fetchMyRepairerProfile(),
+              fetchMyPortfolio(),
+            ]);
+
+          const savedCategory =
+            repairerData?.category || "";
+
+          if (CATEGORIES.includes(savedCategory)) {
+            setCategory(savedCategory);
+            setCustomCategory("");
+          } else if (savedCategory) {
+            setCategory("Other");
+            setCustomCategory(savedCategory);
+          } else {
+            setCategory("");
+            setCustomCategory("");
+          }
+
+          setBio(repairerData?.bio || "");
+
+          setYearsExperience(
+            repairerData?.years_experience ?? ""
+          );
+
+          setLocation(
+            repairerData?.location || ""
+          );
+
+          setPrice(
+            repairerData?.price ?? ""
+          );
+
+          setPhone(
+            repairerData?.phone ||
+              userData?.phone ||
+              ""
+          );
+
+          setAvailable(
+            repairerData?.available !== 0
+          );
+
+          setPhotoUrl(
+            repairerData?.photo_url || ""
+          );
+
+          setPortfolio(
+            Array.isArray(portfolioData)
+              ? portfolioData
+              : []
+          );
+        }
+      } catch (err) {
+        setError(
+          err?.message ||
+            "Unable to load your profile."
+        );
+      } finally {
+        setLoading(false);
+      }
     }
+
+    loadProfile();
   }, [user, isRepairer]);
-
-  useEffect(() => {
-    if (!isRepairer || !user?.id) return;
-
-    setServicesLoading(true);
-    setServiceError("");
-
-    fetchRepairerServices(user.id)
-      .then((data) => {
-        setServices(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => {
-        setServiceError(err.message);
-      })
-      .finally(() => {
-        setServicesLoading(false);
-      });
-  }, [isRepairer, user?.id]);
-
-  if (!user) {
-    return (
-      <section className="fixora-container flex min-h-[500px] items-center justify-center py-16">
-        <p className="text-sm text-[#777f86]">
-          You must be logged in to view this page.
-        </p>
-      </section>
-    );
-  }
-
-  if (loading) {
-    return (
-      <section className="fixora-container flex min-h-[500px] items-center justify-center py-16">
-        <p className="text-sm text-[#777f86]">Loading...</p>
-      </section>
-    );
-  }
 
   async function handlePhotoChange(e) {
     const file = e.target.files?.[0];
+
     if (!file) return;
 
     setPhotoError("");
     setPhotoUploading(true);
 
     try {
-      const result = await uploadMyRepairerPhoto(file);
+      const result =
+        await uploadMyRepairerPhoto(file);
+
+      if (!result?.photo_url) {
+        throw new Error(
+          "Photo uploaded, but the new photo could not be displayed."
+        );
+      }
+
       setPhotoUrl(result.photo_url);
     } catch (err) {
-      setPhotoError(err.message);
+      setPhotoError(
+        err?.message ||
+          "Unable to upload your photo."
+      );
     } finally {
       setPhotoUploading(false);
       e.target.value = "";
@@ -171,17 +177,29 @@ function EditProfile() {
 
   async function handlePortfolioUpload(e) {
     const file = e.target.files?.[0];
+
     if (!file) return;
 
     setPortfolioError("");
     setPortfolioUploading(true);
 
     try {
-      const item = await addPortfolioItem(file, portfolioCaption);
-      setPortfolio((prev) => [item, ...prev]);
+      const item = await addPortfolioItem(
+        file,
+        portfolioCaption
+      );
+
+      setPortfolio((prev) => [
+        item,
+        ...prev,
+      ]);
+
       setPortfolioCaption("");
     } catch (err) {
-      setPortfolioError(err.message);
+      setPortfolioError(
+        err?.message ||
+          "Unable to upload portfolio photo."
+      );
     } finally {
       setPortfolioUploading(false);
       e.target.value = "";
@@ -190,706 +208,689 @@ function EditProfile() {
 
   async function handlePortfolioDelete(id) {
     try {
+      setPortfolioError("");
+
       await deletePortfolioItem(id);
-      setPortfolio((prev) => prev.filter((item) => item.id !== id));
-    } catch (err) {
-      setPortfolioError(err.message);
-    }
-  }
 
-  async function handleAddService(e) {
-    e.preventDefault();
-
-    setServiceError("");
-    setServiceSuccess("");
-
-    if (!serviceName.trim()) {
-      setServiceError("Please enter a service name.");
-      return;
-    }
-
-    setServiceSaving(true);
-
-    try {
-      const service = await addRepairerService({
-        name: serviceName.trim(),
-        description: serviceDescription.trim() || null,
-        starting_price: servicePrice ? Number(servicePrice) : null,
-      });
-
-      setServices((prev) =>
-        [...prev, service].sort((a, b) =>
-          String(a.name || "").localeCompare(String(b.name || ""))
+      setPortfolio((prev) =>
+        prev.filter(
+          (item) => item.id !== id
         )
       );
-
-      setServiceName("");
-      setServiceDescription("");
-      setServicePrice("");
-      setServiceSuccess("Service added successfully.");
-
-      setTimeout(() => {
-        setServiceSuccess("");
-      }, 2500);
     } catch (err) {
-      setServiceError(err.message);
-    } finally {
-      setServiceSaving(false);
-    }
-  }
-
-  function startEditingService(service) {
-    setServiceError("");
-    setServiceSuccess("");
-    setEditingServiceId(service.id);
-    setEditingServiceName(service.name || "");
-    setEditingServiceDescription(service.description || "");
-    setEditingServicePrice(
-      service.starting_price !== null &&
-      service.starting_price !== undefined
-        ? String(service.starting_price)
-        : ""
-    );
-  }
-
-  function cancelEditingService() {
-    setEditingServiceId(null);
-    setEditingServiceName("");
-    setEditingServiceDescription("");
-    setEditingServicePrice("");
-    setServiceUpdating(false);
-  }
-
-  async function handleUpdateService(e, serviceId) {
-    e.preventDefault();
-
-    setServiceError("");
-    setServiceSuccess("");
-
-    if (!editingServiceName.trim()) {
-      setServiceError("Please enter a service name.");
-      return;
-    }
-
-    setServiceUpdating(true);
-
-    try {
-      const updated = await updateRepairerService(serviceId, {
-        name: editingServiceName.trim(),
-        description: editingServiceDescription.trim() || null,
-        starting_price: editingServicePrice
-          ? Number(editingServicePrice)
-          : null,
-      });
-
-      setServices((prev) =>
-        prev
-          .map((service) =>
-            service.id === serviceId ? updated : service
-          )
-          .sort((a, b) =>
-            String(a.name || "").localeCompare(String(b.name || ""))
-          )
+      setPortfolioError(
+        err?.message ||
+          "Unable to delete portfolio photo."
       );
-
-      cancelEditingService();
-      setServiceSuccess("Service updated successfully.");
-
-      setTimeout(() => {
-        setServiceSuccess("");
-      }, 2500);
-    } catch (err) {
-      setServiceError(err.message);
-    } finally {
-      setServiceUpdating(false);
     }
   }
 
-  async function handleDeleteService(serviceId) {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this service?"
-    );
-
-    if (!confirmed) return;
-
-    setServiceError("");
-    setServiceSuccess("");
-    setServiceDeletingId(serviceId);
-
-    try {
-      await deleteRepairerService(serviceId);
-
-      setServices((prev) =>
-        prev.filter((service) => service.id !== serviceId)
-      );
-
-      if (editingServiceId === serviceId) {
-        cancelEditingService();
-      }
-
-      setServiceSuccess("Service deleted successfully.");
-
-      setTimeout(() => {
-        setServiceSuccess("");
-      }, 2500);
-    } catch (err) {
-      setServiceError(err.message);
-    } finally {
-      setServiceDeletingId(null);
-    }
-  }
   async function handleSubmit(e) {
     e.preventDefault();
 
     setError("");
     setSuccess(false);
-    setSaving(true);
+
+    if (isRepairer) {
+      if (!category) {
+        setError(
+          "Please select a repair category."
+        );
+        return;
+      }
+
+      if (
+        category === "Other" &&
+        !customCategory.trim()
+      ) {
+        setError(
+          "Please enter your repair category."
+        );
+        return;
+      }
+    }
 
     try {
+      setSaving(true);
+
       if (isRepairer) {
+        const finalCategory =
+          category === "Other"
+            ? customCategory.trim()
+            : category;
+
         await updateMyRepairerProfile({
-          category,
-          bio,
-          years_experience: yearsExperience
-            ? Number(yearsExperience)
+          category: finalCategory,
+          bio: bio.trim(),
+          years_experience:
+            yearsExperience
+              ? Number(yearsExperience)
+              : null,
+          location: location.trim(),
+          price: price
+            ? Number(price)
             : null,
-          location,
-          price: price ? Number(price) : null,
-          phone,
+          phone: phone.trim(),
           available,
         });
       } else {
-        await updateMyPhone(phone);
+        await updateMyPhone(
+          phone.trim()
+        );
       }
 
       setSuccess(true);
 
       setTimeout(() => {
         navigate("/profile");
-      }, 700);
+      }, 800);
     } catch (err) {
-      setError(err.message);
+      setError(
+        err?.message ||
+          "Unable to save your profile."
+      );
     } finally {
       setSaving(false);
     }
   }
 
-  return (
-    <section className="fixora-container flex min-h-[680px] items-center justify-center py-16">
-      <div className="w-full max-w-md rounded-2xl border border-[#e4ded7] bg-white p-8 shadow-sm">
+  if (!user) {
+    return (
+      <section className="fixora-container flex min-h-[500px] items-center justify-center py-16">
+        <p className="text-sm text-[#777f86]">
+          You must be logged in to edit your profile.
+        </p>
+      </section>
+    );
+  }
 
-        <div className="text-center">
+  if (loading) {
+    return (
+      <section className="fixora-container flex min-h-[500px] items-center justify-center py-16">
+        <p className="text-sm text-[#777f86]">
+          Loading profile...
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="fixora-container py-10 sm:py-14">
+      <div className="mx-auto w-full max-w-4xl">
+
+        {/* PAGE HEADER */}
+        <div className="mb-8">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
-            {isRepairer ? "Manage your listing" : "Manage your account"}
+            {isRepairer
+              ? "Repairer Profile"
+              : "Account Settings"}
           </p>
 
-          <h1 className="mt-3 text-3xl font-extrabold text-[#17202a]">
+          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-[#17202a] sm:text-4xl">
             Edit Profile
           </h1>
 
-          <p className="mt-3 text-sm text-[#777f86]">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#777f86]">
             {isRepairer
-              ? "Update your repairer information. Changes are visible immediately."
+              ? "Update your repairer information so customers can learn more about you and the services you provide."
               : "Update your account information."}
           </p>
         </div>
 
+        {/* ERROR */}
         {error && (
-          <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         )}
 
+        {/* SUCCESS */}
         {success && (
-          <div className="mt-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+          <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
             Profile updated successfully.
           </div>
         )}
 
+        {/* CUSTOMER */}
         {!isRepairer ? (
-          <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-            <Input
-              label="Full name"
-              type="text"
-              value={profile?.name || ""}
-              disabled
-            />
+          <div className="rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm sm:p-8">
 
-            <Input
-              label="Email"
-              type="email"
-              value={profile?.email || ""}
-              disabled
-            />
-
-            <Input
-              label="Mobile number"
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Enter your mobile number"
-            />
-
-            <Button type="submit" className="w-full" disabled={saving}>
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => navigate(-1)}
-            >
-              Cancel
-            </Button>
-          </form>
-        ) : (
-          <>
-            <div className="mt-6 flex flex-col items-center gap-3">
-              {photoUrl ? (
-                <img
-                  src={`http://127.0.0.1:8000${photoUrl}`}
-                  alt="Profile"
-                  className="h-24 w-24 rounded-2xl object-cover"
-                />
-              ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-[#f1e6da] text-lg font-bold text-[#b9825f]">
-                  No photo
-                </div>
-              )}
-
-              <label className="cursor-pointer rounded-lg border border-[#b9825f] px-4 py-2 text-sm font-semibold text-[#b9825f] transition hover:bg-[#b9825f] hover:text-white">
-                {photoUploading ? "Uploading..." : "Change photo"}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoChange}
-                  disabled={photoUploading}
-                  className="hidden"
-                />
-              </label>
-
-              {photoError && (
-                <p className="text-xs text-red-600">{photoError}</p>
-              )}
-            </div>
-
-            <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-              <div>
-                <label className="mb-1.5 block text-sm font-semibold text-[#26313b]">
-                  Category
-                </label>
-
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  required
-                  className="w-full rounded-lg border border-[#ddd7d0] bg-white px-4 py-2.5 text-sm text-[#26313b] focus:border-[#b9825f] focus:outline-none"
-                >
-                  <option value="" disabled>
-                    Select a category
-                  </option>
-
-                  {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-sm font-semibold text-[#26313b]">
-                  Bio
-                </label>
-
-                <textarea
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  rows={4}
-                  placeholder="Describe your experience and the type of repairs you handle"
-                  className="w-full rounded-lg border border-[#ddd7d0] bg-white px-4 py-2.5 text-sm text-[#26313b] focus:border-[#b9825f] focus:outline-none"
-                />
-              </div>
-
-              <Input
-                label="Years of experience"
-                type="number"
-                min="0"
-                value={yearsExperience}
-                onChange={(e) => setYearsExperience(e.target.value)}
-              />
-
-              <Input
-                label="Location"
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                required
-              />
-
-              <Input
-                label="Starting price (PHP)"
-                type="number"
-                min="0"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-              />
-
-              <Input
-                label="Phone number"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-              />
-
-              <div className="rounded-xl border border-[#e4ded7] bg-[#faf8f5] p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-bold text-[#26313b]">
-                      Availability
-                    </p>
-
-                    <p className="mt-1 text-xs text-[#777f86]">
-                      {available
-                        ? "Customers can see that you are currently accepting jobs."
-                        : "Customers will see that you are currently unavailable."}
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setAvailable((value) => !value)}
-                    disabled={saving}
-                    aria-pressed={available}
-                    className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-                      available ? "bg-[#b9825f]" : "bg-[#b8b2ac]"
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition ${
-                        available ? "left-6" : "left-1"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                <p
-                  className={`mt-3 text-xs font-semibold ${
-                    available ? "text-green-700" : "text-[#777f86]"
-                  }`}
-                >
-                  {available ? "Available now" : "Currently unavailable"}
-                </p>
-              </div>
-
-              <Button type="submit" className="w-full" disabled={saving}>
-                {saving ? "Saving..." : "Save Changes"}
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => navigate(-1)}
-              >
-                Cancel
-              </Button>
-            </form>
-
-            <div className="mt-10 border-t border-[#e4ded7] pt-8">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
-                Services
+            <div className="border-b border-[#eee9e3] pb-5">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
+                Account Information
               </p>
 
               <h2 className="mt-2 text-xl font-bold text-[#17202a]">
-                What you offer
+                Your account
               </h2>
+            </div>
 
-              <p className="mt-2 text-sm text-[#777f86]">
-                Add the specific repair services customers can request from you.
-              </p>
+            <form
+              onSubmit={handleSubmit}
+              className="mt-6 space-y-5"
+            >
+              <Input
+                label="Full name"
+                type="text"
+                value={profile?.name || ""}
+                disabled
+              />
 
-              {serviceError && (
-                <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                  {serviceError}
-                </div>
-              )}
+              <Input
+                label="Email"
+                type="email"
+                value={profile?.email || ""}
+                disabled
+              />
 
-              {serviceSuccess && (
-                <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                  {serviceSuccess}
-                </div>
-              )}
+              <Input
+                label="Mobile number"
+                type="tel"
+                value={phone}
+                onChange={(e) =>
+                  setPhone(e.target.value)
+                }
+                placeholder="Enter your mobile number"
+              />
 
-              <div className="mt-5 space-y-3">
-                {servicesLoading ? (
-                  <div className="rounded-xl border border-[#e4ded7] bg-[#faf8f5] p-4">
-                    <div className="h-4 w-32 animate-pulse rounded bg-[#e8e0d8]" />
-                    <div className="mt-3 h-3 w-full animate-pulse rounded bg-[#eee8e2]" />
-                    <div className="mt-2 h-3 w-2/3 animate-pulse rounded bg-[#eee8e2]" />
-                  </div>
-                ) : services.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-[#d8cec4] bg-[#faf8f5] px-4 py-6 text-center">
-                    <p className="text-sm font-semibold text-[#505961]">
-                      No services added yet.
-                    </p>
-                    <p className="mt-1 text-xs text-[#8a8f94]">
-                      Add your first service below.
-                    </p>
-                  </div>
-                ) : (
-                  services.map((service) => (
-                    <div
-                      key={service.id}
-                      className="rounded-xl border border-[#e4ded7] bg-white p-4"
-                    >
-                      {editingServiceId === service.id ? (
-                        <form
-                          onSubmit={(e) =>
-                            handleUpdateService(e, service.id)
-                          }
-                        >
-                          <div className="flex items-center justify-between gap-3">
-                            <p className="text-sm font-bold text-[#26313b]">
-                              Edit service
-                            </p>
+              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={saving}
+                >
+                  {saving
+                    ? "Saving..."
+                    : "Save Profile"}
+                </Button>
 
-                            <button
-                              type="button"
-                              onClick={cancelEditingService}
-                              className="text-xs font-semibold text-[#777f86] hover:text-[#26313b]"
-                              disabled={serviceUpdating}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-
-                          <div className="mt-4 space-y-3">
-                            <Input
-                              label="Service name"
-                              type="text"
-                              value={editingServiceName}
-                              onChange={(e) =>
-                                setEditingServiceName(e.target.value)
-                              }
-                              maxLength={100}
-                            />
-
-                            <div>
-                              <label className="mb-1.5 block text-sm font-semibold text-[#26313b]">
-                                Description
-                              </label>
-
-                              <textarea
-                                value={editingServiceDescription}
-                                onChange={(e) =>
-                                  setEditingServiceDescription(
-                                    e.target.value
-                                  )
-                                }
-                                rows={3}
-                                maxLength={1000}
-                                className="w-full rounded-lg border border-[#ddd7d0] bg-white px-4 py-2.5 text-sm text-[#26313b] focus:border-[#b9825f] focus:outline-none"
-                              />
-                            </div>
-
-                            <Input
-                              label="Starting price (PHP)"
-                              type="number"
-                              min="0"
-                              value={editingServicePrice}
-                              onChange={(e) =>
-                                setEditingServicePrice(e.target.value)
-                              }
-                              placeholder="Example: 500"
-                            />
-
-                            <Button
-                              type="submit"
-                              className="w-full"
-                              disabled={serviceUpdating}
-                            >
-                              {serviceUpdating
-                                ? "Saving..."
-                                : "Save Changes"}
-                            </Button>
-                          </div>
-                        </form>
-                      ) : (
-                        <>
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="min-w-0">
-                              <h3 className="font-bold text-[#26313b]">
-                                {service.name}
-                              </h3>
-
-                              {service.description && (
-                                <p className="mt-1 text-sm leading-6 text-[#777f86]">
-                                  {service.description}
-                                </p>
-                              )}
-                            </div>
-
-                            {service.starting_price !== null &&
-                              service.starting_price !== undefined && (
-                                <span className="shrink-0 text-sm font-bold text-[#b9825f]">
-                                  PHP{" "}
-                                  {Number(
-                                    service.starting_price
-                                  ).toLocaleString()}
-                                </span>
-                              )}
-                          </div>
-
-                          <div className="mt-4 flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => startEditingService(service)}
-                              className="rounded-lg border border-[#d8cec4] px-3 py-2 text-xs font-bold text-[#505961] transition hover:border-[#b9825f] hover:text-[#b9825f]"
-                              disabled={serviceDeletingId === service.id}
-                            >
-                              Edit
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleDeleteService(service.id)
-                              }
-                              disabled={serviceDeletingId === service.id}
-                              className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
-                            >
-                              {serviceDeletingId === service.id
-                                ? "Deleting..."
-                                : "Delete"}
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))
-                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => navigate(-1)}
+                >
+                  Cancel
+                </Button>
               </div>
-              <form
-                className="mt-6 rounded-xl border border-[#e4ded7] bg-[#faf8f5] p-4"
-                onSubmit={handleAddService}
-              >
-                <p className="text-sm font-bold text-[#26313b]">
-                  Add a service
+            </form>
+          </div>
+        ) : (
+          <>
+            {/* PROFILE PHOTO */}
+            <div className="rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm sm:p-8">
+
+              <div className="border-b border-[#eee9e3] pb-5">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
+                  Profile Photo
                 </p>
 
-                <div className="mt-4 space-y-3">
-                  <Input
-                    label="Service name"
-                    type="text"
-                    value={serviceName}
-                    onChange={(e) => setServiceName(e.target.value)}
-                    placeholder="Example: Phone screen replacement"
-                    maxLength={100}
-                  />
+                <h2 className="mt-2 text-xl font-bold text-[#17202a]">
+                  Your photo
+                </h2>
 
-                  <div>
+                <p className="mt-2 text-sm text-[#777f86]">
+                  Add a clear photo so customers can recognize your repairer profile.
+                </p>
+              </div>
+
+              <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
+
+                {/* PHOTO PREVIEW */}
+                <div className="shrink-0">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#90979d]">
+                    Current Photo
+                  </p>
+
+                  <div className="h-32 w-32 overflow-hidden rounded-2xl bg-[#f1e6da] ring-4 ring-[#f7eee8]">
+                    {photoUrl ? (
+                      <img
+                        src={`${API_URL}${photoUrl}`}
+                        alt="Current repairer profile"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-sm font-bold text-[#b9825f]">
+                        No photo
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* PHOTO CONTROLS */}
+                <div className="min-w-0 flex-1">
+
+                  <p className="text-sm font-bold text-[#26313b]">
+                    {photoUploading
+                      ? "Updating your profile photo..."
+                      : photoUrl
+                        ? "Your current profile photo"
+                        : "You don't have a profile photo yet"}
+                  </p>
+
+                  <p className="mt-1 max-w-lg text-xs leading-5 text-[#777f86]">
+                    Choose a new image to replace your current profile photo. The preview will update after the upload is completed.
+                  </p>
+
+                  <label className="mt-4 inline-flex cursor-pointer rounded-xl border border-[#b9825f] px-5 py-2.5 text-sm font-semibold text-[#b9825f] transition hover:bg-[#b9825f] hover:text-white">
+                    {photoUploading
+                      ? "Uploading..."
+                      : photoUrl
+                        ? "Change photo"
+                        : "Add photo"}
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      disabled={photoUploading}
+                      className="hidden"
+                    />
+                  </label>
+
+                  {photoError && (
+                    <p className="mt-2 text-xs text-red-600">
+                      {photoError}
+                    </p>
+                  )}
+
+                </div>
+              </div>
+            </div>
+
+            {/* REPAIR INFORMATION */}
+            <div className="mt-6 rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm sm:p-8">
+
+              <div className="border-b border-[#eee9e3] pb-5">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
+                  Repair Information
+                </p>
+
+                <h2 className="mt-2 text-xl font-bold text-[#17202a]">
+                  About your repairer profile
+                </h2>
+
+                <p className="mt-2 text-sm text-[#777f86]">
+                  Keep your information accurate so customers know what you can help them with.
+                </p>
+              </div>
+
+              <form
+                onSubmit={handleSubmit}
+                className="mt-6 space-y-5"
+              >
+
+                {/* CATEGORY */}
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-[#26313b]">
+                    Category
+                  </label>
+
+                  <select
+                    value={category}
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      setCategory(value);
+
+                      if (value !== "Other") {
+                        setCustomCategory("");
+                      }
+                    }}
+                    className="w-full rounded-xl border border-[#ddd7d0] bg-white px-4 py-3 text-sm text-[#26313b] outline-none transition focus:border-[#b9825f]"
+                    required
+                  >
+                    <option value="" disabled>
+                      Select a category
+                    </option>
+
+                    {CATEGORIES.map((item) => (
+                      <option
+                        key={item}
+                        value={item}
+                      >
+                        {item}
+                      </option>
+                    ))}
+
+                    <option value="Other">
+                      Other / Add your own
+                    </option>
+                  </select>
+
+                  <p className="mt-1.5 text-xs leading-5 text-[#90979d]">
+                    Choose the type of repair you specialize in. If it is not listed, add your own category.
+                  </p>
+                </div>
+
+                {/* CUSTOM CATEGORY */}
+                {category === "Other" && (
+                  <div className="rounded-xl border border-[#e4ded7] bg-[#faf8f5] p-5">
                     <label className="mb-1.5 block text-sm font-semibold text-[#26313b]">
-                      Description
+                      Custom Category
                     </label>
 
-                    <textarea
-                      value={serviceDescription}
-                      onChange={(e) => setServiceDescription(e.target.value)}
-                      rows={3}
-                      maxLength={1000}
-                      placeholder="Briefly describe what is included."
-                      className="w-full rounded-lg border border-[#ddd7d0] bg-white px-4 py-2.5 text-sm text-[#26313b] focus:border-[#b9825f] focus:outline-none"
+                    <input
+                      type="text"
+                      value={customCategory}
+                      onChange={(e) =>
+                        setCustomCategory(
+                          e.target.value
+                        )
+                      }
+                      placeholder="Example: Computer Repair"
+                      maxLength={100}
+                      required
+                      className="w-full rounded-xl border border-[#ddd7d0] bg-white px-4 py-3 text-sm text-[#26313b] outline-none transition focus:border-[#b9825f]"
                     />
                   </div>
+                )}
 
-                  <Input
-                    label="Starting price (PHP)"
-                    type="number"
-                    min="0"
-                    value={servicePrice}
-                    onChange={(e) => setServicePrice(e.target.value)}
-                    placeholder="Example: 500"
+                {/* ABOUT */}
+                <div>
+                  <label className="mb-1.5 block text-sm font-semibold text-[#26313b]">
+                    About You
+                  </label>
+
+                  <textarea
+                    value={bio}
+                    onChange={(e) =>
+                      setBio(e.target.value)
+                    }
+                    rows={5}
+                    maxLength={1000}
+                    placeholder="Tell customers a little about yourself, your experience, and the type of repairs you handle."
+                    className="w-full resize-none rounded-xl border border-[#ddd7d0] bg-white px-4 py-3 text-sm leading-6 text-[#26313b] outline-none transition focus:border-[#b9825f]"
                   />
 
+                  <div className="mt-1 flex justify-end text-xs text-[#90979d]">
+                    {bio.length}/1000
+                  </div>
+                </div>
+
+                {/* EXPERIENCE + LOCATION */}
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Input
+                    label="Years of Experience"
+                    type="number"
+                    min="0"
+                    value={yearsExperience}
+                    onChange={(e) =>
+                      setYearsExperience(
+                        e.target.value
+                      )
+                    }
+                    placeholder="Example: 5"
+                  />
+
+                  <Input
+                    label="Location"
+                    type="text"
+                    value={location}
+                    onChange={(e) =>
+                      setLocation(
+                        e.target.value
+                      )
+                    }
+                    placeholder="Example: Cebu City"
+                    required
+                  />
+                </div>
+
+                {/* PRICE + PHONE */}
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Input
+                    label="Starting Price (PHP)"
+                    type="number"
+                    min="0"
+                    value={price}
+                    onChange={(e) =>
+                      setPrice(e.target.value)
+                    }
+                    placeholder="Example: 500"
+                    required
+                  />
+
+                  <Input
+                    label="Phone Number"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) =>
+                      setPhone(e.target.value)
+                    }
+                    placeholder="Enter your phone number"
+                    required
+                  />
+                </div>
+
+                {/* AVAILABILITY */}
+                <div className="rounded-xl border border-[#e4ded7] bg-[#faf8f5] p-5">
+                  <div className="flex items-center justify-between gap-5">
+
+                    <div>
+                      <p className="text-sm font-bold text-[#26313b]">
+                        Available for Jobs
+                      </p>
+
+                      <p className="mt-1 max-w-md text-xs leading-5 text-[#777f86]">
+                        Let customers know whether you are currently accepting repair jobs.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAvailable(
+                          (value) => !value
+                        )
+                      }
+                      disabled={saving}
+                      aria-pressed={available}
+                      className={`relative h-7 w-12 shrink-0 rounded-full transition ${
+                        available
+                          ? "bg-[#b9825f]"
+                          : "bg-[#b8b2ac]"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition ${
+                          available
+                            ? "left-6"
+                            : "left-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <p
+                    className={`mt-3 text-xs font-semibold ${
+                      available
+                        ? "text-green-700"
+                        : "text-[#777f86]"
+                    }`}
+                  >
+                    {available
+                      ? "Available now"
+                      : "Currently unavailable"}
+                  </p>
+                </div>
+
+                {/* ACTIONS */}
+                <div className="flex flex-col gap-3 border-t border-[#eee9e3] pt-6 sm:flex-row">
                   <Button
                     type="submit"
-                    className="w-full"
-                    disabled={serviceSaving}
+                    className="flex-1"
+                    disabled={saving}
                   >
-                    {serviceSaving ? "Adding..." : "Add Service"}
+                    {saving
+                      ? "Saving..."
+                      : "Save Profile"}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() =>
+                      navigate(-1)
+                    }
+                  >
+                    Cancel
                   </Button>
                 </div>
               </form>
             </div>
 
-            <div className="mt-10 border-t border-[#e4ded7] pt-8">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
-                Portfolio
-              </p>
+            {/* PORTFOLIO */}
+            <div className="mt-6 rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm sm:p-8">
 
-              <h2 className="mt-2 text-xl font-bold text-[#17202a]">
-                Past work
-              </h2>
+              <div className="border-b border-[#eee9e3] pb-5">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
+                  Portfolio
+                </p>
 
-              <p className="mt-2 text-sm text-[#777f86]">
-                Add photos of jobs you have completed.
-              </p>
+                <h2 className="mt-2 text-xl font-bold text-[#17202a]">
+                  Past Work
+                </h2>
+
+                <p className="mt-2 text-sm text-[#777f86]">
+                  Show customers examples of repair jobs you have completed.
+                </p>
+              </div>
 
               {portfolioError && (
-                <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {portfolioError}
                 </div>
               )}
 
-              <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {portfolio.map((item) => (
-                  <div
-                    key={item.id}
-                    className="group relative aspect-square overflow-hidden rounded-xl border border-[#e4ded7]"
-                  >
-                    <img
-                      src={`http://127.0.0.1:8000${item.image_url}`}
-                      alt={item.caption || "Portfolio item"}
-                      className="h-full w-full object-cover"
-                    />
+              {portfolio.length > 0 ? (
+                <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
 
-                    <button
-                      type="button"
-                      onClick={() => handlePortfolioDelete(item.id)}
-                      className="absolute right-2 top-2 rounded-lg bg-white/90 px-2 py-1 text-xs font-semibold text-red-600 opacity-0 transition group-hover:opacity-100"
+                  {portfolio.map((item) => (
+                    <div
+                      key={item.id}
+                      className="group relative aspect-square overflow-hidden rounded-xl border border-[#e4ded7] bg-[#faf8f5]"
                     >
-                      Delete
-                    </button>
+                      <img
+                        src={`${API_URL}${item.image_url}`}
+                        alt={
+                          item.caption ||
+                          "Portfolio repair work"
+                        }
+                        className="h-full w-full object-cover"
+                      />
 
-                    {item.caption && (
-                      <p className="truncate bg-white px-2 py-1.5 text-xs text-[#505961]">
-                        {item.caption}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handlePortfolioDelete(
+                            item.id
+                          )
+                        }
+                        className="absolute right-2 top-2 rounded-lg bg-white/95 px-2.5 py-1.5 text-xs font-semibold text-red-600 opacity-0 shadow-sm transition group-hover:opacity-100"
+                      >
+                        Delete
+                      </button>
 
-              <div className="mt-5 space-y-3">
+                      {item.caption && (
+                        <div className="absolute inset-x-0 bottom-0 bg-black/55 px-3 py-2 text-xs text-white">
+                          {item.caption}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* ADD PHOTO TILE */}
+                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-[#d7c9bd] bg-[#faf8f5] text-center transition hover:border-[#b9825f] hover:bg-[#f8f1eb]">
+
+                    <span className="text-3xl font-light text-[#b9825f]">
+                      +
+                    </span>
+
+                    <span className="mt-1 text-xs font-semibold text-[#777f86]">
+                      Add photo
+                    </span>
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={
+                        handlePortfolioUpload
+                      }
+                      disabled={
+                        portfolioUploading
+                      }
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              ) : (
+                <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+
+                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-[#d7c9bd] bg-[#faf8f5] text-center transition hover:border-[#b9825f] hover:bg-[#f8f1eb]">
+
+                    <span className="text-3xl font-light text-[#b9825f]">
+                      +
+                    </span>
+
+                    <span className="mt-1 text-xs font-semibold text-[#777f86]">
+                      Add photo
+                    </span>
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={
+                        handlePortfolioUpload
+                      }
+                      disabled={
+                        portfolioUploading
+                      }
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              )}
+
+              {/* PORTFOLIO CAPTION */}
+              <div className="mt-6 rounded-xl border border-[#e4ded7] bg-[#faf8f5] p-5">
+
+                <p className="text-sm font-bold text-[#26313b]">
+                  Add Portfolio Photo
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-[#777f86]">
+                  Add an optional caption before uploading your next work photo.
+                </p>
+
                 <input
                   type="text"
                   value={portfolioCaption}
-                  onChange={(e) => setPortfolioCaption(e.target.value)}
-                  placeholder="Caption (optional)"
-                  className="w-full rounded-lg border border-[#ddd7d0] bg-white px-4 py-2.5 text-sm text-[#26313b] focus:border-[#b9825f] focus:outline-none"
+                  onChange={(e) =>
+                    setPortfolioCaption(
+                      e.target.value
+                    )
+                  }
+                  placeholder="Example: Laptop motherboard repair"
+                  className="mt-4 w-full rounded-xl border border-[#ddd7d0] bg-white px-4 py-3 text-sm text-[#26313b] outline-none transition focus:border-[#b9825f]"
                 />
 
-                <label className="inline-flex cursor-pointer rounded-lg border border-[#b9825f] px-4 py-2.5 text-sm font-semibold text-[#b9825f] transition hover:bg-[#b9825f] hover:text-white">
-                  {portfolioUploading ? "Uploading..." : "Add photo"}
+                <label className="mt-3 inline-flex cursor-pointer rounded-xl border border-[#b9825f] px-5 py-2.5 text-sm font-semibold text-[#b9825f] transition hover:bg-[#b9825f] hover:text-white">
+
+                  {portfolioUploading
+                    ? "Uploading..."
+                    : "Choose Photo"}
+
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handlePortfolioUpload}
-                    disabled={portfolioUploading}
+                    onChange={
+                      handlePortfolioUpload
+                    }
+                    disabled={
+                      portfolioUploading
+                    }
                     className="hidden"
                   />
                 </label>

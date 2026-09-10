@@ -5,16 +5,40 @@ function getToken() {
 }
 
 async function handleResponse(response, fallbackMessage) {
-  const data = await response.json();
+  const contentType = response.headers.get("content-type") || "";
+  const text = await response.text();
+
+  let data = null;
+
+  if (contentType.includes("application/json")) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(fallbackMessage);
+    }
+  } else {
+    throw new Error(
+      response.ok
+        ? fallbackMessage
+        : `Server returned ${response.status}`
+    );
+  }
 
   if (!response.ok) {
-    throw new Error(data.error || fallbackMessage);
+    throw new Error(
+      data?.error ||
+      data?.message ||
+      fallbackMessage
+    );
   }
 
   return data;
 }
 
+
+// ============================================
 // CUSTOMER
+// ============================================
 
 export async function createRepairRequest({
   repairerId,
@@ -27,6 +51,7 @@ export async function createRepairRequest({
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Accept: "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
@@ -36,17 +61,25 @@ export async function createRepairRequest({
     }),
   });
 
-  return handleResponse(response, "Failed to create repair request");
+  return handleResponse(
+    response,
+    "Failed to create repair request"
+  );
 }
+
 
 export async function fetchMyRepairRequests() {
   const token = getToken();
 
-  const response = await fetch(`${API_URL}/api/repair-requests/mine`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await fetch(
+    `${API_URL}/api/repair-requests/mine`,
+    {
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 
   const data = await handleResponse(
     response,
@@ -55,87 +88,180 @@ export async function fetchMyRepairRequests() {
 
   const requests = Array.isArray(data)
     ? data
-    : (Array.isArray(data.requests) ? data.requests : []);
+    : Array.isArray(data?.requests)
+      ? data.requests
+      : [];
 
   return requests.map((request) => {
-    const description = String(request.description || "");
+    const description = String(
+      request.description || ""
+    );
 
     const getDetail = (label) => {
       const line = description
         .split("\n")
-        .find((item) => item.startsWith(`${label}:`));
+        .find((item) =>
+          item.startsWith(`${label}:`)
+        );
 
-      return line ? line.replace(`${label}:`, "").trim() : "";
+      return line
+        ? line.replace(`${label}:`, "").trim()
+        : "";
     };
+
+    const repairer = request.repairer || {};
+    const customer = request.customer || {};
+    const repairerProfile =
+      repairer.repairer_profile || {};
 
     return {
       ...request,
 
-      // Backend fields -> fields used by the dashboard/card
-      repairerName: request.repairer_name || "Not specified",
-      category:
-        getDetail("Category") ||
+      // --------------------------------------
+      // REPAIRER
+      // --------------------------------------
+
+      repairerId:
+        repairer.id ||
+        request.repairer_id ||
+        null,
+
+      repairerName:
+        repairer.name ||
+        request.repairer_name ||
+        "Not specified",
+
+      repairerPhone:
+        repairer.phone ||
+        request.repairer_phone ||
+        null,
+
+      repairerPhoto:
+        repairer.photo_url ||
+        request.repairer_photo ||
+        null,
+
+      repairerCategory:
+        repairerProfile.category ||
         request.repairer_category ||
         request.service ||
         "Repair Service",
 
-      itemName: getDetail("Item") || request.service || "Repair Request",
+      // --------------------------------------
+      // CUSTOMER
+      // --------------------------------------
 
-      location: getDetail("Location") || "Not specified",
+      customerName:
+        customer.name ||
+        request.customer_name ||
+        null,
 
-      schedule: getDetail("Preferred schedule") || null,
+      customerPhone:
+        customer.phone ||
+        request.customer_phone ||
+        null,
 
-      problem: getDetail("Problem") || description || "No problem description provided.",
+      // --------------------------------------
+      // REQUEST
+      // --------------------------------------
 
-      notes: getDetail("Additional notes") || "",
+      category:
+        getDetail("Category") ||
+        repairerProfile.category ||
+        request.repairer_category ||
+        request.service ||
+        "Repair Service",
 
-      photoName: getDetail("Photo") || "",
+      itemName:
+        getDetail("Item") ||
+        request.service ||
+        "Repair Request",
 
-      repairerPhoto: request.repairer_photo || null,
-      repairerPhone: request.repairer_phone || null,
-      customerPhone: request.customer_phone || null,
-      customerName: request.customer_name || null,
+      location:
+        getDetail("Location") ||
+        "Not specified",
+
+      schedule:
+        getDetail("Preferred schedule") ||
+        null,
+
+      problem:
+        getDetail("Problem") ||
+        description ||
+        "No problem description provided.",
+
+      notes:
+        getDetail("Additional notes") ||
+        "",
+
+      photoName:
+        getDetail("Photo") ||
+        "",
     };
   });
 }
 
+
 export async function cancelRepairRequest(id) {
   const token = getToken();
 
-  const response = await fetch(`${API_URL}/api/repair-requests/${id}/status`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      status: "cancelled",
-    }),
-  });
+  const response = await fetch(
+    `${API_URL}/api/repair-requests/${id}/status`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        status: "cancelled",
+      }),
+    }
+  );
 
-  return handleResponse(response, "Failed to cancel repair request");
+  return handleResponse(
+    response,
+    "Failed to cancel repair request"
+  );
 }
 
-// REPAIRER
 
-export async function updateRepairRequestStatus(id, status) {
+// ============================================
+// REPAIRER
+// ============================================
+
+export async function updateRepairRequestStatus(
+  id,
+  status
+) {
   const token = getToken();
 
-  const response = await fetch(`${API_URL}/api/repair-requests/${id}/status`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      status,
-    }),
-  });
+  const response = await fetch(
+    `${API_URL}/api/repair-requests/${id}/status`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        status,
+      }),
+    }
+  );
 
-  return handleResponse(response, "Failed to update repair request");
+  return handleResponse(
+    response,
+    "Failed to update repair request"
+  );
 }
 
+
+// ============================================
 // REVIEWS
+// ============================================
 
 export async function createReview({
   repairRequestId,
@@ -144,27 +270,44 @@ export async function createReview({
 }) {
   const token = getToken();
 
-  const response = await fetch(`${API_URL}/api/reviews`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      repair_request_id: repairRequestId,
-      rating,
-      comment,
-    }),
-  });
-
-  return handleResponse(response, "Failed to submit review");
-}
-
-export async function fetchRepairerReviews(repairerId) {
   const response = await fetch(
-    `${API_URL}/api/repairers/${repairerId}/reviews`
+    `${API_URL}/api/reviews`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        repair_request_id: repairRequestId,
+        rating,
+        comment,
+      }),
+    }
   );
 
-  return handleResponse(response, "Failed to fetch repairer reviews");
+  return handleResponse(
+    response,
+    "Failed to submit review"
+  );
 }
 
+
+export async function fetchRepairerReviews(
+  repairerId
+) {
+  const response = await fetch(
+    `${API_URL}/api/repairers/${repairerId}/reviews`,
+    {
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+
+  return handleResponse(
+    response,
+    "Failed to fetch repairer reviews"
+  );
+}

@@ -33,7 +33,11 @@ class RepairRequestController extends Controller
 
         return response()->json([
             'message' => 'Repair request created successfully',
-            'request' => $repairRequest->load(['customer', 'repairer']),
+            'request' => $repairRequest->load([
+                'customer',
+                'repairer',
+                'repairer.repairerProfile',
+            ]),
         ], 201);
     }
 
@@ -41,24 +45,23 @@ class RepairRequestController extends Controller
     {
         $user = $request->user();
 
+        $relations = [
+            'customer',
+            'repairer',
+            'repairer.repairerProfile',
+            'review',
+        ];
+
         if ($user->role === 'repairer') {
-            $requests = RepairRequest::with([
-                'customer',
-                'repairer',
-                'review',
-            ])
-            ->where('repairer_id', $user->id)
-            ->orderByDesc('created_at')
-            ->get();
+            $requests = RepairRequest::with($relations)
+                ->where('repairer_id', $user->id)
+                ->orderByDesc('created_at')
+                ->get();
         } else {
-            $requests = RepairRequest::with([
-                'customer',
-                'repairer',
-                'review',
-            ])
-            ->where('customer_id', $user->id)
-            ->orderByDesc('created_at')
-            ->get();
+            $requests = RepairRequest::with($relations)
+                ->where('customer_id', $user->id)
+                ->orderByDesc('created_at')
+                ->get();
         }
 
         return response()->json([
@@ -104,7 +107,12 @@ class RepairRequestController extends Controller
         }
 
         if (
-            in_array($status, ['on_the_way', 'arrived', 'in_progress', 'completed'])
+            in_array($status, [
+                'on_the_way',
+                'arrived',
+                'in_progress',
+                'completed'
+            ])
             && !$isRepairer
         ) {
             return response()->json([
@@ -133,6 +141,7 @@ class RepairRequestController extends Controller
             'request' => $repairRequest->fresh()->load([
                 'customer',
                 'repairer',
+                'repairer.repairerProfile',
                 'review',
             ]),
         ]);

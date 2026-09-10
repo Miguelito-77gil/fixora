@@ -24,7 +24,7 @@ function PendingBadge() {
 }
 
 function AdminDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const [repairers, setRepairers] = useState([]);
@@ -68,9 +68,8 @@ function AdminDashboard() {
   }
 
   function handleLogout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("auth");
+    logout();
+    setSidebarOpen(false);
     window.location.href = "/";
   }
 
