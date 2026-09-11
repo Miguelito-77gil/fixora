@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import {
   fetchMyRepairRequests,
   createReview,
@@ -261,7 +261,7 @@ function RepairHistorySection() {
                 className="text-2xl leading-none text-slate-500 transition hover:text-white disabled:opacity-50"
                 aria-label="Close"
               >
-                ×
+                Ã—
               </button>
             </div>
 

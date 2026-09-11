@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { createReview } from "@/services/repairService";
 
 function formatSchedule(schedule) {
@@ -247,7 +247,7 @@ function RepairRequestCard({ request }) {
                         : "text-[#d8c8bc]"
                     } hover:scale-105`}
                   >
-                    ★
+                    â˜…
                   </button>
                 ))}
 

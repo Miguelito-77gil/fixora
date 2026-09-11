@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { applyAsRepairer } from "@/services/authService";
@@ -197,7 +197,7 @@ function BecomeRepairer() {
           />
 
           <Input
-            label="Starting price (₱)"
+            label="Starting price (â‚±)"
             type="number"
             min="0"
             placeholder="e.g. 500"

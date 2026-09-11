@@ -17,9 +17,40 @@ function ChatPanel({ initialUserId = null }) {
   async function loadUsers() {
     try {
       const data = await fetchChatUsers();
-      const list = Array.isArray(data) ? data : [];
 
-      setUsers(list);
+      const list =
+        Array.isArray(data)
+          ? data
+          : Array.isArray(data?.data)
+            ? data.data
+            : Array.isArray(data?.users)
+              ? data.users
+              : Array.isArray(data?.conversations)
+                ? data.conversations
+                : [];
+
+      // Do not wipe the existing conversation list if a polling request
+      // temporarily returns an empty response.
+      setUsers((current) => {
+        if (list.length === 0 && current.length > 0) {
+          return current;
+        }
+
+        const merged = [...list];
+
+        current.forEach((oldUser) => {
+          if (
+            oldUser?.id &&
+            !merged.some(
+              (user) => String(user.id) === String(oldUser.id)
+            )
+          ) {
+            merged.push(oldUser);
+          }
+        });
+
+        return merged;
+      });
 
       if (initialUserId) {
         const existing = list.find(
@@ -125,7 +156,7 @@ function ChatPanel({ initialUserId = null }) {
         <div className="max-h-[540px] overflow-y-auto">
 
           {loading ? (
-            <p className="p-5 text-sm text-[#777f86]">
+            <p className="p-5 text-sm text-[#75675f]">
               Loading conversations...
             </p>
           ) : users.length === 0 && !selected ? (
@@ -200,7 +231,7 @@ function ChatPanel({ initialUserId = null }) {
                 Select a conversation
               </h3>
 
-              <p className="mt-2 text-sm leading-6 text-[#777f86]">
+              <p className="mt-2 text-sm leading-6 text-[#75675f]">
                 Choose someone from your conversations to start chatting.
               </p>
 
@@ -266,7 +297,7 @@ function ChatPanel({ initialUserId = null }) {
                       <div
                         className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-6 ${
                           mine
-                            ? "rounded-br-md bg-[#b9825f] text-white"
+                            ? "rounded-br-md bg-[#b9825f] text-white shadow-sm hover:bg-[#a9714f]"
                             : "rounded-bl-md border border-[#e5ddd5] bg-white text-[#26313b] shadow-sm"
                         }`}
                       >
@@ -334,3 +365,4 @@ function ChatPanel({ initialUserId = null }) {
 }
 
 export default ChatPanel;
+

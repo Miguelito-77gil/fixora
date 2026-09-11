@@ -147,24 +147,30 @@ class MarketplaceController extends Controller
     {
         $user = $request->user();
 
-        $total = DB::table('repair_requests')
-            ->where('repairer_id', $user->id)
+        $baseQuery = DB::table('repair_requests')
+            ->where('repairer_id', $user->id);
+
+        $total = (clone $baseQuery)->count();
+
+        $pending = (clone $baseQuery)
+            ->where('status', 'pending')
             ->count();
 
-        $completed = DB::table('repair_requests')
-            ->where('repairer_id', $user->id)
-            ->where('status', 'completed')
-            ->count();
-
-        $pending = DB::table('repair_requests')
-            ->where('repairer_id', $user->id)
+        $active = (clone $baseQuery)
             ->whereIn('status', [
-                'pending',
                 'accepted',
                 'on_the_way',
                 'arrived',
                 'in_progress'
             ])
+            ->count();
+
+        $completed = (clone $baseQuery)
+            ->where('status', 'completed')
+            ->count();
+
+        $cancelled = (clone $baseQuery)
+            ->where('status', 'cancelled')
             ->count();
 
         $earnings = RepairerEarning::where('repairer_id', $user->id)
@@ -173,9 +179,11 @@ class MarketplaceController extends Controller
 
         return response()->json([
             'total_requests' => $total,
-            'completed_requests' => $completed,
             'pending_requests' => $pending,
-            'earnings' => $earnings,
+            'active_repairs' => $active,
+            'completed_requests' => $completed,
+            'cancelled_requests' => $cancelled,
+            'earnings' => (float) $earnings,
         ]);
     }
 
@@ -352,4 +360,5 @@ class MarketplaceController extends Controller
         ]);
     }
 }
+
 

@@ -1,4 +1,4 @@
-function SectionHeading({ eyebrow, title, description, align = "left" }) {
+﻿function SectionHeading({ eyebrow, title, description, align = "left" }) {
   return (
     <div
       className={

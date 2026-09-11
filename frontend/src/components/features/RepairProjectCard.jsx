@@ -1,4 +1,4 @@
-function RepairProjectCard({ project }) {
+﻿function RepairProjectCard({ project }) {
   return (
     <article className="group overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70 transition duration-300 hover:-translate-y-1 hover:border-white/20">
 
@@ -7,7 +7,7 @@ function RepairProjectCard({ project }) {
         <div className="text-center">
 
           <div className="text-4xl">
-            🔧
+            ðŸ”§
           </div>
 
           <p className="mt-2 text-xs text-slate-600">

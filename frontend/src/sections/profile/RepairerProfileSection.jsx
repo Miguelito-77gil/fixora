@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import {
   fetchRepairerById,
   fetchRepairerPortfolio,
@@ -9,7 +10,7 @@ import {
   fetchRepairerServices,
 } from "@/services/marketplaceService";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "http://localhost:8000";
 
 function mediaUrl(path) {
   if (!path) return "";
@@ -41,6 +42,7 @@ function Stat({ value, label }) {
 
 function RepairerProfileSection() {
   const { slug } = useParams();
+  const { user } = useAuth();
 
   const [repairer, setRepairer] = useState(null);
   const [portfolio, setPortfolio] = useState([]);
@@ -133,6 +135,10 @@ function RepairerProfileSection() {
   }, [slug]);
 
   const repairerId = repairer?.id;
+
+  const isOwner =
+    user?.role === "repairer" &&
+    String(user?.id) === String(repairer?.id);
 
   const displayServices = useMemo(() => {
     if (services.length > 0) {
@@ -345,15 +351,37 @@ function RepairerProfileSection() {
                 </div>
               </div>
 
-              {/* OWNER ACTION */}
-              <div className="flex shrink-0">
+              {/* PROFILE ACTIONS */}
+              <div className="flex flex-wrap gap-3">
 
-                <Link
-                  to="/edit-profile"
-                  className="inline-flex min-w-36 items-center justify-center rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#a9704e]"
-                >
-                  Edit Profile
-                </Link>
+                {isOwner ? (
+                  <Link
+                    to="/edit-profile"
+                    className="inline-flex min-w-36 items-center justify-center rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#a9704e]"
+                  >
+                    Edit Profile
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      to={`/request-repair/${repairerId}`}
+                      className="inline-flex min-w-36 items-center justify-center rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#a9704e]"
+                    >
+                      Request Repairer
+                    </Link>
+
+                    <Link
+                      to="/messages"
+                      state={{
+                        repairerId: repairerId,
+                        repairerName: repairer.name,
+                      }}
+                      className="inline-flex min-w-36 items-center justify-center rounded-xl border border-[#d8c8bc] bg-white px-5 py-3 text-sm font-bold text-[#8b5e3c] transition hover:bg-[#faf6f2]"
+                    >
+                      Message Repairer
+                    </Link>
+                  </>
+                )}
 
               </div>
 
@@ -680,3 +708,7 @@ function RepairerProfileSection() {
 }
 
 export default RepairerProfileSection;
+
+
+
+

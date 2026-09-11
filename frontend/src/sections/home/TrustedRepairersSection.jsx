@@ -1,4 +1,4 @@
-function TrustedRepairersSection() {
+﻿function TrustedRepairersSection() {
   return (
     <section className="mx-auto max-w-7xl px-6 py-24">
       <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8 sm:p-12">
@@ -20,3 +20,4 @@ function TrustedRepairersSection() {
 }
 
 export default TrustedRepairersSection;
+

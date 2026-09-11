@@ -1,10 +1,10 @@
-const API_URL = "http://127.0.0.1:8000";
+﻿const API_URL = "http://localhost:8000";
 
 function getToken() {
   return (
+    localStorage.getItem("fixora_token") ||
     localStorage.getItem("token") ||
     localStorage.getItem("authToken") ||
-    localStorage.getItem("fixora_token") ||
     ""
   );
 }
@@ -35,12 +35,19 @@ async function request(path, options = {}) {
   }
 
   if (!response.ok) {
-    const message =
-      typeof data === "object" && data?.message
-        ? data.message
-        : typeof data === "object" && data?.error
-          ? data.error
-          : `Request failed with status ${response.status}`;
+    let message = `Request failed with status ${response.status}`;
+
+    if (typeof data === "object" && data) {
+      if (data.message) {
+        message = data.message;
+      } else if (data.error) {
+        message = data.error;
+      } else if (data.errors) {
+        message = Object.values(data.errors)
+          .flat()
+          .join(" ");
+      }
+    }
 
     throw new Error(message);
   }
@@ -76,15 +83,19 @@ export async function fetchChatUsers() {
   return request("/api/marketplace/chat/users");
 }
 
-
 export async function fetchUnreadMessages() {
   return request("/api/marketplace/chat/unread");
 }
+
 export async function fetchMessages(userId) {
   return request(`/api/marketplace/chat/${userId}`);
 }
 
-export async function sendMessage(userId, message, repairRequestId = null) {
+export async function sendMessage(
+  userId,
+  message,
+  repairRequestId = null
+) {
   return request(`/api/marketplace/chat/${userId}`, {
     method: "POST",
     body: JSON.stringify({
@@ -120,9 +131,11 @@ export async function fetchAdminMarketplaceStats() {
   return request("/api/marketplace/admin-dashboard");
 }
 
-
-
-export async function addRepairerService({ name, description, starting_price }) {
+export async function addRepairerService({
+  name,
+  description,
+  starting_price,
+}) {
   return request("/api/marketplace/repairer-services", {
     method: "POST",
     body: JSON.stringify({
@@ -132,22 +145,33 @@ export async function addRepairerService({ name, description, starting_price }) 
     }),
   });
 }
+
 export async function updateRepairerService(
   id,
-  { name, description, starting_price }
+  {
+    name,
+    description,
+    starting_price,
+  }
 ) {
-  return request(`/api/marketplace/repairer-services/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify({
-      name,
-      description,
-      starting_price,
-    }),
-  });
+  return request(
+    `/api/marketplace/repairer-services/${id}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        name,
+        description,
+        starting_price,
+      }),
+    }
+  );
 }
 
 export async function deleteRepairerService(id) {
-  return request(`/api/marketplace/repairer-services/${id}`, {
-    method: "DELETE",
-  });
+  return request(
+    `/api/marketplace/repairer-services/${id}`,
+    {
+      method: "DELETE",
+    }
+  );
 }

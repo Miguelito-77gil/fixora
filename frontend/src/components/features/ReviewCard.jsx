@@ -1,4 +1,4 @@
-function ReviewCard({ review }) {
+﻿function ReviewCard({ review }) {
   return (
     <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
 
@@ -10,9 +10,9 @@ function ReviewCard({ review }) {
           </p>
 
           <div className="mt-1 text-sm tracking-wide text-yellow-400">
-            {"★".repeat(review.rating)}
+            {"â˜…".repeat(review.rating)}
             <span className="text-slate-700">
-              {"★".repeat(5 - review.rating)}
+              {"â˜…".repeat(5 - review.rating)}
             </span>
           </div>
         </div>

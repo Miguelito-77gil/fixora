@@ -1,4 +1,4 @@
-function ManageProjectCard({
+﻿function ManageProjectCard({
   project,
   onEdit,
   onDelete,
@@ -9,7 +9,7 @@ function ManageProjectCard({
       {/* IMAGE */}
       <div className="flex h-40 items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950">
         <span className="text-4xl">
-          🔧
+          ðŸ”§
         </span>
       </div>
 

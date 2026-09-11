@@ -1,4 +1,4 @@
-﻿import Account from "@/pages/Account";
+import Account from "@/pages/Account";
 import { Routes, Route } from "react-router-dom";
 import MainLayout from "@/layouts/MainLayout";
 
@@ -10,11 +10,15 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import BecomeRepairer from "@/pages/BecomeRepairer";
 import AdminDashboard from "@/pages/AdminDashboard";
+import UserManagement from "@/pages/UserManagement";
+import RepairerVerification from "@/pages/RepairerVerification";
 import CustomerDashboard from "@/pages/CustomerDashboard";
 import RepairerDashboard from "@/pages/RepairerDashboard";
+import RepairerServices from "@/pages/RepairerServices";
 import EditProfile from "@/pages/EditProfile";
 import Profile from "@/pages/Profile";
 import Messages from "@/pages/Messages";
+import PortfolioManagement from "@/pages/PortfolioManagement";
 
 function App() {
   return (
@@ -58,6 +62,7 @@ function App() {
           path="/repairer/dashboard"
           element={<RepairerDashboard />}
         />
+        <Route path="/repairer/services" element={<RepairerServices />} />
 
         <Route
           path="/edit-profile"
@@ -81,6 +86,11 @@ function App() {
       </Route>
           <Route path="/account" element={<Account />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<UserManagement />} />
+        <Route
+          path="/admin/repairers"
+          element={<RepairerVerification />}
+        />
       
 
         <Route
@@ -92,6 +102,9 @@ function App() {
 }
 
 export default App;
+
+
+
 
 
 

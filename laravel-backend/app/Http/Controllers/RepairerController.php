@@ -89,9 +89,12 @@ class RepairerController extends Controller
             'photo_url' => ['nullable', 'string', 'max:500'],
         ]);
 
+        $profileData = $validated;
+        $profileData['verification_status'] = 'pending';
+
         $profile = RepairerProfile::updateOrCreate(
             ['user_id' => $user->id],
-            $validated
+            $profileData
         );
 
         return response()->json([
@@ -117,9 +120,12 @@ class RepairerController extends Controller
         $user->verification_status = 'pending';
         $user->save();
 
+        $profileData = $validated;
+        $profileData['verification_status'] = 'pending';
+
         $profile = RepairerProfile::updateOrCreate(
             ['user_id' => $user->id],
-            $validated
+            $profileData
         );
 
         return response()->json([

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 
 import RepairRequestCard from "@/components/features/RepairRequestCard";
 import { fetchMyRepairRequests } from "@/services/repairService";
@@ -186,3 +186,4 @@ function CustomerDashboardSection() {
 }
 
 export default CustomerDashboardSection;
+

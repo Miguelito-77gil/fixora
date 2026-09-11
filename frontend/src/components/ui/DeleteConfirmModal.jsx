@@ -1,4 +1,4 @@
-function DeleteConfirmModal({
+﻿function DeleteConfirmModal({
   project,
   onConfirm,
   onCancel,
@@ -13,7 +13,7 @@ function DeleteConfirmModal({
       <div className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-900 p-7 shadow-2xl">
 
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-400/10 text-xl">
-          ⚠️
+          âš ï¸
         </div>
 
         <h2 className="mt-5 text-2xl font-black">

@@ -1,8 +1,6 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import Navbar from "@/components/common/Navbar";
-
 import {
   fetchMyRepairRequests,
   updateRepairRequestStatus,
@@ -297,13 +295,33 @@ function RepairerDashboard() {
           />
         </svg>
       ),
+    },    {
+      label: "My Services",
+      path: "/repairer/services",
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M4.5 7.5h15M6.75 4.5h10.5A2.25 2.25 0 0 1 19.5 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 17.25V6.75A2.25 2.25 0 0 1 6.75 4.5Z"
+          />
+          <path
+            strokeLinecap="round"
+            d="M8 11.5h8M8 15h5"
+          />
+        </svg>
+      ),
     },
   ];
 
   return (
     <>
-      <Navbar />
-
       <div className="min-h-screen bg-[#f7f3ef] text-[#2f241e]">
 
         {/* MOBILE TOP BAR */}
@@ -1034,3 +1052,4 @@ function RepairerDashboard() {
 }
 
 export default RepairerDashboard;
+

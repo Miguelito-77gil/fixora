@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8000";
+﻿const API_URL = "http://localhost:8000";
 
 export async function registerUser({ name, email, password }) {
   const response = await fetch(`${API_URL}/api/auth/register`, {
@@ -166,4 +166,5 @@ export async function updateMyPhone(phone) {
 
   return data.user || data;
 }
+
 

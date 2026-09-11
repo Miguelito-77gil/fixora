@@ -8,7 +8,7 @@ import {
   fetchFavorites,
 } from "@/services/marketplaceService";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "http://localhost:8000";
 
 function RepairerCard({ repairer }) {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -170,3 +170,4 @@ function RepairerCard({ repairer }) {
 }
 
 export default RepairerCard;
+

@@ -1,4 +1,4 @@
-function VerificationBadge({ verified = false }) {
+﻿function VerificationBadge({ verified = false }) {
   if (!verified) {
     return null;
   }

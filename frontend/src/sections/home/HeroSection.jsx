@@ -1,4 +1,4 @@
-function HeroSection() {
+﻿function HeroSection() {
   return (
     <section className="mx-auto flex min-h-[70vh] max-w-7xl items-center px-6 py-20">
       <div className="max-w-3xl">
@@ -33,3 +33,4 @@ function HeroSection() {
 }
 
 export default HeroSection;
+

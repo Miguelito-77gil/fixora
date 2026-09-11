@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 
 function LoginSection() {
   return (
@@ -38,7 +38,7 @@ function LoginSection() {
 
           <input
             type="password"
-            placeholder="••••••••"
+            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
             className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3.5 text-white outline-none placeholder:text-slate-600 focus:border-indigo-400/50"
           />
 
@@ -59,7 +59,7 @@ function LoginSection() {
             to="/"
             className="mt-2 inline-block font-semibold text-indigo-300 hover:text-indigo-200"
           >
-            Become a repairer →
+            Become a repairer â†’
           </Link>
         </div>
       </div>

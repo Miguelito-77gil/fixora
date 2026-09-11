@@ -3,68 +3,78 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
-    private function checkAdmin(Request $request)
+    public function users(Request $request): JsonResponse
     {
-        if ($request->user()->role !== 'admin') {
-            abort(response()->json([
-                'error' => 'Admin access required.',
-            ], 403));
+        if ($request->user()?->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized.'], 403);
         }
+
+        $users = User::query()
+            ->select([
+                'id',
+                'name',
+                'email',
+                'role',
+                'phone',
+                'created_at',
+            ])
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json([
+            'users' => $users,
+        ]);
     }
 
-    public function pendingRepairers(Request $request)
+    public function pendingRepairers(Request $request): JsonResponse
     {
-        $this->checkAdmin($request);
+        if ($request->user()?->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
 
-        $status = $request->query('status', 'pending');
-
-        $repairers = User::with('repairerProfile')
+        $repairers = User::query()
             ->where('role', 'repairer')
-            ->where('verification_status', $status)
-            ->get()
-            ->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'phone' => $user->phone,
-                    'role' => $user->role,
-                    'verification_status' => $user->verification_status,
-                    'profile' => $user->repairerProfile,
-                ];
-            });
+            ->where('verification_status', 'pending')
+            ->with('repairerProfile')
+            ->orderByDesc('created_at')
+            ->get();
 
         return response()->json($repairers);
     }
 
-    public function verifyRepairer(Request $request, $id)
+    public function verifyRepairer(Request $request, $id): JsonResponse
     {
-        $this->checkAdmin($request);
-
-        $validated = $request->validate([
-            'status' => ['required', 'in:verified,rejected,pending'],
-        ]);
-
-        $user = User::where('id', $id)
-            ->where('role', 'repairer')
-            ->first();
-
-        if (!$user) {
-            return response()->json([
-                'error' => 'Repairer not found.',
-            ], 404);
+        if ($request->user()?->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
-        $user->verification_status = $validated['status'];
-        $user->save();
+        $validated = $request->validate([
+            'status' => ['required', 'in:pending,verified,rejected'],
+        ]);
+
+        $repairer = User::query()
+            ->where('id', $id)
+            ->where('role', 'repairer')
+            ->firstOrFail();
+
+        // Update the main users verification status.
+        $repairer->verification_status = $validated['status'];
+        $repairer->save();
+
+        // Keep the repairer profile status synchronized.
+        if ($repairer->repairerProfile) {
+            $repairer->repairerProfile->verification_status = $validated['status'];
+            $repairer->repairerProfile->save();
+        }
 
         return response()->json([
-            'message' => 'Repairer verification status updated successfully',
-            'user' => $user->fresh(),
+            'message' => 'Repairer status updated successfully.',
+            'status' => $validated['status'],
         ]);
     }
 }

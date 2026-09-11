@@ -1,4 +1,4 @@
-function HowItWorksSection() {
+﻿function HowItWorksSection() {
   const steps = [
     {
       number: "01",
@@ -54,3 +54,4 @@ function HowItWorksSection() {
 }
 
 export default HowItWorksSection;
+

@@ -1,4 +1,4 @@
-function Input({ label, ...props }) {
+﻿function Input({ label, ...props }) {
   return (
     <label className="block">
       {label && (

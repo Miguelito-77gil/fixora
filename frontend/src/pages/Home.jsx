@@ -1,4 +1,4 @@
-import HomeSection from "@/sections/home/HomeSection";
+﻿import HomeSection from "@/sections/home/HomeSection";
 
 function Home() {
   return <HomeSection />;

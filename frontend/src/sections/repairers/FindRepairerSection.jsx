@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 
 import RepairerCard from "@/components/features/RepairerCard";
 import RepairerFilters from "@/components/features/RepairerFilters";
@@ -131,7 +131,7 @@ function FindRepairerSection() {
         <div className="mt-6 rounded-3xl border border-dashed border-white/10 px-6 py-24 text-center">
 
           <div className="text-4xl">
-            🔎
+            ðŸ”Ž
           </div>
 
           <h3 className="mt-5 text-xl font-bold">

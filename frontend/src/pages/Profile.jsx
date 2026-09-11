@@ -1,4 +1,4 @@
-import MyProfileSection from "@/sections/profile/MyProfileSection";
+﻿import MyProfileSection from "@/sections/profile/MyProfileSection";
 
 function Profile() {
   return <MyProfileSection />;

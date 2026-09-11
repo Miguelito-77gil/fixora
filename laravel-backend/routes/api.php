@@ -46,7 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/repairers', [AdminController::class, 'pendingRepairers']);
     Route::put('/admin/repairers/{id}/verify', [AdminController::class, 'verifyRepairer']);
 
-    # Marketplace features
+    Route::get('/admin/users', [AdminController::class, 'users']);
+
     Route::post('/marketplace/favorites/{repairerId}', [MarketplaceController::class, 'favorite']);
     Route::get('/marketplace/favorites', [MarketplaceController::class, 'favorites']);
 
@@ -71,5 +72,3 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/admin/dashboard', [MarketplaceController::class, 'adminDashboard']);
 });
-
-

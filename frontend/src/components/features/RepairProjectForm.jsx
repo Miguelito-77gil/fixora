@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 
 const emptyForm = {
   title: "",
@@ -87,7 +87,7 @@ function RepairProjectForm({
           onClick={onCancel}
           className="rounded-lg px-3 py-2 text-slate-500 transition hover:bg-white/5 hover:text-white"
         >
-          ✕
+          âœ•
         </button>
 
       </div>
@@ -107,7 +107,7 @@ function RepairProjectForm({
           <label className="mt-3 flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-slate-950 px-6 text-center transition hover:border-blue-400/40 hover:bg-white/[0.02]">
 
             <span className="text-4xl">
-              📷
+              ðŸ“·
             </span>
 
             <span className="mt-3 font-semibold text-slate-300">

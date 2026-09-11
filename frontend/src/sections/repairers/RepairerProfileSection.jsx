@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+﻿import { Link, useParams } from "react-router-dom";
 import { repairers } from "@/services/repairerData";
 
 function RepairerProfileSection() {
@@ -34,7 +34,7 @@ function RepairerProfileSection() {
         to="/repairers"
         className="text-sm font-semibold text-[#777f86] hover:text-[#b9825f]"
       >
-        â† Back to repairers
+        Ã¢â€ Â Back to repairers
       </Link>
 
       <div className="mt-6 rounded-3xl border border-[#e4ded7] bg-white shadow-sm">
@@ -109,7 +109,7 @@ function RepairerProfileSection() {
 
           <div className="border-t border-[#eee9e3] p-6 text-center sm:border-l sm:border-t-0">
             <p className="text-2xl font-extrabold text-[#17202a]">
-              â˜… {repairer.rating}
+              Ã¢Ëœâ€¦ {repairer.rating}
             </p>
             <p className="mt-1 text-sm text-[#90979d]">
               {repairer.reviews} reviews
@@ -178,7 +178,7 @@ function RepairerProfileSection() {
           </div>
 
           <p className="text-2xl font-extrabold text-[#17202a]">
-            ₱{repairer.price}
+            â‚±{repairer.price}
           </p>
 
         </div>
@@ -217,3 +217,4 @@ function RepairerProfileSection() {
 }
 
 export default RepairerProfileSection;
+

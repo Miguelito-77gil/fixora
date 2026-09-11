@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -25,7 +25,7 @@ const CATEGORIES = [
   "Furniture",
 ];
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "http://localhost:8000";
 
 function EditProfile() {
   const { user } = useAuth();
@@ -315,22 +315,22 @@ function EditProfile() {
   }
 
   return (
-    <section className="fixora-container py-10 sm:py-14">
-      <div className="mx-auto w-full max-w-4xl">
+    <section className="fixora-container py-10 sm:py-14 lg:py-16">
+      <div className="mx-auto w-full max-w-5xl">
 
         {/* PAGE HEADER */}
-        <div className="mb-8">
+        <div className="mb-9 sm:mb-10">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
             {isRepairer
               ? "Repairer Profile"
               : "Account Settings"}
           </p>
 
-          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-[#17202a] sm:text-4xl">
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-[#17202a] sm:text-4xl lg:text-[42px]">
             Edit Profile
           </h1>
 
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#777f86]">
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#75675f]">
             {isRepairer
               ? "Update your repairer information so customers can learn more about you and the services you provide."
               : "Update your account information."}
@@ -339,21 +339,21 @@ function EditProfile() {
 
         {/* ERROR */}
         {error && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm leading-6 text-red-700">
             {error}
           </div>
         )}
 
         {/* SUCCESS */}
         {success && (
-          <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+          <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm leading-6 text-green-700">
             Profile updated successfully.
           </div>
         )}
 
         {/* CUSTOMER */}
         {!isRepairer ? (
-          <div className="rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-3xl border border-[#e4ded7] bg-white p-6 shadow-[0_12px_40px_rgba(47,36,30,0.06)] sm:p-8 lg:p-9">
 
             <div className="border-b border-[#eee9e3] pb-5">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
@@ -418,7 +418,7 @@ function EditProfile() {
         ) : (
           <>
             {/* PROFILE PHOTO */}
-            <div className="rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm sm:p-8">
+            <div className="rounded-3xl border border-[#e4ded7] bg-white p-6 shadow-[0_12px_40px_rgba(47,36,30,0.06)] sm:p-8 lg:p-9">
 
               <div className="border-b border-[#eee9e3] pb-5">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
@@ -429,7 +429,7 @@ function EditProfile() {
                   Your photo
                 </h2>
 
-                <p className="mt-2 text-sm text-[#777f86]">
+                <p className="mt-2 text-sm leading-6 text-[#75675f]">
                   Add a clear photo so customers can recognize your repairer profile.
                 </p>
               </div>
@@ -442,7 +442,7 @@ function EditProfile() {
                     Current Photo
                   </p>
 
-                  <div className="h-32 w-32 overflow-hidden rounded-2xl bg-[#f1e6da] ring-4 ring-[#f7eee8]">
+                  <div className="h-36 w-36 overflow-hidden rounded-2xl bg-[#f1e6da] ring-4 ring-[#faf5f1] shadow-sm sm:h-40 sm:w-40">
                     {photoUrl ? (
                       <img
                         src={`${API_URL}${photoUrl}`}
@@ -460,7 +460,7 @@ function EditProfile() {
                 {/* PHOTO CONTROLS */}
                 <div className="min-w-0 flex-1">
 
-                  <p className="text-sm font-bold text-[#26313b]">
+                  <p className="text-sm font-bold text-[#2f241e]">
                     {photoUploading
                       ? "Updating your profile photo..."
                       : photoUrl
@@ -468,11 +468,11 @@ function EditProfile() {
                         : "You don't have a profile photo yet"}
                   </p>
 
-                  <p className="mt-1 max-w-lg text-xs leading-5 text-[#777f86]">
+                  <p className="mt-1 max-w-lg text-xs leading-6 text-[#75675f]">
                     Choose a new image to replace your current profile photo. The preview will update after the upload is completed.
                   </p>
 
-                  <label className="mt-4 inline-flex cursor-pointer rounded-xl border border-[#b9825f] px-5 py-2.5 text-sm font-semibold text-[#b9825f] transition hover:bg-[#b9825f] hover:text-white">
+                  <label className="mt-4 inline-flex cursor-pointer rounded-xl border border-[#b9825f] bg-white px-5 py-2.5 text-sm font-semibold text-[#8b5e3c] transition hover:bg-[#b9825f] hover:text-white">
                     {photoUploading
                       ? "Uploading..."
                       : photoUrl
@@ -499,7 +499,7 @@ function EditProfile() {
             </div>
 
             {/* REPAIR INFORMATION */}
-            <div className="mt-6 rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm sm:p-8">
+            <div className="mt-6 rounded-3xl border border-[#e4ded7] bg-white p-6 shadow-[0_12px_40px_rgba(47,36,30,0.06)] sm:p-8 lg:p-9">
 
               <div className="border-b border-[#eee9e3] pb-5">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
@@ -510,7 +510,7 @@ function EditProfile() {
                   About your repairer profile
                 </h2>
 
-                <p className="mt-2 text-sm text-[#777f86]">
+                <p className="mt-2 text-sm leading-6 text-[#75675f]">
                   Keep your information accurate so customers know what you can help them with.
                 </p>
               </div>
@@ -522,7 +522,7 @@ function EditProfile() {
 
                 {/* CATEGORY */}
                 <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-[#26313b]">
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[#8f796b]">
                     Category
                   </label>
 
@@ -537,7 +537,7 @@ function EditProfile() {
                         setCustomCategory("");
                       }
                     }}
-                    className="w-full rounded-xl border border-[#ddd7d0] bg-white px-4 py-3 text-sm text-[#26313b] outline-none transition focus:border-[#b9825f]"
+                    className="w-full rounded-xl border border-[#dcd0c7] bg-white px-4 py-3 text-sm text-[#2f241e] shadow-sm outline-none transition focus:border-[#b9825f] focus:ring-2 focus:ring-[#b9825f]/10"
                     required
                   >
                     <option value="" disabled>
@@ -558,15 +558,15 @@ function EditProfile() {
                     </option>
                   </select>
 
-                  <p className="mt-1.5 text-xs leading-5 text-[#90979d]">
+                  <p className="mt-1.5 text-xs leading-6 text-[#95847a]">
                     Choose the type of repair you specialize in. If it is not listed, add your own category.
                   </p>
                 </div>
 
                 {/* CUSTOM CATEGORY */}
                 {category === "Other" && (
-                  <div className="rounded-xl border border-[#e4ded7] bg-[#faf8f5] p-5">
-                    <label className="mb-1.5 block text-sm font-semibold text-[#26313b]">
+                  <div className="rounded-2xl border border-[#e4ded7] bg-[#faf8f5] p-5 sm:p-6">
+                    <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[#8f796b]">
                       Custom Category
                     </label>
 
@@ -581,14 +581,14 @@ function EditProfile() {
                       placeholder="Example: Computer Repair"
                       maxLength={100}
                       required
-                      className="w-full rounded-xl border border-[#ddd7d0] bg-white px-4 py-3 text-sm text-[#26313b] outline-none transition focus:border-[#b9825f]"
+                      className="w-full rounded-xl border border-[#dcd0c7] bg-white px-4 py-3 text-sm text-[#2f241e] shadow-sm outline-none transition focus:border-[#b9825f] focus:ring-2 focus:ring-[#b9825f]/10"
                     />
                   </div>
                 )}
 
                 {/* ABOUT */}
                 <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-[#26313b]">
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[#8f796b]">
                     About You
                   </label>
 
@@ -600,7 +600,7 @@ function EditProfile() {
                     rows={5}
                     maxLength={1000}
                     placeholder="Tell customers a little about yourself, your experience, and the type of repairs you handle."
-                    className="w-full resize-none rounded-xl border border-[#ddd7d0] bg-white px-4 py-3 text-sm leading-6 text-[#26313b] outline-none transition focus:border-[#b9825f]"
+                    className="w-full resize-none rounded-xl border border-[#dcd0c7] bg-white px-4 py-3 text-sm leading-6 text-[#2f241e] shadow-sm outline-none transition focus:border-[#b9825f] focus:ring-2 focus:ring-[#b9825f]/10"
                   />
 
                   <div className="mt-1 flex justify-end text-xs text-[#90979d]">
@@ -664,15 +664,15 @@ function EditProfile() {
                 </div>
 
                 {/* AVAILABILITY */}
-                <div className="rounded-xl border border-[#e4ded7] bg-[#faf8f5] p-5">
+                <div className="rounded-2xl border border-[#e4ded7] bg-[#faf8f5] p-5 sm:p-6">
                   <div className="flex items-center justify-between gap-5">
 
                     <div>
-                      <p className="text-sm font-bold text-[#26313b]">
+                      <p className="text-sm font-bold text-[#2f241e]">
                         Available for Jobs
                       </p>
 
-                      <p className="mt-1 max-w-md text-xs leading-5 text-[#777f86]">
+                      <p className="mt-1 max-w-md text-xs leading-6 text-[#75675f]">
                         Let customers know whether you are currently accepting repair jobs.
                       </p>
                     </div>
@@ -742,7 +742,7 @@ function EditProfile() {
             </div>
 
             {/* PORTFOLIO */}
-            <div className="mt-6 rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm sm:p-8">
+            <div className="mt-6 rounded-3xl border border-[#e4ded7] bg-white p-6 shadow-[0_12px_40px_rgba(47,36,30,0.06)] sm:p-8 lg:p-9">
 
               <div className="border-b border-[#eee9e3] pb-5">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
@@ -753,13 +753,13 @@ function EditProfile() {
                   Past Work
                 </h2>
 
-                <p className="mt-2 text-sm text-[#777f86]">
+                <p className="mt-2 text-sm leading-6 text-[#75675f]">
                   Show customers examples of repair jobs you have completed.
                 </p>
               </div>
 
               {portfolioError && (
-                <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm leading-6 text-red-700">
                   {portfolioError}
                 </div>
               )}
@@ -770,7 +770,7 @@ function EditProfile() {
                   {portfolio.map((item) => (
                     <div
                       key={item.id}
-                      className="group relative aspect-square overflow-hidden rounded-xl border border-[#e4ded7] bg-[#faf8f5]"
+                      className="group relative aspect-square overflow-hidden rounded-2xl border border-[#e4ded7] bg-[#faf8f5] shadow-sm"
                     >
                       <img
                         src={`${API_URL}${item.image_url}`}
@@ -856,11 +856,11 @@ function EditProfile() {
               {/* PORTFOLIO CAPTION */}
               <div className="mt-6 rounded-xl border border-[#e4ded7] bg-[#faf8f5] p-5">
 
-                <p className="text-sm font-bold text-[#26313b]">
+                <p className="text-sm font-bold text-[#2f241e]">
                   Add Portfolio Photo
                 </p>
 
-                <p className="mt-1 text-xs leading-5 text-[#777f86]">
+                <p className="mt-1 text-xs leading-6 text-[#75675f]">
                   Add an optional caption before uploading your next work photo.
                 </p>
 
@@ -873,10 +873,10 @@ function EditProfile() {
                     )
                   }
                   placeholder="Example: Laptop motherboard repair"
-                  className="mt-4 w-full rounded-xl border border-[#ddd7d0] bg-white px-4 py-3 text-sm text-[#26313b] outline-none transition focus:border-[#b9825f]"
+                  className="mt-4 w-full rounded-xl border border-[#dcd0c7] bg-white px-4 py-3 text-sm text-[#2f241e] shadow-sm outline-none transition focus:border-[#b9825f] focus:ring-2 focus:ring-[#b9825f]/10"
                 />
 
-                <label className="mt-3 inline-flex cursor-pointer rounded-xl border border-[#b9825f] px-5 py-2.5 text-sm font-semibold text-[#b9825f] transition hover:bg-[#b9825f] hover:text-white">
+                <label className="mt-3 inline-flex cursor-pointer rounded-xl border border-[#b9825f] bg-white px-5 py-2.5 text-sm font-semibold text-[#8b5e3c] transition hover:bg-[#b9825f] hover:text-white">
 
                   {portfolioUploading
                     ? "Uploading..."
@@ -904,3 +904,4 @@ function EditProfile() {
 }
 
 export default EditProfile;
+

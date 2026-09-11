@@ -1,4 +1,4 @@
-function RepairerFilters({
+﻿function RepairerFilters({
   search,
   setSearch,
   category,
@@ -30,7 +30,7 @@ function RepairerFilters({
         <div className="relative mt-3">
 
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600">
-            🔎
+            ðŸ”Ž
           </span>
 
           <input
@@ -84,7 +84,7 @@ function RepairerFilters({
           }`}
         >
           <span>
-            {verifiedOnly ? "✓" : "○"}
+            {verifiedOnly ? "âœ“" : "â—‹"}
           </span>
 
           Verified only
@@ -100,7 +100,7 @@ function RepairerFilters({
           }`}
         >
           <span>
-            {availableOnly ? "✓" : "○"}
+            {availableOnly ? "âœ“" : "â—‹"}
           </span>
 
           Available now
