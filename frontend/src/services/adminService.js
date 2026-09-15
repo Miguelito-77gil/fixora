@@ -1,6 +1,6 @@
 ﻿import { getToken } from "@/services/authService";
 
-const API_URL = "http://localhost:8000";
+const API_URL = "";
 
 export async function fetchPendingRepairers() {
   const token = getToken();
@@ -74,4 +74,5 @@ export async function fetchAdminUsers() {
     ? data.data
     : [];
 }
+
 

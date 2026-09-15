@@ -1,4 +1,4 @@
-﻿const API_URL = "http://localhost:8000";
+﻿const API_URL = "";
 
 function getToken() {
   return (
@@ -76,7 +76,16 @@ export async function fetchRecentlyViewed() {
 }
 
 export async function fetchRepairerServices(repairerId) {
-  return request(`/api/marketplace/repairers/${repairerId}/services`);
+  try {
+    return await request(`/api/marketplace/repairers/${repairerId}/services`);
+  } catch (error) {
+    console.error(
+      `Failed to load services for repairer ${repairerId}:`,
+      error
+    );
+
+    return [];
+  }
 }
 
 export async function fetchChatUsers() {
@@ -175,3 +184,4 @@ export async function deleteRepairerService(id) {
     }
   );
 }
+

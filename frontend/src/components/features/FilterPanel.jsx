@@ -1,10 +1,10 @@
-﻿import { categories } from "@/services/repairerData";
+import { categories } from "@/services/repairerData";
 
 function FilterPanel({
   category,
   setCategory,
-  minRating,
-  setMinRating,
+  ratingFilter,
+  setRatingFilter,
   availableOnly,
   setAvailableOnly,
 }) {
@@ -62,8 +62,8 @@ function FilterPanel({
         <div className="mt-3 space-y-3">
           {[
             ["All Ratings", 0],
-      ["\u2605 4.5 and above", "4.5"],
-      ["\u2605 4.0 and above", "4.0"],
+      ["\u2605 4.5 and above", 4.5],
+      ["\u2605 4.0 and below", 4.0],
           ].map(([label, value]) => (
             <label
               key={label}
@@ -72,8 +72,8 @@ function FilterPanel({
               <input
                 type="radio"
                 name="rating"
-                checked={minRating === value}
-                onChange={() => setMinRating(value)}
+                checked={ratingFilter === value}
+                onChange={() => setRatingFilter(value)}
                 className="h-4 w-4 accent-[#b9825f]"
               />
               {label}

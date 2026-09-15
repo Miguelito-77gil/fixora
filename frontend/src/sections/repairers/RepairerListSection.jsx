@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SearchBar from "@/components/features/SearchBar";
 import FilterPanel from "@/components/features/FilterPanel";
@@ -13,7 +13,7 @@ function RepairerListSection() {
   const [search, setSearch] = useState(() => new URLSearchParams(window.location.search).get("search") || "");
   const [location, setLocation] = useState("All Locations");
   const [category, setCategory] = useState("All Categories");
-  const [minRating, setMinRating] = useState(0);
+  const [ratingFilter, setRatingFilter] = useState("all");
   const [availableOnly, setAvailableOnly] = useState(false);
   const [sort, setSort] = useState("rating");
 
@@ -71,9 +71,9 @@ function RepairerListSection() {
       });
     }
 
-    if (minRating > 0) {
+    if (ratingFilter > 0) {
       result = result.filter(
-        (repairer) => repairer.rating >= minRating
+        (repairer) => repairer.rating >= ratingFilter
       );
     }
 
@@ -105,7 +105,7 @@ function RepairerListSection() {
     search,
     location,
     category,
-    minRating,
+    ratingFilter,
     availableOnly,
     sort,
   ]);
@@ -142,8 +142,8 @@ function RepairerListSection() {
           <FilterPanel
             category={category}
             setCategory={setCategory}
-            minRating={minRating}
-            setMinRating={setMinRating}
+            ratingFilter={ratingFilter}
+            setRatingFilter={setRatingFilter}
             availableOnly={availableOnly}
             setAvailableOnly={setAvailableOnly}
           />

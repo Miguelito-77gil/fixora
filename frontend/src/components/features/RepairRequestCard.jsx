@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { createReview } from "@/services/repairService";
 
 function formatSchedule(schedule) {
@@ -47,15 +47,31 @@ function RepairRequestCard({ request }) {
     category &&
     category.toLowerCase() !== itemName.toLowerCase();
 
-  const [selectedRating, setSelectedRating] = useState(0);
-  const [comment, setComment] = useState("");
+  const existingReview =
+    request.has_review === true ||
+    request.has_review === 1 ||
+    request.has_review === "1" ||
+    Boolean(request.review);
+
+  const [selectedRating, setSelectedRating] = useState(
+    existingReview ? Number(request.review?.rating || 0) : 0
+  );
+
+  const [comment, setComment] = useState(
+    existingReview ? request.review?.comment || "" : ""
+  );
+
   const [showRatingForm, setShowRatingForm] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
-  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [reviewSubmitted, setReviewSubmitted] = useState(existingReview);
   const [reviewError, setReviewError] = useState("");
 
   async function handleSubmitReview(event) {
     event.preventDefault();
+
+    if (reviewSubmitted || existingReview) {
+      return;
+    }
 
     if (!selectedRating) {
       setReviewError("Please select a rating.");
@@ -76,13 +92,25 @@ function RepairRequestCard({ request }) {
       setShowRatingForm(false);
     } catch (error) {
       console.error("Failed to submit review:", error);
-      setReviewError(
-        error.message || "Failed to submit review. Please try again."
-      );
+
+      if (
+        error.message &&
+        error.message.toLowerCase().includes("already been reviewed")
+      ) {
+        setReviewSubmitted(true);
+        setShowRatingForm(false);
+        setReviewError("");
+      } else {
+        setReviewError(
+          error.message || "Failed to submit review. Please try again."
+        );
+      }
     } finally {
       setSubmittingReview(false);
     }
   }
+
+  const isRated = reviewSubmitted || existingReview;
 
   return (
     <article className="overflow-hidden rounded-2xl border border-[#d8c4b3] bg-[#fffaf5] shadow-[0_4px_18px_rgba(90,60,40,0.08)]">
@@ -179,16 +207,28 @@ function RepairRequestCard({ request }) {
       {status === "completed" && (
         <div className="border-t border-[#eaded4] bg-[#fdf8f3] px-5 py-5 sm:px-6">
 
-          {reviewSubmitted ? (
-            <div className="rounded-xl border border-[#bdd3c1] bg-[#eaf3eb] px-4 py-4">
+          {isRated ? (
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-              <p className="text-sm font-medium text-[#376044]">
-                Thank you for your review.
-              </p>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#78917c]">
+                  Repair Completed
+                </p>
 
-              <p className="mt-1 text-sm text-[#54705a]">
-                You rated {repairerName} {selectedRating} out of 5.
-              </p>
+                <p className="mt-1.5 text-sm font-medium text-[#376044]">
+                  Thank you for rating {repairerName}.
+                </p>
+              </div>
+
+              <div
+                className="flex shrink-0 items-center gap-2 rounded-xl border border-[#bdd3c1] bg-[#eaf3eb] px-5 py-3 text-sm font-semibold text-[#376044]"
+                aria-label="Repairer already rated"
+              >
+                <span aria-hidden="true">
+                  &#10003;
+                </span>
+                Rated
+              </div>
 
             </div>
           ) : !showRatingForm ? (
@@ -210,8 +250,11 @@ function RepairRequestCard({ request }) {
                   setShowRatingForm(true);
                   setReviewError("");
                 }}
-                className="rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#a9704e]"
+                className="flex shrink-0 items-center gap-2 rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#a9704e]"
               >
+                <span aria-hidden="true">
+                  &#9733;
+                </span>
                 Rate Repairer
               </button>
 
@@ -247,7 +290,7 @@ function RepairRequestCard({ request }) {
                         : "text-[#d8c8bc]"
                     } hover:scale-105`}
                   >
-                    â˜…
+                    &#9733;
                   </button>
                 ))}
 

@@ -1,3 +1,5 @@
+﻿const API_URL = "http://localhost:8000";
+
 import { useEffect, useState } from "react";
 import {
   fetchChatUsers,
@@ -5,6 +7,25 @@ import {
   sendMessage,
 } from "@/services/marketplaceService";
 import { fetchRepairerById } from "@/services/repairerService";
+
+function mediaUrl(path) {
+  if (!path) return "";
+
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+
+  return `${API_URL}${path}`;
+}
+
+function getInitials(name) {
+  return String(name || "U")
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
 
 function ChatPanel({ initialUserId = null }) {
   const [users, setUsers] = useState([]);
@@ -68,6 +89,7 @@ function ChatPanel({ initialUserId = null }) {
                 id: repairer.id,
                 name: repairer.name,
                 role: repairer.role || "repairer",
+                photo_url: repairer.photo_url || null,
               });
             }
           } catch {
@@ -243,14 +265,20 @@ function ChatPanel({ initialUserId = null }) {
             {/* CHAT HEADER */}
             <div className="flex items-center gap-3 border-b border-[#e4ded7] bg-white px-5 py-4">
 
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eee7df] font-bold text-[#9b806a]">
-                {String(selected.name || "U")
-                  .split(" ")
-                  .map((part) => part[0])
-                  .join("")
-                  .slice(0, 2)
-                  .toUpperCase()}
-              </div>
+              {selected.photo_url ? (
+                <img
+                  src={mediaUrl(selected.photo_url)}
+                  alt={selected.name || "User"}
+                  className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-[#f3ebe4]"
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                  }}
+                />
+              ) : (
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eee7df] font-bold text-[#9b806a]">
+                  {getInitials(selected.name)}
+                </div>
+              )}
 
               <div>
                 <p className="font-bold text-[#17202a]">
@@ -365,4 +393,5 @@ function ChatPanel({ initialUserId = null }) {
 }
 
 export default ChatPanel;
+
 

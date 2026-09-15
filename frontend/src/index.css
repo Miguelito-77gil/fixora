@@ -35,3 +35,27 @@ a {
   color: inherit;
   text-decoration: none;
 }
+/* FIXORA CUSTOMER ACCOUNT SHELL */
+
+/*
+  Account.jsx previously contained its own sidebar.
+  CustomerDashboardLayout now owns the sidebar, so the
+  duplicate Account sidebar is hidden.
+*/
+
+.customer-account-content > aside {
+  display: none !important;
+}
+
+.customer-account-content > .sticky {
+  display: none !important;
+}
+
+.customer-account-content > main {
+  padding-left: 0 !important;
+}
+
+.customer-account-content {
+  min-height: 100%;
+  background: #f7f7f5;
+}

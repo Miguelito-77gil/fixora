@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   fetchMyRepairRequests,
   createReview,
@@ -107,22 +107,28 @@ function RepairHistorySection() {
         comment: comment.trim(),
       });
 
-      setRatingSuccess("Your rating has been submitted.");
-
       setRequests((currentRequests) =>
         currentRequests.map((request) =>
           request.id === ratingRequest.id
-            ? { ...request, has_review: true }
+            ? {
+                ...request,
+                has_review: true,
+                review: {
+                  ...(request.review || {}),
+                  rating,
+                  comment: comment.trim(),
+                },
+              }
             : request
         )
       );
 
-      setTimeout(() => {
-        setRatingRequest(null);
-        setRating(0);
-        setComment("");
-        setRatingSuccess("");
-      }, 1000);
+      // Close the rating modal immediately after a successful review.
+      setRatingRequest(null);
+      setRating(0);
+      setComment("");
+      setRatingError("");
+      setRatingSuccess("");
     } catch (err) {
       setRatingError(err.message || "Failed to submit your rating.");
     } finally {
@@ -219,21 +225,36 @@ function RepairHistorySection() {
                   </p>
                 </div>
 
-                {request.status === "completed" && !request.has_review && (
-                  <button
-                    type="button"
-                    onClick={() => openRating(request)}
-                    className="shrink-0 rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#a97150]"
-                  >
-                    Rate Repairer
-                  </button>
-                )}
+                {request.status === "completed" &&
+  !(
+    Boolean(request.has_review) ||
+    Boolean(request.review) ||
+    request.review_id !== null && request.review_id !== undefined
+  ) && (
+    <button
+      type="button"
+      onClick={() => openRating(request)}
+      className="flex shrink-0 items-center gap-2 rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#a97150]"
+    >
+      <span aria-hidden="true">&#9733;</span>
+      Rate Repairer
+    </button>
+  )}
 
-                {request.status === "completed" && request.has_review && (
-                  <div className="shrink-0 rounded-xl border border-green-500/20 bg-green-500/10 px-5 py-3 text-sm font-semibold text-green-400">
-                    Rated
-                  </div>
-                )}
+{request.status === "completed" &&
+  (
+    Boolean(request.has_review) ||
+    Boolean(request.review) ||
+    request.review_id !== null && request.review_id !== undefined
+  ) && (
+    <div
+      className="flex shrink-0 items-center gap-2 rounded-xl border border-green-500/20 bg-green-500/10 px-5 py-3 text-sm font-semibold text-green-400"
+      aria-label="Repairer already rated"
+    >
+      <span aria-hidden="true">&#10003;</span>
+      Rated
+    </div>
+  )}
               </div>
             </div>
           ))}
@@ -261,7 +282,7 @@ function RepairHistorySection() {
                 className="text-2xl leading-none text-slate-500 transition hover:text-white disabled:opacity-50"
                 aria-label="Close"
               >
-                Ã—
+                ÃƒÆ’Ã¢â‚¬â€
               </button>
             </div>
 

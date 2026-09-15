@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -25,7 +25,34 @@ const CATEGORIES = [
   "Furniture",
 ];
 
-const API_URL = "http://localhost:8000";
+const API_URL = "";
+
+function resolveMediaUrl(url) {
+  if (!url) return "";
+
+  const value = String(url).trim();
+
+  if (
+    value.startsWith("http://") ||
+    value.startsWith("https://")
+  ) {
+    return value;
+  }
+
+  if (value.startsWith("/storage/")) {
+    return `${API_URL}${value}`;
+  }
+
+  if (value.startsWith("storage/")) {
+    return `${API_URL}/${value}`;
+  }
+
+  if (value.startsWith("/")) {
+    return `${API_URL}${value}`;
+  }
+
+  return `${API_URL}/storage/${value}`;
+}
 
 function EditProfile() {
   const { user } = useAuth();
@@ -123,7 +150,10 @@ function EditProfile() {
           );
 
           setPhotoUrl(
-            repairerData?.photo_url || ""
+            resolveMediaUrl(
+              repairerData?.profile?.photo_url || repairerData?.profile?.photo || repairerData?.profile?.profile_photo ||
+              ""
+            )
           );
 
           setPortfolio(
@@ -163,7 +193,9 @@ function EditProfile() {
         );
       }
 
-      setPhotoUrl(result.photo_url);
+      setPhotoUrl(
+        resolveMediaUrl(result.photo_url)
+      );
     } catch (err) {
       setPhotoError(
         err?.message ||
@@ -282,7 +314,7 @@ function EditProfile() {
       setSuccess(true);
 
       setTimeout(() => {
-        navigate("/profile");
+        navigate("/repairer/profile");
       }, 800);
     } catch (err) {
       setError(
@@ -445,7 +477,7 @@ function EditProfile() {
                   <div className="h-36 w-36 overflow-hidden rounded-2xl bg-[#f1e6da] ring-4 ring-[#faf5f1] shadow-sm sm:h-40 sm:w-40">
                     {photoUrl ? (
                       <img
-                        src={`${API_URL}${photoUrl}`}
+                        src={photoUrl}
                         alt="Current repairer profile"
                         className="h-full w-full object-cover"
                       />
@@ -773,7 +805,7 @@ function EditProfile() {
                       className="group relative aspect-square overflow-hidden rounded-2xl border border-[#e4ded7] bg-[#faf8f5] shadow-sm"
                     >
                       <img
-                        src={`${API_URL}${item.image_url}`}
+                        src={resolveMediaUrl(item.image_url)}
                         alt={
                           item.caption ||
                           "Portfolio repair work"
@@ -904,4 +936,8 @@ function EditProfile() {
 }
 
 export default EditProfile;
+
+
+
+
 

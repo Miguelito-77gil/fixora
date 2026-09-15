@@ -6,7 +6,7 @@ import {
   deletePortfolioItem,
 } from "@/services/repairerService";
 
-const API_URL = "http://localhost:8000";
+const API_URL = "";
 
 function mediaUrl(path) {
   if (!path) return "";
@@ -397,3 +397,4 @@ function PortfolioManagementSection() {
 }
 
 export default PortfolioManagementSection;
+

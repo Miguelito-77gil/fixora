@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:8000";
+﻿const API_URL = "";
 
 export async function apiGet(endpoint) {
   const response = await fetch(`${API_URL}${endpoint}`);
@@ -27,3 +27,4 @@ export async function apiPost(endpoint, data) {
 }
 
 export { API_URL };
+

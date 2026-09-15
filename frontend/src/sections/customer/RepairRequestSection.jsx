@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import RepairRequestForm from "@/components/features/RepairRequestForm";
@@ -8,7 +8,7 @@ import { loginUser } from "@/services/authService";
 import { useAuth } from "@/context/AuthContext";
 
 function RepairRequestSection() {
-  const { repairerId } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
 
@@ -28,7 +28,7 @@ function RepairRequestSection() {
         setLoading(true);
         setError("");
 
-        const data = await fetchRepairerById(repairerId);
+        const data = await fetchRepairerById(id);
 
         if (!data) {
           throw new Error("Repairer not found");
@@ -43,13 +43,13 @@ function RepairRequestSection() {
       }
     }
 
-    if (repairerId) {
+    if (id) {
       loadRepairer();
     } else {
       setLoading(false);
       setError("No repairer was selected");
     }
-  }, [repairerId]);
+  }, [id]);
 
   async function handleLogin(event) {
     event.preventDefault();

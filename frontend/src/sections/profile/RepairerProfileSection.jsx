@@ -1,327 +1,276 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import {
-  fetchRepairerById,
-  fetchRepairerPortfolio,
-} from "@/services/repairerService";
-import {
-  trackRecentlyViewed,
-  fetchRepairerServices,
-} from "@/services/marketplaceService";
 
-const API_URL = "http://localhost:8000";
+const API_BASE = "/api";
+const BACKEND_BASE = "";
 
-function mediaUrl(path) {
-  if (!path) return "";
+function resolvePhotoUrl(photoUrl) {
+  if (!photoUrl) return null;
 
-  if (path.startsWith("http://") || path.startsWith("https://")) {
-    return path;
+  if (
+    photoUrl.startsWith("http://") ||
+    photoUrl.startsWith("https://")
+  ) {
+    return photoUrl;
   }
 
-  if (path.startsWith("/storage/")) {
-    return `${API_URL}/media/${path.replace("/storage/", "")}`;
+  if (photoUrl.startsWith("/storage/")) {
+    return `${BACKEND_BASE}${photoUrl}`;
   }
 
-  return `${API_URL}${path}`;
-}
+  if (photoUrl.startsWith("storage/")) {
+    return `${BACKEND_BASE}/${photoUrl}`;
+  }
 
-function Stat({ value, label }) {
-  return (
-    <div className="px-4 py-5 text-center">
-      <p className="text-xl font-semibold text-[#17202a]">
-        {value ?? "—"}
-      </p>
+  if (photoUrl.startsWith("/")) {
+    return `${BACKEND_BASE}${photoUrl}`;
+  }
 
-      <p className="mt-1 text-xs font-medium text-[#90979d]">
-        {label}
-      </p>
-    </div>
-  );
+  return `${BACKEND_BASE}/storage/${photoUrl}`;
 }
 
 function RepairerProfileSection() {
-  const { slug } = useParams();
   const { user } = useAuth();
+  const params = useParams();
+  const repairerId = params.id ?? params.slug;
 
   const [repairer, setRepairer] = useState(null);
-  const [portfolio, setPortfolio] = useState([]);
-  const [services, setServices] = useState([]);
-
   const [loading, setLoading] = useState(true);
-  const [serviceLoading, setServiceLoading] = useState(true);
-
   const [error, setError] = useState("");
-  const [photoFailed, setPhotoFailed] = useState(false);
+
+  const isOwnRepairerProfile =
+    user?.role === "repairer" &&
+    repairer &&
+    String(repairer.id) === String(user.id);
 
   useEffect(() => {
-    let active = true;
+    let mounted = true;
 
-    async function loadProfile() {
-      setLoading(true);
-      setServiceLoading(true);
-      setError("");
-
+    async function loadRepairer() {
       try {
-        const profile = await fetchRepairerById(slug);
+        setLoading(true);
+        setError("");
 
-        if (!active) return;
+        const response = await fetch(`${API_BASE}/repairers`);
 
-        setRepairer(profile);
-        setPhotoFailed(false);
-
-        const repairerId = profile?.id ?? slug;
-
-        try {
-          await trackRecentlyViewed(repairerId);
-        } catch {
-          // Authentication is not required for viewing the profile.
+        if (!response.ok) {
+          throw new Error("Failed to load repairers.");
         }
 
-        try {
-          const serviceData = await fetchRepairerServices(repairerId);
+        const result = await response.json();
 
-          if (active) {
-            setServices(
-              Array.isArray(serviceData) ? serviceData : []
-            );
-          }
-        } catch {
-          if (active) {
-            setServices([]);
-          }
-        } finally {
-          if (active) {
-            setServiceLoading(false);
-          }
+        const list = Array.isArray(result)
+          ? result
+          : result.data || [];
+
+        const found = list.find(
+          (item) => String(item.id) === String(repairerId)
+        );
+
+        if (!found) {
+          throw new Error("Repairer not found.");
         }
 
-        try {
-          const portfolioData =
-            await fetchRepairerPortfolio(repairerId);
-
-          if (active) {
-            setPortfolio(
-              Array.isArray(portfolioData)
-                ? portfolioData
-                : []
-            );
-          }
-        } catch {
-          if (active) {
-            setPortfolio([]);
-          }
+        if (mounted) {
+          setRepairer(found);
         }
       } catch (err) {
-        if (active) {
-          setError(
-            err.message ||
-              "Failed to load repairer profile."
-          );
-          setRepairer(null);
+        if (mounted) {
+          setError(err.message || "Unable to load repairer profile.");
         }
       } finally {
-        if (active) {
+        if (mounted) {
           setLoading(false);
         }
       }
     }
 
-    loadProfile();
+    if (repairerId) {
+      loadRepairer();
+    } else {
+      setLoading(false);
+      setError("Repairer ID is missing.");
+    }
 
     return () => {
-      active = false;
+      mounted = false;
     };
-  }, [slug]);
-
-  const repairerId = repairer?.id;
-
-  const isOwner =
-    user?.role === "repairer" &&
-    String(user?.id) === String(repairer?.id);
-
-  const displayServices = useMemo(() => {
-    if (services.length > 0) {
-      return services;
-    }
-
-    if (Array.isArray(repairer?.services)) {
-      return repairer.services;
-    }
-
-    return [];
-  }, [services, repairer]);
-
-  const initials =
-    repairer?.initials ||
-    repairer?.name
-      ?.split(" ")
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() ||
-    "RP";
-
-  const rating =
-    repairer?.rating !== undefined &&
-    repairer?.rating !== null &&
-    repairer?.rating !== ""
-      ? repairer.rating
-      : "—";
-
-  const reviews =
-    repairer?.reviews !== undefined &&
-    repairer?.reviews !== null
-      ? repairer.reviews
-      : 0;
-
-  const experience =
-    repairer?.experience !== undefined &&
-    repairer?.experience !== null &&
-    repairer?.experience !== ""
-      ? `${repairer.experience}+`
-      : "—";
-
-  const repairs =
-    repairer?.repairs !== undefined &&
-    repairer?.repairs !== null &&
-    repairer?.repairs !== ""
-      ? repairer.repairs
-      : "—";
-
-  const price =
-    repairer?.price !== undefined &&
-    repairer?.price !== null &&
-    repairer?.price !== ""
-      ? repairer.price
-      : null;
+  }, [repairerId]);
 
   if (loading) {
     return (
-      <section className="fixora-container py-20">
-        <div className="mx-auto max-w-4xl animate-pulse">
-          <div className="h-4 w-32 rounded bg-[#eee9e3]" />
-
-          <div className="mt-5 rounded-3xl border border-[#e4ded7] bg-white p-8">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-              <div className="h-24 w-24 rounded-2xl bg-[#eee9e3]" />
-
-              <div className="flex-1">
-                <div className="h-7 w-56 rounded bg-[#eee9e3]" />
-                <div className="mt-3 h-4 w-32 rounded bg-[#eee9e3]" />
-                <div className="mt-2 h-4 w-40 rounded bg-[#eee9e3]" />
-              </div>
-            </div>
+      <section className="bg-[#f7f7f5] px-4 py-10">
+        <div className="mx-auto max-w-5xl">
+          <div className="rounded-2xl border border-[#e5dfd8] bg-white p-8 text-center shadow-sm">
+            <p className="text-sm text-[#667085]">
+              Loading repairer profile...
+            </p>
           </div>
         </div>
       </section>
     );
   }
 
-  if (!repairer) {
+  if (error || !repairer) {
     return (
-      <section className="fixora-container py-20">
-        <div className="mx-auto max-w-2xl rounded-3xl border border-[#e4ded7] bg-white p-10 text-center shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#b9825f]">
-            Fixora
-          </p>
+      <section className="bg-[#f7f7f5] px-4 py-10">
+        <div className="mx-auto max-w-5xl">
+          <div className="rounded-2xl border border-[#e5dfd8] bg-white p-8 text-center shadow-sm">
+            <h1 className="text-xl font-semibold text-[#17202a]">
+              Repairer not found
+            </h1>
 
-          <h1 className="mt-3 text-3xl font-extrabold text-[#17202a]">
-            Repairer not found
-          </h1>
+            <p className="mt-2 text-sm text-[#667085]">
+              {error}
+            </p>
 
-          <p className="mt-3 text-sm leading-6 text-[#777f86]">
-            {error ||
-              "The repairer profile you are looking for does not exist."}
-          </p>
-
-          <Link
-            to="/repairers"
-            className="mt-6 inline-flex rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#a9704e]"
-          >
-            Back to repairers
-          </Link>
+            <Link
+              to="/repairers"
+              className="mt-6 inline-flex rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-semibold text-white"
+            >
+              Back to Repairers
+            </Link>
+          </div>
         </div>
       </section>
     );
   }
+
+  const accountNumber =
+    repairer.id ??
+    repairer.user_id ??
+    repairer.account_number ??
+    "Not available";
+
+  const name = repairer.name || "Repairer";
+  const email = repairer.email || "Not provided";
+  const phone = repairer.phone || "Not provided";
+
+  const category =
+    repairer.category ||
+    repairer.specialization ||
+    "General Repair";
+
+  const location = repairer.location || "Not specified";
+
+  const experience =
+    repairer.years_experience !== undefined &&
+    repairer.years_experience !== null
+      ? `${repairer.years_experience}+`
+      : repairer.experience || "0";
+
+  const completedRepairs =
+    repairer.repairs ??
+    repairer.completed_repairs ??
+    0;
+
+  const rating = repairer.rating ?? 0;
+  const reviews = repairer.reviews ?? 0;
+
+  const about =
+    repairer.bio ||
+    repairer.about ||
+    "No description provided.";
+
+  const price = repairer.price ?? 0;
+
+  const photoUrl = resolvePhotoUrl(
+    repairer.photo_url ||
+    repairer.photo ||
+    repairer.profile_photo
+  );
+
+  const initials = name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
-    <section className="fixora-container py-8 sm:py-12">
-      <div className="mx-auto max-w-5xl">
+    <section className="bg-[#f7f7f5] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl space-y-5">
 
-        {/* TOP NAVIGATION */}
-        <div className="flex items-center justify-start">
-          <Link
-            to="/repairers"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#777f86] transition hover:text-[#b9825f]"
-          >
-            <span aria-hidden="true">&#8592;</span>
-            Back to repairers
-          </Link>
-        </div>
+        {/* PROFILE HEADER */}
+        <div className="overflow-hidden rounded-2xl border border-[#e5dfd8] bg-white shadow-sm">
 
-        {error && (
-          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+          <div className="p-6 sm:p-7">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
 
-        {/* PROFILE HERO */}
-        <div className="mt-5 overflow-hidden rounded-3xl border border-[#e4ded7] bg-white shadow-sm">
+              <div className="flex min-w-0 items-center gap-4">
 
-          <div className="p-6 sm:p-8">
-            <div className="flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
-
-              <div className="flex min-w-0 items-center gap-5">
-
-                {repairer.photo_url && !photoFailed ? (
+                {photoUrl ? (
                   <img
-                    src={mediaUrl(repairer.photo_url)}
-                    alt={repairer.name}
-                    onError={() => setPhotoFailed(true)}
-                    className="h-24 w-24 shrink-0 rounded-2xl object-cover ring-4 ring-[#f7eee8] sm:h-28 sm:w-28"
+                    src={photoUrl}
+                    alt={name}
+                    className="h-24 w-24 shrink-0 rounded-2xl object-cover ring-2 ring-[#f0ebe6]"
+                    onError={(event) => {
+                      const image = event.currentTarget;
+
+                      const rawPhoto =
+                        repairer.photo_url ||
+                        repairer.photo ||
+                        repairer.profile_photo;
+
+                      if (
+                        rawPhoto &&
+                        !image.dataset.storageFallback
+                      ) {
+                        image.dataset.storageFallback = "true";
+
+                        const cleanPath = String(rawPhoto).replace(/^\/+/, "");
+
+                        image.src =
+                          cleanPath.startsWith("storage/")
+                            ? `${BACKEND_BASE}/${cleanPath}`
+                            : `${BACKEND_BASE}/storage/${cleanPath}`;
+
+                        return;
+                      }
+
+                      image.style.display = "none";
+
+                      if (image.nextElementSibling) {
+                        image.nextElementSibling.style.display = "flex";
+                      }
+                    }}
                   />
-                ) : (
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-[#eee7df] text-xl font-semibold text-[#9b806a] ring-4 ring-[#f7eee8] sm:h-28 sm:w-28">
-                    {initials}
-                  </div>
-                )}
+                ) : null}
+
+                <div
+                  className={`h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-[#eee7e1] text-2xl font-semibold text-[#8b6046] ${
+                    photoUrl ? "hidden" : "flex"
+                  }`}
+                >
+                  {initials}
+                </div>
 
                 <div className="min-w-0">
-
                   <div className="flex flex-wrap items-center gap-2">
 
-                    <h1 className="text-2xl font-semibold tracking-tight text-[#17202a] sm:text-3xl">
-                      {repairer.name}
+                    <h1 className="text-2xl font-semibold text-[#17202a]">
+                      {name}
                     </h1>
 
-                    {repairer.verified && (
-                      <span className="inline-flex items-center rounded-full border border-[#cfe8d8] bg-[#edf7f0] px-2.5 py-1 text-xs font-medium text-[#28734a]">
+                    {repairer.verification_status === "verified" && (
+                      <span className="rounded-full border border-[#cde8d8] bg-[#eefaf2] px-2.5 py-1 text-xs font-medium text-[#28734b]">
                         Verified
                       </span>
                     )}
 
                   </div>
 
-                  <p className="mt-2 text-sm font-medium text-[#b9825f]">
-                    {repairer.category || "Repairer"}
+                  <p className="mt-1 text-sm font-medium text-[#b9825f]">
+                    {category}
                   </p>
 
-                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#777f86]">
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#667085]">
 
-                    {repairer.location && (
-                      <span>{repairer.location}</span>
-                    )}
+                    <span>{location}</span>
 
                     <span className="flex items-center gap-1.5">
-                      <span
-                        className={`h-2 w-2 rounded-full ${
-                          repairer.available
-                            ? "bg-[#4b9b6b]"
-                            : "bg-[#a9a39d]"
-                        }`}
-                      />
+                      <span className="h-2 w-2 rounded-full bg-[#4ea66b]" />
 
                       {repairer.available
                         ? "Available now"
@@ -330,142 +279,131 @@ function RepairerProfileSection() {
 
                   </div>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <div className="mt-3 flex items-center gap-2 text-sm">
 
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-base font-semibold text-[#b9825f]">
-                        &#9733;
-                      </span>
+                    <span className="font-medium text-[#17202a]">
+                      {rating}
+                    </span>
 
-                      <span className="text-sm font-medium text-[#26313b]">
-                        {rating}
-                      </span>
+                    <span className="text-[#b9825f]">
+                      rating
+                    </span>
 
-                      <span className="text-sm text-[#90979d]">
-                        ({reviews} reviews)
-                      </span>
-                    </div>
+                    <span className="text-[#98a2b3]">
+                      ({reviews} reviews)
+                    </span>
 
                   </div>
-
                 </div>
               </div>
 
-              {/* PROFILE ACTIONS */}
-              <div className="flex flex-wrap gap-3">
+              {/* ACTIONS */}
+              {!isOwnRepairerProfile && (
+                <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
 
-                {isOwner ? (
                   <Link
-                    to="/edit-profile"
-                    className="inline-flex min-w-36 items-center justify-center rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#a9704e]"
+                    to={`/repairer/${repairer.id}/request`}
+                    className="inline-flex items-center justify-center rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
                   >
-                    Edit Profile
+                    Request Repairer
                   </Link>
-                ) : (
-                  <>
-                    <Link
-                      to={`/request-repair/${repairerId}`}
-                      className="inline-flex min-w-36 items-center justify-center rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#a9704e]"
-                    >
-                      Request Repairer
-                    </Link>
 
-                    <Link
-                      to="/messages"
-                      state={{
-                        repairerId: repairerId,
-                        repairerName: repairer.name,
-                      }}
-                      className="inline-flex min-w-36 items-center justify-center rounded-xl border border-[#d8c8bc] bg-white px-5 py-3 text-sm font-bold text-[#8b5e3c] transition hover:bg-[#faf6f2]"
-                    >
-                      Message Repairer
-                    </Link>
-                  </>
-                )}
+                  <Link
+                    to={`/customer/messages/${repairer.id}`}
+                    className="inline-flex items-center justify-center rounded-xl border border-[#dccfc5] bg-white px-5 py-3 text-sm font-semibold text-[#17202a] transition hover:bg-[#faf8f6]"
+                  >
+                    Message Repairer
+                  </Link>
 
-              </div>
+                </div>
+              )}
 
             </div>
           </div>
 
           {/* STATS */}
-          <div className="grid border-t border-[#eee9e3] sm:grid-cols-3">
+          <div className="grid grid-cols-1 border-t border-[#eee8e2] sm:grid-cols-3">
 
-            <Stat
-              value={experience}
-              label="Years experience"
-            />
+            <div className="border-b border-[#eee8e2] p-5 text-center sm:border-b-0 sm:border-r">
+              <p className="text-xl font-semibold text-[#17202a]">
+                {experience}
+              </p>
 
-            <div className="border-t border-[#eee9e3] sm:border-l sm:border-t-0">
-              <Stat
-                value={repairs}
-                label="Completed repairs"
-              />
+              <p className="mt-1 text-xs text-[#667085]">
+                Years experience
+              </p>
             </div>
 
-            <div className="border-t border-[#eee9e3] sm:border-l sm:border-t-0">
-              <Stat
-                value={rating}
-                label="Average rating"
-              />
+            <div className="border-b border-[#eee8e2] p-5 text-center sm:border-b-0 sm:border-r">
+              <p className="text-xl font-semibold text-[#17202a]">
+                {completedRepairs}
+              </p>
+
+              <p className="mt-1 text-xs text-[#667085]">
+                Completed repairs
+              </p>
+            </div>
+
+            <div className="p-5 text-center">
+              <p className="text-xl font-semibold text-[#17202a]">
+                {rating}
+              </p>
+
+              <p className="mt-1 text-xs text-[#667085]">
+                Average rating
+              </p>
             </div>
 
           </div>
-
         </div>
 
         {/* ABOUT + SERVICES */}
-        <div className="mt-5 grid gap-5 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
 
           {/* ABOUT */}
-          <div className="rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-[#e5dfd8] bg-white p-6 shadow-sm">
 
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#b9825f]">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#b9825f]">
               About
             </p>
 
             <h2 className="mt-2 text-xl font-semibold text-[#17202a]">
-              About {repairer.name?.split(" ")[0] || "this repairer"}
+              About {name}
             </h2>
 
-            <p className="mt-4 text-sm leading-7 text-[#777f86]">
-              {repairer.about ||
-                repairer.bio ||
-                "No biography has been added yet."}
+            <p className="mt-4 text-sm leading-6 text-[#667085]">
+              {about}
             </p>
 
-            <div className="mt-6 grid gap-4 border-t border-[#eee9e3] pt-5 sm:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-5 border-t border-[#eee8e2] pt-5 sm:grid-cols-2">
 
               <div>
-                <p className="text-sm font-medium text-[#777f86]">
+                <p className="text-sm text-[#667085]">
                   Location
                 </p>
 
-                <p className="mt-1 text-sm font-medium text-[#26313b]">
-                  {repairer.location || "Not provided"}
+                <p className="mt-1 text-sm font-semibold text-[#17202a]">
+                  {location}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm font-medium text-[#777f86]">
+                <p className="text-sm text-[#667085]">
                   Experience
                 </p>
 
-                <p className="mt-1 text-sm font-medium text-[#26313b]">
-                  {experience === "—"
-                    ? "Not provided"
-                    : `${experience} years`}
+                <p className="mt-1 text-sm font-semibold text-[#17202a]">
+                  {experience} years
                 </p>
               </div>
 
             </div>
-
           </div>
 
           {/* SERVICES */}
-          <div className="rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-[#e5dfd8] bg-white p-6 shadow-sm">
 
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#b9825f]">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#b9825f]">
               Services
             </p>
 
@@ -473,122 +411,49 @@ function RepairerProfileSection() {
               What I repair
             </h2>
 
-            {serviceLoading ? (
-              <div className="mt-5 space-y-2">
-                <div className="h-14 animate-pulse rounded-xl bg-[#faf8f5]" />
-                <div className="h-14 animate-pulse rounded-xl bg-[#faf8f5]" />
-                <div className="h-14 animate-pulse rounded-xl bg-[#faf8f5]" />
-              </div>
-            ) : displayServices.length > 0 ? (
-              <div className="mt-5 space-y-2">
+            <div className="mt-5">
+              <div className="rounded-xl border border-[#eee8e2] bg-[#faf8f6] p-4">
 
-                {displayServices.map((service, index) => {
-                  const isObject =
-                    typeof service === "object" &&
-                    service !== null;
-
-                  const name = isObject
-                    ? service.name
-                    : service;
-
-                  const description = isObject
-                    ? service.description
-                    : "";
-
-                  const servicePrice = isObject
-                    ? service.starting_price
-                    : null;
-
-                  return (
-                    <div
-                      key={
-                        isObject && service.id
-                          ? service.id
-                          : `${name}-${index}`
-                      }
-                      className="rounded-xl border border-[#eee9e3] bg-[#faf8f5] p-4"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-
-                        <div className="min-w-0">
-
-                          <p className="text-sm font-medium text-[#26313b]">
-                            {name || "Repair service"}
-                          </p>
-
-                          {description && (
-                            <p className="mt-1 text-xs leading-5 text-[#777f86]">
-                              {description}
-                            </p>
-                          )}
-
-                        </div>
-
-                        {servicePrice !== null &&
-                          servicePrice !== undefined &&
-                          servicePrice !== "" && (
-                            <span className="shrink-0 text-xs font-medium text-[#b9825f]">
-                              From PHP {servicePrice}
-                            </span>
-                          )}
-
-                      </div>
-                    </div>
-                  );
-                })}
-
-              </div>
-            ) : (
-              <div className="mt-5 rounded-xl border border-[#eee9e3] bg-[#faf8f5] p-4">
-
-                <p className="text-sm font-medium text-[#26313b]">
-                  {repairer.category || "General repair"}
+                <p className="text-sm font-semibold text-[#17202a]">
+                  {category}
                 </p>
 
-                <p className="mt-1 text-xs text-[#777f86]">
-                  Contact this repairer for more information about available services.
+                <p className="mt-1 text-xs text-[#667085]">
+                  No specific services listed yet.
                 </p>
 
               </div>
-            )}
-
+            </div>
           </div>
-
         </div>
 
-        {/* SERVICE INFORMATION */}
-        <div className="mt-5 rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm">
+        {/* PRICE / RATING */}
+        <div className="rounded-2xl border border-[#e5dfd8] bg-white p-6 shadow-sm">
 
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
 
             <div>
-              <p className="text-sm font-medium text-[#777f86]">
+              <p className="text-sm text-[#667085]">
                 Starting price
               </p>
 
               <p className="mt-2 text-2xl font-semibold text-[#17202a]">
-                {price !== null
-                  ? `PHP ${price}`
-                  : "Contact for price"}
+                PHP {Number(price).toLocaleString()}
               </p>
             </div>
 
             <div>
-              <p className="text-sm font-medium text-[#777f86]">
+              <p className="text-sm text-[#667085]">
                 Rating
               </p>
 
               <p className="mt-2 text-2xl font-semibold text-[#17202a]">
                 {rating}
-
-                <span className="ml-1 text-base text-[#b9825f]">
-                  &#9733;
-                </span>
               </p>
             </div>
 
             <div>
-              <p className="text-sm font-medium text-[#777f86]">
+              <p className="text-sm text-[#667085]">
                 Reviews
               </p>
 
@@ -598,13 +463,60 @@ function RepairerProfileSection() {
             </div>
 
           </div>
+        </div>
 
+        {/* ACCOUNT */}
+        <div className="rounded-2xl border border-[#e5dfd8] bg-white p-6 shadow-sm">
+
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#b9825f]">
+            Account
+          </p>
+
+          <h2 className="mt-2 text-xl font-semibold text-[#17202a]">
+            Account information
+          </h2>
+
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+            <div className="rounded-xl border border-[#eee8e2] bg-[#faf8f6] p-4">
+
+              <p className="text-xs text-[#667085]">
+                Account Number
+              </p>
+
+              <p className="mt-2 text-sm font-semibold text-[#17202a]">
+                {accountNumber}
+              </p>
+
+              <p className="mt-1 text-xs text-[#98a2b3]">
+                Unique Fixora account number
+              </p>
+
+            </div>
+
+            <div className="rounded-xl border border-[#eee8e2] bg-[#faf8f6] p-4">
+
+              <p className="text-xs text-[#667085]">
+                Email
+              </p>
+
+              <p className="mt-2 break-all text-sm font-semibold text-[#17202a]">
+                {email}
+              </p>
+
+              <p className="mt-1 text-xs text-[#98a2b3]">
+                Repairer contact email
+              </p>
+
+            </div>
+
+          </div>
         </div>
 
         {/* CONTACT */}
-        <div className="mt-5 rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-[#e5dfd8] bg-white p-6 shadow-sm">
 
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#b9825f]">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#b9825f]">
             Contact
           </p>
 
@@ -612,95 +524,44 @@ function RepairerProfileSection() {
             Get in touch
           </h2>
 
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
 
-            <div className="rounded-xl border border-[#eee9e3] bg-[#faf8f5] p-4">
+            <div className="rounded-xl border border-[#eee8e2] bg-[#faf8f6] p-4">
 
-              <p className="text-sm font-medium text-[#777f86]">
+              <p className="text-xs text-[#667085]">
                 Phone
               </p>
 
-              <p className="mt-2 break-words text-sm font-medium text-[#26313b]">
-                {repairer.phone || "Not provided"}
+              <p className="mt-2 break-all text-sm font-semibold text-[#17202a]">
+                {phone}
               </p>
 
             </div>
 
-            <div className="rounded-xl border border-[#eee9e3] bg-[#faf8f5] p-4">
+            <div className="rounded-xl border border-[#eee8e2] bg-[#faf8f6] p-4">
 
-              <p className="text-sm font-medium text-[#777f86]">
+              <p className="text-xs text-[#667085]">
                 Email
               </p>
 
-              <p className="mt-2 break-all text-sm font-medium text-[#26313b]">
-                {repairer.email || "Not provided"}
+              <p className="mt-2 break-all text-sm font-semibold text-[#17202a]">
+                {email}
               </p>
 
             </div>
 
           </div>
-
         </div>
 
-        {/* PORTFOLIO */}
-        {portfolio.length > 0 && (
-          <div className="mt-5 rounded-2xl border border-[#e4ded7] bg-white p-6 shadow-sm">
-
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-
-              <div>
-
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#b9825f]">
-                  Portfolio
-                </p>
-
-                <h2 className="mt-2 text-xl font-semibold text-[#17202a]">
-                  Previous work
-                </h2>
-
-              </div>
-
-              <p className="text-xs text-[#90979d]">
-                {portfolio.length} portfolio{" "}
-                {portfolio.length === 1 ? "item" : "items"}
-              </p>
-
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-
-              {portfolio.map((item) => (
-                <div
-                  key={item.id}
-                  className="group overflow-hidden rounded-xl border border-[#e4ded7] bg-[#faf8f5]"
-                >
-
-                  <div className="aspect-square overflow-hidden">
-
-                    <img
-                      src={mediaUrl(item.image_url)}
-                      alt={
-                        item.caption ||
-                        "Previous repair work"
-                      }
-                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                    />
-
-                  </div>
-
-                  {item.caption && (
-                    <p className="px-3 py-2 text-xs leading-5 text-[#505961]">
-                      {item.caption}
-                    </p>
-                  )}
-
-                </div>
-              ))}
-
-            </div>
-
-          </div>
-        )}
+        {/* BACK */}
+        <div className="pb-6">
+          <Link
+            to="/repairers"
+            className="text-sm font-semibold text-[#8b6046] hover:underline"
+          >
+            Back to Find a Repairer
+          </Link>
+        </div>
 
       </div>
     </section>
@@ -708,7 +569,4 @@ function RepairerProfileSection() {
 }
 
 export default RepairerProfileSection;
-
-
-
 

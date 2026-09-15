@@ -1,4 +1,4 @@
-﻿const API_URL = "http://localhost:8000";
+﻿const API_URL = "";
 
 function getToken() {
   return localStorage.getItem("fixora_token");
@@ -197,6 +197,17 @@ export async function fetchMyRepairRequests() {
       photoName:
         getDetail("Photo") ||
         "",
+
+      // --------------------------------------
+      // REVIEW
+      // --------------------------------------
+
+      has_review:
+          Boolean(request.has_review) ||
+          Boolean(request.review),
+
+        review:
+          request.review || null,
     };
   });
 }
@@ -311,3 +322,4 @@ export async function fetchRepairerReviews(
     "Failed to fetch repairer reviews"
   );
 }
+

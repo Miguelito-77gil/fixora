@@ -1,219 +1,85 @@
-import { useEffect, useMemo, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+﻿import { useEffect, useMemo, useState } from "react";
+import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import logoImage from "@/assets/luh.png";
 
 import {
+  fetchAdminUsers,
   fetchPendingRepairers,
   verifyRepairer,
 } from "@/services/adminService";
 
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+
 function getInitials(name = "") {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  return (
+    name
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "U"
+  );
 }
 
-function Icon({ name }) {
-  const common = {
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: "1.8",
-    className: "h-5 w-5",
-  };
+function getRepairerPhotoUrl(repairer) {
+  const photo = repairer?.repairer_profile?.photo_url || repairer?.photo_url;
 
-  if (name === "dashboard") {
-    return (
-      <svg {...common}>
-        <rect x="4" y="4" width="6" height="6" rx="1" />
-        <rect x="14" y="4" width="6" height="6" rx="1" />
-        <rect x="4" y="14" width="6" height="6" rx="1" />
-        <rect x="14" y="14" width="6" height="6" rx="1" />
-      </svg>
-    );
+  if (!photo) return null;
+
+  if (photo.startsWith("http://") || photo.startsWith("https://")) {
+    return photo;
   }
 
-  if (name === "users") {
-    return (
-      <svg {...common}>
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M16 21v-1.5A3.5 3.5 0 0 0 12.5 16h-5A3.5 3.5 0 0 0 4 19.5V21"
-        />
-        <circle cx="10" cy="9" r="3" />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M16 11a3 3 0 1 0 0-6"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M17 16.5a3.5 3.5 0 0 1 3 3.5V21"
-        />
-      </svg>
-    );
-  }
+  return `${
+    photo.startsWith("/") ? "" : "/"
+  }${photo}`;
+}
 
-  if (name === "verification") {
-    return (
-      <svg {...common}>
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M12 3.5 19 6v5.5c0 4.5-2.8 7.4-7 9-4.2-1.6-7-4.5-7-9V6l7-2.5Z"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="m9 12 2 2 4-4"
-        />
-      </svg>
-    );
-  }
-
-  if (name === "requests") {
-    return (
-      <svg {...common}>
-        <rect
-          x="4"
-          y="4"
-          width="16"
-          height="16"
-          rx="2.5"
-        />
-        <path
-          strokeLinecap="round"
-          d="M8 9h8M8 13h5M8 17h4"
-        />
-      </svg>
-    );
-  }
-
-  if (name === "profile") {
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="8" r="3" />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M5.5 20a6.5 6.5 0 0 1 13 0"
-        />
-      </svg>
-    );
-  }
-
-  if (name === "logout") {
-    return (
-      <svg {...common}>
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M15 6.75 20.25 12 15 17.25M20 12H9"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M4 4.5v15"
-        />
-      </svg>
-    );
-  }
-
-  if (name === "refresh") {
-    return (
-      <svg {...common}>
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M20 11a8 8 0 0 0-14.9-3.9L4 9"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M4 5v4h4"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M4 13a8 8 0 0 0 14.9 3.9L20 15"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M20 19v-4h-4"
-        />
-      </svg>
-    );
-  }
-
-  if (name === "search") {
-    return (
-      <svg {...common}>
-        <circle cx="11" cy="11" r="6.5" />
-        <path
-          strokeLinecap="round"
-          d="m16 16 4 4"
-        />
-      </svg>
-    );
-  }
-
-  return null;
+function PendingBadge() {
+  return (
+    <span className="inline-flex items-center rounded-full bg-[#fdf3e7] px-2.5 py-1 text-[10px] font-semibold text-[#b9700f]">
+      Pending
+    </span>
+  );
 }
 
 function AdminDashboard() {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
+  const [users, setUsers] = useState([]);
   const [repairers, setRepairers] = useState([]);
+
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [actioningId, setActioningId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [search, setSearch] = useState("");
 
-  async function loadRepairers(showRefreshState = false) {
-    if (showRefreshState) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-
+  async function loadDashboard() {
+    setLoading(true);
     setError("");
 
     try {
-      const data = await fetchPendingRepairers();
+      const [usersData, repairersData] = await Promise.all([
+        fetchAdminUsers(),
+        fetchPendingRepairers(),
+      ]);
 
-      setRepairers(
-        Array.isArray(data)
-          ? data
-          : []
-      );
+      setUsers(Array.isArray(usersData) ? usersData : []);
+      setRepairers(Array.isArray(repairersData) ? repairersData : []);
     } catch (err) {
-      console.error("Failed to load pending repairers:", err);
-
       setError(
-        err.message ||
-          "Failed to load pending repairers."
+        err.message || "Failed to load admin dashboard data."
       );
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }
 
   useEffect(() => {
     if (user?.role !== "admin") return;
-
-    loadRepairers();
+    loadDashboard();
   }, [user]);
 
   async function handleVerify(id, status) {
@@ -223,21 +89,12 @@ function AdminDashboard() {
     try {
       await verifyRepairer(id, status);
 
-      setRepairers((current) =>
-        current.filter(
-          (repairer) =>
-            repairer.id !== id
-        )
+      setRepairers((prev) =>
+        prev.filter((repairer) => repairer.id !== id)
       );
     } catch (err) {
-      console.error(
-        "Failed to update repairer:",
-        err
-      );
-
       setError(
-        err.message ||
-          "Failed to update repairer status."
+        err.message || "Failed to update repairer status."
       );
     } finally {
       setActioningId(null);
@@ -245,51 +102,70 @@ function AdminDashboard() {
   }
 
   function handleLogout() {
-    logout();
-    setSidebarOpen(false);
-    navigate("/");
-  }
-
-  const filteredRepairers = useMemo(() => {
-    const query = search
-      .trim()
-      .toLowerCase();
-
-    if (!query) {
-      return repairers;
+    try {
+      logout();
+    } catch (error) {
+      console.error("Auth logout failed:", error);
     }
 
-    return repairers.filter((repairer) => {
-      const name =
-        String(repairer.name || "")
-          .toLowerCase();
+    localStorage.removeItem("fixora_token");
+    localStorage.removeItem("token");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    localStorage.removeItem("auth");
 
-      const email =
-        String(repairer.email || "")
-          .toLowerCase();
+    sessionStorage.removeItem("fixora_token");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("authToken");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("auth");
 
-      const category =
-        String(repairer.category || "")
-          .toLowerCase();
+    setSidebarOpen(false);
 
-      return (
-        name.includes(query) ||
-        email.includes(query) ||
-        category.includes(query)
-      );
-    });
-  }, [repairers, search]);
+    window.location.replace("/login");
+  }
+
+  const counts = useMemo(() => {
+    return {
+      total: users.length,
+
+      customers: users.filter(
+        (item) => item.role === "customer"
+      ).length,
+
+      repairers: users.filter(
+        (item) => item.role === "repairer"
+      ).length,
+
+      admins: users.filter(
+        (item) => item.role === "admin"
+      ).length,
+
+      pending: repairers.length,
+    };
+  }, [users, repairers]);
+
+  const recentUsers = useMemo(() => {
+    return [...users]
+      .sort((a, b) => {
+        return (
+          new Date(b.created_at || 0) -
+          new Date(a.created_at || 0)
+        );
+      })
+      .slice(0, 5);
+  }, [users]);
 
   const navClass = ({ isActive }) =>
-    `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
+    `flex items-center rounded-xl px-4 py-3 text-sm font-medium transition ${
       isActive
-        ? "bg-[#f3e9e1] text-[#8b5e3c]"
+        ? "border border-[#d8c8bc] bg-[#f3eee9] text-[#2f241e]"
         : "text-[#5f5148] hover:bg-[#f8f5f2]"
     }`;
 
   if (!user) {
     return (
-      <section className="min-h-screen bg-[#f8f5f2] text-[#2f241e]">
+      <section className="min-h-full bg-[#f8f5f2] text-[#2f241e]">
         <div className="flex min-h-[500px] items-center justify-center px-6 py-16">
           <p className="text-sm text-[#777f86]">
             You must be logged in to view this page.
@@ -301,29 +177,16 @@ function AdminDashboard() {
 
   if (user.role !== "admin") {
     return (
-      <section className="min-h-screen bg-[#f8f5f2] text-[#2f241e]">
-        <div className="flex min-h-screen items-center justify-center px-6 py-16">
-          <div className="w-full max-w-md rounded-3xl border border-[#e4ded7] bg-white p-8 text-center shadow-sm">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f3e9e1] text-[#9a6541]">
-              <Icon name="verification" />
-            </div>
-
-            <h1 className="mt-5 text-2xl font-bold text-[#2f241e]">
+      <section className="min-h-full bg-[#f8f5f2] text-[#2f241e]">
+        <div className="flex min-h-[500px] items-center justify-center px-6 py-16">
+          <div className="w-full max-w-md rounded-3xl border border-[#d8c8bc] bg-white p-8 text-center shadow-sm">
+            <h1 className="text-2xl font-bold text-[#2f241e]">
               Access denied
             </h1>
 
-            <p className="mt-3 text-sm leading-6 text-[#777f86]">
-              This page is only available to
-              administrators.
+            <p className="mt-3 text-sm text-[#777f86]">
+              This page is only available to admins.
             </p>
-
-            <button
-              type="button"
-              onClick={() => navigate("/")}
-              className="mt-6 rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#a9704e]"
-            >
-              Back to Home
-            </button>
           </div>
         </div>
       </section>
@@ -331,544 +194,818 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f5f2] text-[#2f241e]">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-[#f8f5f2] text-[#2f241e] lg:flex-row">
+      {/* DESKTOP SIDEBAR */}
+      <aside className="hidden h-full w-[250px] shrink-0 flex-col border-r border-[#e8dfd8] bg-white lg:flex">
+        <nav className="flex-1 space-y-1 px-4 py-6">
+          <NavLink
+            to="/admin/dashboard"
+            className={navClass}
+          >
+            Dashboard
+          </NavLink>
 
-      {/* MOBILE HEADER */}
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#e8dfd8] bg-white/95 px-5 py-4 backdrop-blur lg:hidden">
-        <div>
-          <p className="text-lg font-bold tracking-tight text-[#2f241e]">
-            Fixora
-          </p>
+          <NavLink
+            to="/admin/users"
+            className={navClass}
+          >
+            User Management
+          </NavLink>
 
-          <p className="text-xs text-[#8a7a70]">
-            Admin Dashboard
-          </p>
-        </div>
+          <NavLink
+            to="/admin/repairers"
+            className={navClass}
+          >
+            Repairer Verification
+          </NavLink>
 
-        <button
-          type="button"
-          onClick={() => setSidebarOpen(true)}
-          className="rounded-xl border border-[#d8c8bc] bg-white px-4 py-2 text-sm font-semibold text-[#5f5148] transition hover:bg-[#f3eee9]"
-        >
-          Menu
-        </button>
-      </header>
-
-      {/* MOBILE OVERLAY */}
-      {sidebarOpen && (
-        <button
-          type="button"
-          aria-label="Close menu"
-          onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
-        />
-      )}
-
-      {/* SIDEBAR */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-[#e8dfd8] bg-white transition-transform duration-200 lg:translate-x-0 ${
-          sidebarOpen
-            ? "translate-x-0"
-            : "-translate-x-full"
-        }`}
-      >
-
-        {/* SIDEBAR NAVBAR */}
-        <div className="flex h-20 items-center border-b border-[#eee7e2] px-5">
           <NavLink
             to="/"
-            onClick={() => setSidebarOpen(false)}
-            className="inline-flex items-center rounded-xl p-1 transition hover:bg-[#f8f5f2]"
-            aria-label="Go to Fixora Home"
+            className={navClass}
           >
-            <img
-              src={logoImage}
-              alt="Fixora"
-              className="h-10 w-auto object-contain"
-            />
+            Home
           </NavLink>
-        </div>
 
-        {/* NAVIGATION */}
-        <nav className="flex-1 px-4 py-6">
-  <div className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9a8779]">
-    MANAGEMENT
-  </div>
+          <NavLink
+            to="/repairers"
+            className={navClass}
+          >
+            Find a Repairer
+          </NavLink>
+        </nav>
 
-  <NavLink
-    to="/admin/dashboard"
-    onClick={() => setSidebarOpen(false)}
-    className={navClass}
-  >
-    Dashboard
-  </NavLink>
-  <NavLink
-    to="/admin/users"
-    onClick={() => setSidebarOpen(false)}
-    className={navClass}
-  >
-    User Management
-  </NavLink>
-
-  <NavLink
-    to="/admin/repairers"
-    onClick={() => setSidebarOpen(false)}
-    className={navClass}
-  >
-    Repairer Verification
-  </NavLink>
-</nav>
-
-        {/* LOGOUT */}
         <div className="border-t border-[#eee7e2] p-4">
-
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-[#5f5148] transition hover:bg-[#f3eee9] hover:text-[#8b5e3c]"
+            className="flex w-full items-center rounded-xl px-4 py-3 text-left text-sm font-medium text-[#5f5148] transition hover:bg-[#f3eee9]"
           >
-            <Icon name="logout" />
-            <span>Log Out</span>
+            Log Out
           </button>
-
         </div>
-
       </aside>
 
-      {/* MAIN */}
-      <main className="lg:pl-64">
-
-        <section className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10 lg:px-10">
-
-          {/* PAGE HEADER */}
-          <header className="flex flex-col gap-5 border-b border-[#e5ddd6] pb-8 sm:flex-row sm:items-end sm:justify-between">
-
+      {/* MAIN AREA */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        {/* MOBILE HEADER */}
+        <div className="shrink-0 border-b border-[#e8dfd8] bg-white lg:hidden">
+          <div className="flex items-center justify-between px-5 py-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6541]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#b9825f]">
                 Administration
               </p>
 
-              <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#2f241e] sm:text-4xl">
+              <h2 className="mt-1 text-lg font-bold tracking-tight text-[#2f241e]">
                 Dashboard
-              </h1>
-
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#75675f]">
-                Monitor Fixora and review repairer
-                applications that require your attention.
-              </p>
+              </h2>
             </div>
 
             <button
               type="button"
-              onClick={() => loadRepairers(true)}
-              disabled={refreshing}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#d8c8bc] bg-white px-4 py-2.5 text-sm font-semibold text-[#8b5e3c] transition hover:bg-[#f3eee9] disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() =>
+                setSidebarOpen((value) => !value)
+              }
+              aria-label={
+                sidebarOpen
+                  ? "Close admin menu"
+                  : "Open admin menu"
+              }
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#d8c8bc] bg-white text-[#5f5148] transition hover:bg-[#f3eee9]"
             >
-              <span
-                className={
-                  refreshing
-                    ? "animate-spin"
-                    : ""
-                }
-              >
-                <Icon name="refresh" />
-              </span>
-
-              {refreshing
-                ? "Refreshing..."
-                : "Refresh"}
+              {sidebarOpen ? (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  className="h-5 w-5"
+                >
+                  <path d="M6 6l12 12" />
+                  <path d="M18 6L6 18" />
+                </svg>
+              ) : (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  className="h-5 w-5"
+                >
+                  <path d="M4 6h16" />
+                  <path d="M4 12h16" />
+                  <path d="M4 18h16" />
+                </svg>
+              )}
             </button>
+          </div>
 
-          </header>
+          {sidebarOpen && (
+            <div className="border-t border-[#e8dfd8] bg-white px-4 py-4 shadow-sm">
+              <nav className="space-y-1">
+                <NavLink
+                  to="/admin/dashboard"
+                  onClick={() => setSidebarOpen(false)}
+                  className={navClass}
+                >
+                  Dashboard
+                </NavLink>
 
-          {/* OVERVIEW */}
-          <section className="mt-8">
+                <NavLink
+                  to="/admin/users"
+                  onClick={() => setSidebarOpen(false)}
+                  className={navClass}
+                >
+                  User Management
+                </NavLink>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <NavLink
+                  to="/admin/repairers"
+                  onClick={() => setSidebarOpen(false)}
+                  className={navClass}
+                >
+                  Repairer Verification
+                </NavLink>
 
-              <article className="rounded-2xl border border-[#e4ded7] bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between">
+                <NavLink
+                  to="/"
+                  onClick={() => setSidebarOpen(false)}
+                  className={navClass}
+                >
+                  Home
+                </NavLink>
 
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#9a6541]">
-                      Pending Verification
-                    </p>
+                <NavLink
+                  to="/repairers"
+                  onClick={() => setSidebarOpen(false)}
+                  className={navClass}
+                >
+                  Find a Repairer
+                </NavLink>
 
-                    <p className="mt-3 text-3xl font-bold text-[#2f241e]">
-                      {repairers.length}
-                    </p>
-                  </div>
-
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f3e9e1] text-[#9a6541]">
-                    <Icon name="verification" />
-                  </div>
-
-                </div>
-
-                <p className="mt-3 text-xs leading-5 text-[#777f86]">
-                  Repairer applications currently
-                  waiting for review.
-                </p>
-              </article>
-
-              <article className="rounded-2xl border border-[#e4ded7] bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#9a6541]">
-                      Review Queue
-                    </p>
-
-                    <p className="mt-3 text-3xl font-bold text-[#2f241e]">
-                      {filteredRepairers.length}
-                    </p>
-                  </div>
-
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f5f1ed] text-[#75675f]">
-                    <Icon name="requests" />
-                  </div>
-
-                </div>
-
-                <p className="mt-3 text-xs leading-5 text-[#777f86]">
-                  Applications matching your current
-                  search.
-                </p>
-              </article>
-
-              <article className="rounded-2xl border border-[#e4ded7] bg-white p-5 shadow-sm sm:col-span-2 lg:col-span-1">
-                <div className="flex items-center justify-between">
-
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#9a6541]">
-                      Admin Status
-                    </p>
-
-                    <p className="mt-3 text-lg font-bold text-[#28734a]">
-                      Operational
-                    </p>
-                  </div>
-
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#edf7f0] text-[#28734a]">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#4b9b6b]" />
-                  </div>
-
-                </div>
-
-                <p className="mt-3 text-xs leading-5 text-[#777f86]">
-                  Verification tools are available.
-                </p>
-              </article>
-
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex w-full items-center rounded-xl px-4 py-3 text-left text-sm font-medium text-[#5f5148] transition hover:bg-[#f3eee9]"
+                >
+                  Log Out
+                </button>
+              </nav>
             </div>
+          )}
+        </div>
 
-          </section>
+        {/* SCROLLABLE DASHBOARD */}
+        <main className="min-h-0 flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
+            {/* HEADING */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#9a6541]">
+                  Admin Dashboard
+                </p>
 
-          {/* ERROR */}
-          {error && (
-            <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#2f241e] sm:text-4xl">
+                  Fixora Overview
+                </h1>
 
-              <p className="text-sm leading-6 text-red-700">
-                {error}
-              </p>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#75675f]">
+                  Monitor users, repairers, and verification activity
+                  across the Fixora marketplace.
+                </p>
+              </div>
 
               <button
                 type="button"
-                onClick={() => loadRepairers(true)}
-                className="shrink-0 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-red-700 ring-1 ring-red-200 transition hover:bg-red-100"
+                onClick={loadDashboard}
+                disabled={loading}
+                className="rounded-xl border border-[#cdb5a2] bg-white px-4 py-2.5 text-sm font-medium text-[#8b5e3c] transition hover:bg-[#f3e5da] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Try Again
+                {loading ? "Loading..." : "Refresh Dashboard"}
               </button>
-
-            </div>
-          )}
-
-          {/* VERIFICATION */}
-          <section
-            id="verification"
-            className="mt-10 scroll-mt-24"
-          >
-
-            <div className="flex flex-col gap-4 border-b border-[#e5ddd6] pb-5 sm:flex-row sm:items-end sm:justify-between">
-
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#9a6541]">
-                  Verification
-                </p>
-
-                <h2 className="mt-2 text-xl font-bold text-[#2f241e]">
-                  Repairer Applications
-                </h2>
-
-                <p className="mt-2 text-sm text-[#777f86]">
-                  Review applications before they
-                  become visible as verified repairers.
-                </p>
-              </div>
-
-              <div className="relative w-full sm:w-72">
-
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#a28f83]">
-                  <Icon name="search" />
-                </div>
-
-                <input
-                  type="search"
-                  value={search}
-                  onChange={(event) =>
-                    setSearch(event.target.value)
-                  }
-                  placeholder="Search applications..."
-                  className="w-full rounded-xl border border-[#d8c8bc] bg-white py-2.5 pl-10 pr-4 text-sm text-[#2f241e] outline-none transition placeholder:text-[#a28f83] focus:border-[#b9825f] focus:ring-2 focus:ring-[#b9825f]/10"
-                />
-
-              </div>
-
             </div>
 
-            {/* LOADING */}
-            {loading ? (
-              <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-
-                {[1, 2, 3].map((item) => (
-                  <div
-                    key={item}
-                    className="animate-pulse rounded-2xl border border-[#e4ded7] bg-white p-5"
-                  >
-                    <div className="flex gap-3">
-                      <div className="h-11 w-11 rounded-xl bg-[#eee9e3]" />
-
-                      <div className="flex-1">
-                        <div className="h-4 w-32 rounded bg-[#eee9e3]" />
-                        <div className="mt-2 h-3 w-40 rounded bg-[#eee9e3]" />
-                      </div>
-                    </div>
-
-                    <div className="mt-5 h-3 w-28 rounded bg-[#eee9e3]" />
-                    <div className="mt-3 h-10 rounded-xl bg-[#f5f1ed]" />
-                    <div className="mt-5 h-9 rounded-xl bg-[#eee9e3]" />
-                  </div>
-                ))}
-
-              </div>
-            ) : filteredRepairers.length === 0 ? (
-
-              <div className="mt-6 rounded-2xl border border-dashed border-[#d8c8bc] bg-white px-6 py-20 text-center">
-
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f3e9e1] text-[#9a6541]">
-                  <Icon name="verification" />
-                </div>
-
-                <h3 className="mt-5 text-lg font-bold text-[#2f241e]">
-                  {search
-                    ? "No matching applications"
-                    : "No pending applications"}
-                </h3>
-
-                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#777f86]">
-                  {search
-                    ? "Try a different name, email, or category."
-                    : "All repairer applications have been reviewed. New applications will appear here automatically."}
-                </p>
-
-                {search ? (
-                  <button
-                    type="button"
-                    onClick={() => setSearch("")}
-                    className="mt-5 rounded-xl border border-[#d8c8bc] bg-white px-5 py-2.5 text-sm font-semibold text-[#8b5e3c] transition hover:bg-[#f3eee9]"
-                  >
-                    Clear Search
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => loadRepairers(true)}
-                    className="mt-5 rounded-xl bg-[#b9825f] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#a9704e]"
-                  >
-                    Check Again
-                  </button>
-                )}
-
-              </div>
-
-            ) : (
-
-              <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-
-                {filteredRepairers.map((repairer) => {
-
-                  const isActioning =
-                    actioningId === repairer.id;
-
-                  const initials =
-                    getInitials(
-                      repairer.name
-                    ) || "RP";
-
-                  return (
-                    <article
-                      key={repairer.id}
-                      className="flex flex-col overflow-hidden rounded-2xl border border-[#e4ded7] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                    >
-
-                      {/* CARD HEADER */}
-                      <div className="p-5">
-
-                        <div className="flex items-start gap-3">
-
-                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#f1e8e0] text-sm font-bold text-[#9b806a]">
-                            {initials}
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-
-                            <div className="flex items-start justify-between gap-2">
-
-                              <h3 className="truncate text-sm font-bold text-[#2f241e]">
-                                {repairer.name ||
-                                  "Unnamed Repairer"}
-                              </h3>
-
-                              <span className="shrink-0 rounded-full bg-[#fdf3e7] px-2 py-1 text-[10px] font-bold text-[#b9700f]">
-                                Pending
-                              </span>
-
-                            </div>
-
-                            <p className="mt-1 truncate text-xs text-[#8a9298]">
-                              {repairer.email ||
-                                "No email provided"}
-                            </p>
-
-                          </div>
-
-                        </div>
-
-                        {/* INFO */}
-                        <div className="mt-5 space-y-3">
-
-                          <div className="rounded-xl bg-[#faf8f5] px-4 py-3">
-
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9a6541]">
-                              Category
-                            </p>
-
-                            <p className="mt-1 text-sm font-semibold text-[#2f241e]">
-                              {repairer.category ||
-                                "Not provided"}
-                            </p>
-
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-3">
-
-                            <div>
-                              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9a6541]">
-                                Experience
-                              </p>
-
-                              <p className="mt-1 text-sm font-medium text-[#4f443d]">
-                                {repairer.years_experience != null &&
-                                repairer.years_experience !== ""
-                                  ? `${repairer.years_experience} years`
-                                  : "Not provided"}
-                              </p>
-                            </div>
-
-                            <div>
-                              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9a6541]">
-                                Status
-                              </p>
-
-                              <p className="mt-1 text-sm font-medium text-[#b9700f]">
-                                Pending
-                              </p>
-                            </div>
-
-                          </div>
-
-                        </div>
-
-                        {/* BIO */}
-                        {repairer.bio && (
-                          <div className="mt-5 border-t border-[#eee9e3] pt-4">
-
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9a6541]">
-                              About
-                            </p>
-
-                            <p className="mt-2 line-clamp-4 text-xs leading-5 text-[#68727c]">
-                              {repairer.bio}
-                            </p>
-
-                          </div>
-                        )}
-
-                      </div>
-
-                      {/* ACTIONS */}
-                      <div className="mt-auto border-t border-[#eee9e3] bg-[#fcfaf8] p-4">
-
-                        <div className="grid grid-cols-2 gap-2">
-
-                          <button
-                            type="button"
-                            disabled={isActioning}
-                            onClick={() =>
-                              handleVerify(
-                                repairer.id,
-                                "verified"
-                              )
-                            }
-                            className="rounded-xl bg-[#b9825f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#a9704e] disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {isActioning
-                              ? "Updating..."
-                              : "Approve"}
-                          </button>
-
-                          <button
-                            type="button"
-                            disabled={isActioning}
-                            onClick={() =>
-                              handleVerify(
-                                repairer.id,
-                                "rejected"
-                              )
-                            }
-                            className="rounded-xl border border-[#d8c8bc] bg-white px-4 py-2.5 text-sm font-semibold text-[#8b5e3c] transition hover:bg-[#f3eee9] disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {isActioning
-                              ? "Updating..."
-                              : "Reject"}
-                          </button>
-
-                        </div>
-
-                      </div>
-
-                    </article>
-                  );
-                })}
-
+            {error && (
+              <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+                {error}
               </div>
             )}
 
-          </section>
+            {/* KPI CARDS */}
+            <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {/* TOTAL USERS */}
+              <Card className="rounded-2xl border border-[#e4ded7] bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#9a6541]">
+                      Total Users
+                    </p>
 
+                    <p className="mt-2 text-3xl font-bold text-[#2f241e]">
+                      {counts.total}
+                    </p>
 
+                    <p className="mt-1 text-xs text-[#81736a]">
+                      All registered accounts
+                    </p>
+                  </div>
 
-        </section>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f3eee9] text-[#a97955]">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      className="h-5 w-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+                      />
+                      <circle cx="9" cy="7" r="4" />
+                      <path
+                        strokeLinecap="round"
+                        d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </Card>
 
-      </main>
+              {/* CUSTOMERS */}
+              <Card className="rounded-2xl border border-[#e4ded7] bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#9a6541]">
+                      Customers
+                    </p>
 
+                    <p className="mt-2 text-3xl font-bold text-[#2f241e]">
+                      {counts.customers}
+                    </p>
+
+                    <p className="mt-1 text-xs text-[#81736a]">
+                      Customer accounts
+                    </p>
+                  </div>
+
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#edf4ee] text-[#39734a]">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      className="h-5 w-5"
+                    >
+                      <circle cx="12" cy="8" r="4" />
+                      <path
+                        strokeLinecap="round"
+                        d="M4 21a8 8 0 0 1 16 0"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </Card>
+
+              {/* REPAIRERS */}
+              <Card className="rounded-2xl border border-[#e4ded7] bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#9a6541]">
+                      Repairers
+                    </p>
+
+                    <p className="mt-2 text-3xl font-bold text-[#2f241e]">
+                      {counts.repairers}
+                    </p>
+
+                    <p className="mt-1 text-xs text-[#81736a]">
+                      Registered repairers
+                    </p>
+                  </div>
+
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f3eee9] text-[#8b5e3c]">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      className="h-5 w-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m14.7 6.3 3-3a4 4 0 0 1 0 5.7l-1.4 1.4"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m10.3 17.7-3 3a4 4 0 0 1-5.7-5.7l3-3"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        d="m8 16 8-8"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </Card>
+
+              {/* PENDING */}
+              <Card className="rounded-2xl border border-[#e4ded7] bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#9a6541]">
+                      Pending Verification
+                    </p>
+
+                    <p className="mt-2 text-3xl font-bold text-[#2f241e]">
+                      {counts.pending}
+                    </p>
+
+                    <p className="mt-1 text-xs text-[#81736a]">
+                      Applications to review
+                    </p>
+                  </div>
+
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fdf3e7] text-[#b9700f]">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      className="h-5 w-5"
+                    >
+                      <circle cx="12" cy="12" r="9" />
+                      <path
+                        strokeLinecap="round"
+                        d="M12 7v5l3 2"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </Card>
+            </section>
+
+            {/* MIDDLE ROW */}
+            <section className="mt-8 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+              {/* VERIFICATION */}
+              <Card className="rounded-3xl border border-[#e4ded7] bg-white p-6 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#9a6541]">
+                      Verification
+                    </p>
+
+                    <h2 className="mt-2 text-xl font-bold text-[#2f241e]">
+                      Repairer Applications
+                    </h2>
+
+                    <p className="mt-1 text-sm text-[#81736a]">
+                      Review repairers waiting for approval.
+                    </p>
+                  </div>
+
+                  <PendingBadge />
+                </div>
+
+                {loading ? (
+                  <div className="mt-8 rounded-2xl bg-[#fcfaf8] p-8 text-center text-sm text-[#81736a]">
+                    Loading applications...
+                  </div>
+                ) : repairers.length === 0 ? (
+                  <div className="mt-8 rounded-2xl border border-dashed border-[#d8c8bc] bg-[#fcfaf8] p-8 text-center">
+                    <p className="text-sm font-semibold text-[#2f241e]">
+                      All caught up
+                    </p>
+
+                    <p className="mt-1 text-xs text-[#81736a]">
+                      There are no pending repairer applications.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-6 space-y-3">
+                    {repairers.slice(0, 4).map((repairer) => (
+                      <div
+                        key={repairer.id}
+                        className="flex flex-col gap-4 rounded-2xl border border-[#eee7e1] bg-[#fcfaf8] p-4 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-[#f0e6de]">
+                            {getRepairerPhotoUrl(repairer) ? (
+                              <img
+                                src={getRepairerPhotoUrl(repairer)}
+                                alt={repairer.name || "Repairer"}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-sm font-bold text-[#8b5e3c]">
+                                {getInitials(repairer.name)}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="truncate text-sm font-semibold text-[#2f241e]">
+                                {repairer.name || "Unnamed Repairer"}
+                              </p>
+
+                              <PendingBadge />
+                            </div>
+
+                            <p className="mt-1 truncate text-xs text-[#81736a]">
+                              {repairer.email || "No email"}
+                            </p>
+
+                            <p className="mt-1 text-xs text-[#a97955]">
+                              {repairer.category || "Repair Professional"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex shrink-0 gap-2">
+                          <Button
+                            onClick={() =>
+                              handleVerify(repairer.id, "verified")
+                            }
+                            disabled={actioningId === repairer.id}
+                            className="!px-3 !py-2 !text-xs"
+                          >
+                            {actioningId === repairer.id
+                              ? "..."
+                              : "Approve"}
+                          </Button>
+
+                          <Button
+                            onClick={() =>
+                              handleVerify(repairer.id, "rejected")
+                            }
+                            variant="outline"
+                            disabled={actioningId === repairer.id}
+                            className="!px-3 !py-2 !text-xs"
+                          >
+                            {actioningId === repairer.id
+                              ? "..."
+                              : "Reject"}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {repairers.length > 4 && (
+                      <Link
+                        to="/admin/repairers"
+                        className="block rounded-xl border border-[#dccfc5] px-4 py-3 text-center text-sm font-medium text-[#8b5e3c] transition hover:bg-[#f8f5f2]"
+                      >
+                        View all {repairers.length} pending applications
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </Card>
+
+              {/* USER OVERVIEW */}
+              <Card className="rounded-3xl border border-[#e4ded7] bg-white p-6 shadow-sm">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#9a6541]">
+                    User Overview
+                  </p>
+
+                  <h2 className="mt-2 text-xl font-bold text-[#2f241e]">
+                    Marketplace Accounts
+                  </h2>
+
+                  <p className="mt-1 text-sm text-[#81736a]">
+                    Current registered account distribution.
+                  </p>
+                </div>
+
+                <div className="mt-6 space-y-5">
+                  <div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-[#5f5148]">
+                        Customers
+                      </span>
+
+                      <span className="font-semibold text-[#2f241e]">
+                        {counts.customers}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#eee7e1]">
+                      <div
+                        className="h-full rounded-full bg-[#7b9b7a]"
+                        style={{
+                          width: `${
+                            counts.total
+                              ? (counts.customers / counts.total) * 100
+                              : 0
+                          }%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-[#5f5148]">
+                        Repairers
+                      </span>
+
+                      <span className="font-semibold text-[#2f241e]">
+                        {counts.repairers}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#eee7e1]">
+                      <div
+                        className="h-full rounded-full bg-[#b9855c]"
+                        style={{
+                          width: `${
+                            counts.total
+                              ? (counts.repairers / counts.total) * 100
+                              : 0
+                          }%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-[#5f5148]">
+                        Administrators
+                      </span>
+
+                      <span className="font-semibold text-[#2f241e]">
+                        {counts.admins}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#eee7e1]">
+                      <div
+                        className="h-full rounded-full bg-[#765d8f]"
+                        style={{
+                          width: `${
+                            counts.total
+                              ? (counts.admins / counts.total) * 100
+                              : 0
+                          }%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  to="/admin/users"
+                  className="mt-7 block rounded-xl border border-[#dccfc5] px-4 py-3 text-center text-sm font-semibold text-[#8b5e3c] transition hover:bg-[#f8f5f2]"
+                >
+                  Manage Users
+                </Link>
+              </Card>
+            </section>
+
+            {/* RECENT USERS */}
+            <section className="mt-8">
+              <Card className="overflow-hidden rounded-3xl border border-[#e4ded7] bg-white shadow-sm">
+                <div className="flex flex-col gap-3 border-b border-[#eee7e1] p-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#9a6541]">
+                      Recent Activity
+                    </p>
+
+                    <h2 className="mt-2 text-xl font-bold text-[#2f241e]">
+                      Recently Registered Users
+                    </h2>
+
+                    <p className="mt-1 text-sm text-[#81736a]">
+                      Latest accounts added to the Fixora marketplace.
+                    </p>
+                  </div>
+
+                  <Link
+                    to="/admin/users"
+                    className="text-sm font-semibold text-[#9a6541] hover:underline"
+                  >
+                    View all users
+                  </Link>
+                </div>
+
+                {loading ? (
+                  <div className="p-8 text-center text-sm text-[#81736a]">
+                    Loading users...
+                  </div>
+                ) : recentUsers.length === 0 ? (
+                  <div className="p-8 text-center text-sm text-[#81736a]">
+                    No users available.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-[#eee7e1]">
+                    {recentUsers.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#f0e6de] text-sm font-bold text-[#8b5e3c]">
+                            {item.repairer_profile?.photo_url ? (
+                              <img
+                                src={`${item.repairer_profile.photo_url}`}
+                                alt={item.name || "User"}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              getInitials(item.name)
+                            )}
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="truncate text-sm font-semibold text-[#2f241e]">
+                                {item.name || "Unnamed User"}
+                              </p>
+
+                              <span
+                                className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${
+                                  item.role === "repairer"
+                                    ? "bg-[#f3eee9] text-[#8b5e3c]"
+                                    : item.role === "admin"
+                                    ? "bg-[#eee9f5] text-[#654b82]"
+                                    : "bg-[#edf4ee] text-[#39734a]"
+                                }`}
+                              >
+                                {item.role === "repairer"
+                                  ? "Repairer"
+                                  : item.role === "admin"
+                                  ? "Admin"
+                                  : "Customer"}
+                              </span>
+                            </div>
+
+                            <p className="mt-1 truncate text-xs text-[#81736a]">
+                              {item.email || "No email"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="text-left text-xs text-[#95877e] sm:text-right">
+                          <p>
+                            {item.created_at
+                              ? new Date(
+                                  item.created_at
+                                ).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })
+                              : "—"}
+                          </p>
+
+                          <p className="mt-1">
+                            User ID: {item.id}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            </section>
+
+           {/* ADMIN SHORTCUTS */}
+<section className="mt-8">
+  <div>
+    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#9a6541]">
+      Admin Shortcuts
+    </p>
+
+    <h2 className="mt-2 text-xl font-bold text-[#2f241e]">
+      Manage Fixora
+    </h2>
+
+    <p className="mt-1 text-sm text-[#81736a]">
+      Quickly access the main administration tools.
+    </p>
+  </div>
+
+  <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <Link
+      to="/admin/users"
+      className="group rounded-2xl border border-[#e4ded7] bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f3eee9] text-[#a97955]">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+        >
+          <path
+            strokeLinecap="round"
+            d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+          />
+          <circle cx="9" cy="7" r="4" />
+          <path
+            strokeLinecap="round"
+            d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+          />
+        </svg>
+      </div>
+
+      <h3 className="mt-4 text-sm font-bold text-[#2f241e]">
+        User Management
+      </h3>
+
+      <p className="mt-1 text-xs leading-5 text-[#81736a]">
+        View and manage customer, repairer, and admin accounts.
+      </p>
+
+      <p className="mt-4 text-xs font-semibold text-[#9a6541] transition group-hover:text-[#7f5034]">
+        Open User Management →
+      </p>
+    </Link>
+
+    <Link
+      to="/admin/repairers"
+      className="group rounded-2xl border border-[#e4ded7] bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fdf3e7] text-[#b9700f]">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 3 4 6v5c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-3Z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="m9 12 2 2 4-4"
+          />
+        </svg>
+      </div>
+
+      <h3 className="mt-4 text-sm font-bold text-[#2f241e]">
+        Repairer Verification
+      </h3>
+
+      <p className="mt-1 text-xs leading-5 text-[#81736a]">
+        Review applications and approve trusted repairers.
+      </p>
+
+      <p className="mt-4 text-xs font-semibold text-[#9a6541] transition group-hover:text-[#7f5034]">
+        Review Applications →
+      </p>
+    </Link>
+
+    <Link
+      to="/repairers"
+      className="group rounded-2xl border border-[#e4ded7] bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#edf4ee] text-[#39734a]">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path
+            strokeLinecap="round"
+                  d="m20 20-4-4"
+                        />
+                    </svg>
+                    </div>
+
+                     <h3 className="mt-4 text-sm font-bold text-[#2f241e]">
+                       Browse Repairers
+                      </h3>
+
+                      <p className="mt-1 text-xs leading-5 text-[#81736a]">
+                       View verified repairers available on the Fixora marketplace.
+                    </p>
+
+                 <p className="mt-4 text-xs font-semibold text-[#9a6541] transition group-hover:text-[#7f5034]">
+                    Browse Repairers →
+               </p>
+             </Link>
+             </div>
+            </section>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
 
 export default AdminDashboard;
-
-
-
-
-

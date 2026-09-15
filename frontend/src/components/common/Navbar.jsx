@@ -11,6 +11,10 @@ function Navbar() {
   const isCustomerDashboard =
     location.pathname === "/customer/dashboard";
 
+  const isAdminPage =
+    location.pathname === "/admin" ||
+    location.pathname.startsWith("/admin/");
+
   const isRepairerProfile =
     location.pathname.startsWith("/repairer/") &&
     user?.role === "repairer";
@@ -41,6 +45,7 @@ function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-[#e7e2dc] bg-[#f7f7f5]/95 backdrop-blur">
       <div className="fixora-container">
+
         <div
           className="flex items-center justify-between"
           style={{ height: "64px" }}
@@ -67,31 +72,44 @@ function Navbar() {
             </div>
           </Link>
 
-          {!isCustomerDashboard && (
+          {/* NORMAL NAVBAR */}
+          {!isCustomerDashboard && !isAdminPage && (
             <nav className="hidden items-center gap-8 pr-3 md:flex">
+
               <NavLink to="/" className={linkClass}>
                 Home
               </NavLink>
 
               {!isRepairerProfile && (
-                <NavLink to="/repairers" className={linkClass}>
+                <NavLink
+                  to="/repairers"
+                  className={linkClass}
+                >
                   Find a Repairer
                 </NavLink>
               )}
 
               {user ? (
-                <NavLink to={getAccountPath()} className={linkClass}>
+                <NavLink
+                  to={getAccountPath()}
+                  className={linkClass}
+                >
                   Account
                 </NavLink>
               ) : (
-                <NavLink to="/login" className={linkClass}>
+                <NavLink
+                  to="/login"
+                  className={linkClass}
+                >
                   Log In
                 </NavLink>
               )}
+
             </nav>
           )}
 
-          {!isCustomerDashboard && (
+          {/* MOBILE MENU */}
+          {!isCustomerDashboard && !isAdminPage && (
             <button
               type="button"
               onClick={() => setOpen((current) => !current)}
@@ -102,12 +120,17 @@ function Navbar() {
               {open ? "Close" : "Menu"}
             </button>
           )}
+
         </div>
 
-        {open && !isCustomerDashboard && (
+        {/* MOBILE NAV */}
+        {open && !isCustomerDashboard && !isAdminPage && (
           <nav className="absolute left-0 right-0 top-full border-b border-[#e7e2dc] bg-[#f7f7f5] px-6 py-4 shadow-lg md:hidden">
+
             <div className="mx-auto max-w-7xl">
+
               <div className="flex flex-col gap-1">
+
                 <NavLink
                   onClick={closeMenu}
                   to="/"
@@ -167,16 +190,16 @@ function Navbar() {
                     Log In
                   </NavLink>
                 )}
+
               </div>
+
             </div>
           </nav>
         )}
+
       </div>
     </header>
   );
 }
 
 export default Navbar;
-
-
-

@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+﻿import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   fetchMyRepairRequests,
   updateRepairRequestStatus,
@@ -15,8 +14,7 @@ import {
 
 function RepairerDashboard() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
-
+  
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
@@ -33,8 +31,6 @@ function RepairerDashboard() {
   const [notifications, setNotifications] = useState([]);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [notificationLoading, setNotificationLoading] = useState(false);
-
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   async function loadRequests() {
     try {
@@ -238,272 +234,14 @@ function RepairerDashboard() {
     },
   ];
 
-  const menuItems = [
-    {
-      label: "Dashboard",
-      path: "/repairer/dashboard",
-      icon: (
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          className="h-5 w-5"
-        >
-          <rect x="4" y="4" width="6" height="6" rx="1" />
-          <rect x="14" y="4" width="6" height="6" rx="1" />
-          <rect x="4" y="14" width="6" height="6" rx="1" />
-          <rect x="14" y="14" width="6" height="6" rx="1" />
-        </svg>
-      ),
-    },
-    {
-      label: "Messages",
-      path: "/messages",
-      icon: (
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          className="h-5 w-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M4 5.75A2.75 2.75 0 0 1 6.75 3h10.5A2.75 2.75 0 0 1 20 5.75v8.5A2.75 2.75 0 0 1 17.25 17H10l-4.5 4v-4.15A2.75 2.75 0 0 1 4 14.25v-8.5Z"
-          />
-        </svg>
-      ),
-    },
-    {
-      label: "My Profile",
-      path: "/profile",
-      icon: (
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          className="h-5 w-5"
-        >
-          <circle cx="12" cy="8" r="3.5" />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M5 20a7 7 0 0 1 14 0"
-          />
-        </svg>
-      ),
-    },    {
-      label: "My Services",
-      path: "/repairer/services",
-      icon: (
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          className="h-5 w-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M4.5 7.5h15M6.75 4.5h10.5A2.25 2.25 0 0 1 19.5 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 17.25V6.75A2.25 2.25 0 0 1 6.75 4.5Z"
-          />
-          <path
-            strokeLinecap="round"
-            d="M8 11.5h8M8 15h5"
-          />
-        </svg>
-      ),
-    },
-  ];
-
   return (
     <>
-      <div className="min-h-screen bg-[#f7f3ef] text-[#2f241e]">
-
-        {/* MOBILE TOP BAR */}
-        <div className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#e5d9d0] bg-white px-5 lg:hidden">
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#e1d4ca] bg-white text-[#6f4b36]"
-            aria-label="Open menu"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              className="h-5 w-5"
-            >
-              <path
-                strokeLinecap="round"
-                d="M4 7h16M4 12h16M4 17h16"
-              />
-            </svg>
-          </button>
-
-          <span className="text-lg font-semibold tracking-tight text-[#2f241e]">
-            Repairer Dashboard
-          </span>
-
-          <div className="h-10 w-10" aria-hidden="true" />
-        </div>
-
-        {/* MOBILE OVERLAY */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 z-50 bg-black/30 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-
-        {/* SIDEBAR */}
-        <aside
-          className={`fixed inset-y-0 left-0 z-[60] flex w-64 flex-col border-r border-[#e4d8cf] bg-white transition-transform duration-200 lg:top-16 lg:h-[calc(100vh-4rem)] lg:translate-x-0 ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
-
-          {/* MOBILE CLOSE */}
-          <div className="flex h-16 items-center justify-end px-5 lg:hidden">
-            <button
-              type="button"
-              onClick={() => setSidebarOpen(false)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-[#8b776b] transition hover:bg-[#f7eee8]"
-              aria-label="Close menu"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-5 w-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  d="M6 6l12 12M18 6 6 18"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {/* MENU */}
-          <nav className="flex flex-1 flex-col px-4 py-7">
-
-            <p className="px-3 pb-3 text-[10px] font-medium uppercase tracking-[0.16em] text-[#a28f83]">
-              Menu
-            </p>
-
-            <div className="space-y-1">
-              {menuItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setSidebarOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition ${
-                      isActive
-                        ? "bg-[#f5e9e0] text-[#8b5e3c]"
-                        : "text-[#505961] hover:bg-[#f3eee9] hover:text-[#8b5e3c]"
-                    }`
-                  }
-                >
-                  {item.icon}
-
-                  <span>{item.label}</span>
-
-                  {item.label === "Messages" && messageCount > 0 && (
-                    <span className="ml-auto rounded-full bg-[#b9825f] px-2 py-0.5 text-[10px] font-semibold text-white">
-                      {messageCount > 99 ? "99+" : messageCount}
-                    </span>
-                  )}
-                </NavLink>
-              ))}
-
-              {/* NOTIFICATIONS */}
-              <button
-                type="button"
-                onClick={() => {
-                  setNotificationOpen(true);
-                  setSidebarOpen(false);
-                  loadNotifications();
-                }}
-                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium transition ${
-                  notificationOpen
-                    ? "bg-[#f5e9e0] text-[#8b5e3c]"
-                    : "text-[#505961] hover:bg-[#f3eee9] hover:text-[#8b5e3c]"
-                }`}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  className="h-5 w-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 18.75a3 3 0 0 1-6 0m9-4.5H6a1.5 1.5 0 0 1-1.5-1.5v-.75a7.5 7.5 0 0 1 15 0v.75a1.5 1.5 0 0 1-1.5 1.5Z"
-                  />
-                </svg>
-
-                <span>Notifications</span>
-
-                {unreadNotificationCount > 0 && (
-                  <span className="ml-auto rounded-full bg-[#b9825f] px-2 py-0.5 text-[10px] font-semibold text-white">
-                    {unreadNotificationCount > 99
-                      ? "99+"
-                      : unreadNotificationCount}
-                  </span>
-                )}
-              </button>
-            </div>
-
-            {/* LOG OUT */}
-            <div className="mt-auto border-t border-[#eee5df] pt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  logout();
-                  setSidebarOpen(false);
-                  window.location.href = "/";
-                }}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium text-[#505961] transition hover:bg-[#f3eee9] hover:text-[#8b5e3c]"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  className="h-5 w-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 6.75 20.25 12 15 17.25M20 12H9"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 4.5v15"
-                  />
-                </svg>
-
-                <span>Log Out</span>
-              </button>
-            </div>
-          </nav>
-        </aside>
+      <div className="min-h-full bg-[#f7f3ef] text-[#2f241e]">
 
         {/* MAIN CONTENT */}
-        <main className="min-h-screen lg:pl-64">
+        
 
-          <div className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
+          <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-14 md:px-8">
 
             {/* PAGE HEADER */}
             <header>
@@ -511,7 +249,7 @@ function RepairerDashboard() {
                 Repairer Dashboard
               </p>
 
-              <h1 className="mt-3 text-4xl font-black tracking-tight text-[#2f241e]">
+              <h1 className="mt-3 text-3xl font-black tracking-tight text-[#2f241e] sm:text-4xl md:text-4xl">
                 {notificationOpen ? "Notifications" : "Dashboard"}
               </h1>
 
@@ -526,7 +264,7 @@ function RepairerDashboard() {
             {notificationOpen ? (
               <section className="mt-10">
 
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-4 md:gap-6">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#b9825f]">
                       Updates
@@ -657,11 +395,11 @@ function RepairerDashboard() {
             ) : (
               <>
                 {/* STATS */}
-                <section className="mt-10 grid gap-4 sm:grid-cols-3">
+                <section className="mt-10 grid gap-4 sm:grid-cols-3 md:gap-5">
                   {statCards.map((stat) => (
                     <div
                       key={stat.label}
-                      className="rounded-2xl border border-[#e4d9d0] bg-white p-5 shadow-sm"
+                      className="rounded-2xl border border-[#e4d9d0] bg-white p-5 shadow-sm md:p-6"
                     >
                       <div className="flex items-start justify-between">
                         <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#9a6541]">
@@ -816,7 +554,7 @@ function RepairerDashboard() {
 
                               {/* REQUEST HEADER */}
                               <div className="border-b border-[#eee5df] px-5 py-5 sm:px-6">
-                                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between md:gap-6">
 
                                   <div>
                                     <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#b9825f]">
@@ -888,7 +626,7 @@ function RepairerDashboard() {
                               </div>
 
                               {/* DETAILS */}
-                              <div className="grid gap-5 px-5 py-5 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
+                              <div className="grid gap-4 px-5 py-5 sm:grid-cols-2 sm:px-6 md:grid-cols-4 md:gap-5 lg:grid-cols-4">
 
                                 <div>
                                   <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#9a6541]">
@@ -959,7 +697,7 @@ function RepairerDashboard() {
 
                               {/* ACTIONS */}
                               {request.status === "pending" && (
-                                <div className="flex flex-col gap-3 border-t border-[#eee5df] bg-[#fcfaf8] px-5 py-4 sm:flex-row sm:px-6">
+                                <div className="flex flex-col gap-3 border-t border-[#eee5df] bg-[#fcfaf8] px-5 py-4 sm:flex-row sm:px-6 md:gap-4">
 
                                   <button
                                     type="button"
@@ -1045,11 +783,14 @@ function RepairerDashboard() {
             )}
 
           </div>
-        </main>
+        
       </div>
     </>
   );
 }
 
 export default RepairerDashboard;
+
+
+
 

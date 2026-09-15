@@ -1,5 +1,7 @@
 ﻿import { useState } from "react";
 
+const BACKEND_URL = "";
+
 const initialForm = {
   itemName: "",
   category: "",
@@ -8,6 +10,39 @@ const initialForm = {
   schedule: "",
   notes: "",
 };
+
+function resolvePhotoUrl(photoUrl) {
+  if (!photoUrl) return null;
+
+  const value = String(photoUrl).trim();
+
+  if (!value) return null;
+
+  if (
+    value.startsWith("http://") ||
+    value.startsWith("https://")
+  ) {
+    return value;
+  }
+
+  const cleanPath = value.replace(/^\/+/, "");
+
+  if (cleanPath.startsWith("storage/")) {
+    return `${BACKEND_URL}/${cleanPath}`;
+  }
+
+  return `${BACKEND_URL}/storage/${cleanPath}`;
+}
+
+function getInitials(name) {
+  return String(name || "Repairer")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
 
 function RepairRequestForm({
   repairer,
@@ -18,6 +53,7 @@ function RepairRequestForm({
 }) {
   const [form, setForm] = useState(initialForm);
   const [photoName, setPhotoName] = useState("");
+  const [photoFailed, setPhotoFailed] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -63,6 +99,24 @@ function RepairRequestForm({
     });
   }
 
+  const photoUrl = resolvePhotoUrl(
+    repairer?.photo_url ||
+    repairer?.photo ||
+    repairer?.profile_photo
+  );
+
+  const repairerName = repairer?.name || "Repairer";
+
+  const repairerCategory =
+    repairer?.category ||
+    repairer?.specialty ||
+    repairer?.specialization ||
+    "General Repair";
+
+  const verified =
+    repairer?.verified ||
+    repairer?.verification_status === "verified";
+
   return (
     <div className="mx-auto max-w-3xl">
 
@@ -89,26 +143,39 @@ function RepairRequestForm({
         </p>
 
         <div className="mt-4 flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#b9825f]/10 font-bold text-[#b9825f] ring-1 ring-[#b9825f]/20">
-            {repairer.name
-              .split(" ")
-              .map((word) => word[0])
-              .join("")
-              .slice(0, 2)}
+
+          {/* REPAIRER PHOTO */}
+          <div className="relative h-12 w-12 shrink-0">
+
+            {photoUrl && !photoFailed ? (
+              <img
+                src={photoUrl}
+                alt={repairerName}
+                className="h-12 w-12 rounded-xl object-cover ring-1 ring-[#e4ded7]"
+                onError={() => {
+                  setPhotoFailed(true);
+                }}
+              />
+            ) : (
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#b9825f]/10 font-bold text-[#b9825f] ring-1 ring-[#b9825f]/20">
+                {getInitials(repairerName)}
+              </div>
+            )}
+
           </div>
 
-          <div>
+          <div className="min-w-0">
             <p className="font-bold text-[#17202a]">
-              {repairer.name}
+              {repairerName}
             </p>
 
             <p className="mt-1 text-sm text-[#777f86]">
-              {repairer.specialty}
+              {repairerCategory}
             </p>
           </div>
 
-          {repairer.verified && (
-            <span className="ml-auto rounded-full bg-green-100 px-3 py-1.5 text-xs font-bold text-green-700 ring-1 ring-green-200">
+          {verified && (
+            <span className="ml-auto shrink-0 rounded-full bg-green-100 px-3 py-1.5 text-xs font-bold text-green-700 ring-1 ring-green-200">
               Verified
             </span>
           )}
@@ -333,4 +400,3 @@ function RepairRequestForm({
 }
 
 export default RepairRequestForm;
-

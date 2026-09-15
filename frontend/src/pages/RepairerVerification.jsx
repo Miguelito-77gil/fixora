@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+
 import {
   fetchPendingRepairers,
   verifyRepairer,
@@ -147,10 +148,14 @@ function RepairerVerification() {
 
     try {
       const data = await fetchPendingRepairers();
+
       setRepairers(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to load repairers:", err);
-      setError(err.message || "Failed to load repairer applications.");
+
+      setError(
+        err.message || "Failed to load repairer applications."
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -159,11 +164,15 @@ function RepairerVerification() {
 
   useEffect(() => {
     if (user?.role !== "admin") return;
+
     loadRepairers();
   }, [user]);
 
   async function handleVerify(id, status) {
-    const action = status === "verified" ? "approve" : "reject";
+    const action =
+      status === "verified"
+        ? "approve"
+        : "reject";
 
     const confirmed = window.confirm(
       `Are you sure you want to ${action} this repairer application?`
@@ -178,11 +187,16 @@ function RepairerVerification() {
       await verifyRepairer(id, status);
 
       setRepairers((current) =>
-        current.filter((repairer) => repairer.id !== id)
+        current.filter(
+          (repairer) => repairer.id !== id
+        )
       );
     } catch (err) {
       console.error("Failed to update repairer:", err);
-      setError(err.message || "Failed to update repairer status.");
+
+      setError(
+        err.message || "Failed to update repairer status."
+      );
     } finally {
       setActioningId(null);
     }
@@ -196,13 +210,26 @@ function RepairerVerification() {
   const filteredRepairers = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    if (!query) return repairers;
+    if (!query) {
+      return repairers;
+    }
 
     return repairers.filter((repairer) => {
-      const name = String(repairer.name || "").toLowerCase();
-      const email = String(repairer.email || "").toLowerCase();
-      const category = String(repairer.category || "").toLowerCase();
-      const location = String(repairer.location || "").toLowerCase();
+      const name = String(
+        repairer.name || ""
+      ).toLowerCase();
+
+      const email = String(
+        repairer.email || ""
+      ).toLowerCase();
+
+      const category = String(
+        repairer.category || ""
+      ).toLowerCase();
+
+      const location = String(
+        repairer.location || ""
+      ).toLowerCase();
 
       return (
         name.includes(query) ||
@@ -222,7 +249,7 @@ function RepairerVerification() {
 
   if (!user) {
     return (
-      <section className="min-h-screen bg-[#f8f5f2] text-[#2f241e]">
+      <section className="min-h-0 flex-1 bg-[#f8f5f2] text-[#2f241e]">
         <div className="flex min-h-screen items-center justify-center px-6">
           <p className="text-sm text-[#777f86]">
             You must be logged in to view this page.
@@ -234,7 +261,7 @@ function RepairerVerification() {
 
   if (user.role !== "admin") {
     return (
-      <section className="min-h-screen bg-[#f8f5f2] text-[#2f241e]">
+      <section className="min-h-0 flex-1 bg-[#f8f5f2] text-[#2f241e]">
         <div className="flex min-h-screen items-center justify-center px-6">
           <div className="w-full max-w-md rounded-3xl border border-[#e4ded7] bg-white p-8 text-center shadow-sm">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f3e9e1] text-[#9a6541]">
@@ -246,7 +273,8 @@ function RepairerVerification() {
             </h1>
 
             <p className="mt-3 text-sm leading-6 text-[#777f86]">
-              This page is only available to administrators.
+              This page is only available to
+              administrators.
             </p>
 
             <button
@@ -263,14 +291,15 @@ function RepairerVerification() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f5f2] text-[#2f241e]">
+    <div className="flex h-full min-h-0 flex-1 flex-col bg-[#f8f5f2] text-[#2f241e]">
 
       {/* MOBILE HEADER */}
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#e8dfd8] bg-white/95 px-5 py-4 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-30 flex shrink-0 items-center justify-between border-b border-[#e8dfd8] bg-white/95 px-5 py-4 backdrop-blur lg:hidden">
         <div>
           <p className="text-lg font-bold tracking-tight">
             Fixora
           </p>
+
           <p className="text-xs text-[#8a7a70]">
             Admin Panel
           </p>
@@ -305,6 +334,7 @@ function RepairerVerification() {
 
         {/* NAVIGATION */}
         <nav className="flex-1 px-4 py-6">
+
           <div className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9a8779]">
             MANAGEMENT
           </div>
@@ -332,6 +362,7 @@ function RepairerVerification() {
             <Icon name="verification" />
             <span>Repairer Verification</span>
           </NavLink>
+
         </nav>
 
         {/* LOGOUT */}
@@ -345,15 +376,17 @@ function RepairerVerification() {
             <span>Log Out</span>
           </button>
         </div>
+
       </aside>
 
       {/* MAIN */}
-      <main className="lg:pl-64">
+      <main className="min-h-0 flex-1 overflow-y-auto lg:pl-64">
 
         <section className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10 lg:px-10">
 
           {/* HEADER */}
           <header className="flex flex-col gap-5 border-b border-[#e5ddd6] pb-8 sm:flex-row sm:items-end sm:justify-between">
+
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#9a6541]">
                 Administration
@@ -364,8 +397,9 @@ function RepairerVerification() {
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#75675f]">
-                Review repairer applications before they become
-                visible as verified repairers on Fixora.
+                Review repairer applications before
+                they become visible as verified
+                repairers on Fixora.
               </p>
             </div>
 
@@ -375,16 +409,26 @@ function RepairerVerification() {
               disabled={refreshing}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#d8c8bc] bg-white px-4 py-2.5 text-sm font-semibold text-[#8b5e3c] transition hover:bg-[#f3eee9] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <span className={refreshing ? "animate-spin" : ""}>
+              <span
+                className={
+                  refreshing
+                    ? "animate-spin"
+                    : ""
+                }
+              >
                 <Icon name="refresh" />
               </span>
 
-              {refreshing ? "Refreshing..." : "Refresh"}
+              {refreshing
+                ? "Refreshing..."
+                : "Refresh"}
             </button>
+
           </header>
 
           {/* SUMMARY */}
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
+
             <article className="rounded-2xl border border-[#e4ded7] bg-white p-5 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#9a6541]">
                 Pending Applications
@@ -412,6 +456,7 @@ function RepairerVerification() {
                 Applications matching your search.
               </p>
             </article>
+
           </div>
 
           {/* ERROR */}
@@ -423,9 +468,11 @@ function RepairerVerification() {
             </div>
           )}
 
-          {/* SEARCH */}
+          {/* SEARCH / QUEUE */}
           <section className="mt-8">
+
             <div className="flex flex-col gap-4 border-b border-[#e5ddd6] pb-5 sm:flex-row sm:items-end sm:justify-between">
+
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#9a6541]">
                   Verification Queue
@@ -436,23 +483,28 @@ function RepairerVerification() {
                 </h2>
 
                 <p className="mt-2 text-sm text-[#777f86]">
-                  Approve qualified applicants or reject applications
-                  that need to be declined.
+                  Approve qualified applicants or
+                  reject applications that need to
+                  be declined.
                 </p>
               </div>
 
               <input
                 type="search"
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) =>
+                  setSearch(event.target.value)
+                }
                 placeholder="Search name, email, category..."
                 className="w-full rounded-xl border border-[#d8c8bc] bg-white px-4 py-2.5 text-sm text-[#2f241e] outline-none placeholder:text-[#a28f83] focus:border-[#b9825f] focus:ring-2 focus:ring-[#b9825f]/10 sm:w-80"
               />
+
             </div>
 
             {/* CONTENT */}
             {loading ? (
               <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
                 {[1, 2, 3].map((item) => (
                   <div
                     key={item}
@@ -472,9 +524,12 @@ function RepairerVerification() {
                     <div className="mt-5 h-9 rounded-xl bg-[#eee9e3]" />
                   </div>
                 ))}
+
               </div>
             ) : filteredRepairers.length === 0 ? (
+
               <div className="mt-6 rounded-2xl border border-dashed border-[#d8c8bc] bg-white px-6 py-20 text-center">
+
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f3e9e1] text-[#9a6541]">
                   <Icon name="verification" />
                 </div>
@@ -502,14 +557,20 @@ function RepairerVerification() {
                   }}
                   className="mt-5 rounded-xl bg-[#b9825f] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#a9704e]"
                 >
-                  {search ? "Clear Search" : "Check Again"}
+                  {search
+                    ? "Clear Search"
+                    : "Check Again"}
                 </button>
+
               </div>
+
             ) : (
+
               <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 
                 {filteredRepairers.map((repairer) => {
-                  const isActioning = actioningId === repairer.id;
+                  const isActioning =
+                    actioningId === repairer.id;
 
                   return (
                     <article
@@ -521,49 +582,64 @@ function RepairerVerification() {
                       <div className="p-5">
 
                         <div className="flex items-start gap-3">
+
                           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#f1e8e0] text-sm font-bold text-[#9b806a]">
                             {getInitials(repairer.name)}
                           </div>
 
                           <div className="min-w-0 flex-1">
+
                             <div className="flex items-start justify-between gap-2">
+
                               <h3 className="truncate text-sm font-bold">
-                                {repairer.name || "Unnamed Repairer"}
+                                {repairer.name ||
+                                  "Unnamed Repairer"}
                               </h3>
 
                               <span className="shrink-0 rounded-full bg-[#fdf3e7] px-2 py-1 text-[10px] font-bold text-[#b9700f]">
                                 Pending
                               </span>
+
                             </div>
 
                             <p className="mt-1 truncate text-xs text-[#8a9298]">
-                              {repairer.email || "No email provided"}
+                              {repairer.email ||
+                                "No email provided"}
                             </p>
+
                           </div>
+
                         </div>
 
                         {/* CATEGORY */}
                         <div className="mt-5 rounded-xl bg-[#faf8f5] px-4 py-3">
+
                           <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9a6541]">
                             Service Category
                           </p>
 
                           <p className="mt-1 text-sm font-semibold">
-                            {repairer.category || "Not provided"}
+                            {repairer.category ||
+                              "Not provided"}
                           </p>
+
                         </div>
 
                         {/* DETAILS */}
                         <div className="mt-5 grid grid-cols-2 gap-4">
+
                           <div>
                             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9a6541]">
                               Experience
                             </p>
 
                             <p className="mt-1 text-sm font-medium text-[#4f443d]">
-                              {repairer.years_experience !== null &&
-                              repairer.years_experience !== undefined &&
-                              repairer.years_experience !== ""
+                              {repairer.years_experience !==
+                                null &&
+                              repairer.years_experience !==
+                                undefined &&
+                              repairer.years_experience !==
+                                ""
                                 ? `${repairer.years_experience} years`
                                 : "Not provided"}
                             </p>
@@ -575,74 +651,102 @@ function RepairerVerification() {
                             </p>
 
                             <p className="mt-1 truncate text-sm font-medium text-[#4f443d]">
-                              {repairer.location || "Not provided"}
+                              {repairer.location ||
+                                "Not provided"}
                             </p>
                           </div>
+
                         </div>
 
                         {/* PHONE */}
                         <div className="mt-4">
+
                           <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9a6541]">
                             Phone
                           </p>
 
                           <p className="mt-1 text-sm font-medium text-[#4f443d]">
-                            {repairer.phone || "Not provided"}
+                            {repairer.phone ||
+                              "Not provided"}
                           </p>
+
                         </div>
 
                         {/* BIO */}
                         <div className="mt-5 border-t border-[#eee9e3] pt-4">
+
                           <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9a6541]">
                             About Applicant
                           </p>
 
                           <p className="mt-2 line-clamp-4 text-xs leading-5 text-[#68727c]">
-                            {repairer.bio || "No description provided."}
+                            {repairer.bio ||
+                              "No description provided."}
                           </p>
+
                         </div>
+
                       </div>
 
                       {/* ACTIONS */}
                       <div className="mt-auto border-t border-[#eee9e3] bg-[#fcfaf8] p-4">
+
                         <div className="grid grid-cols-2 gap-2">
 
                           <button
                             type="button"
                             disabled={isActioning}
                             onClick={() =>
-                              handleVerify(repairer.id, "verified")
+                              handleVerify(
+                                repairer.id,
+                                "verified"
+                              )
                             }
                             className="rounded-xl bg-[#b9825f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#a9704e] disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            {isActioning ? "Updating..." : "Approve"}
+                            {isActioning
+                              ? "Updating..."
+                              : "Approve"}
                           </button>
 
                           <button
                             type="button"
                             disabled={isActioning}
                             onClick={() =>
-                              handleVerify(repairer.id, "rejected")
+                              handleVerify(
+                                repairer.id,
+                                "rejected"
+                              )
                             }
                             className="rounded-xl border border-[#d8c8bc] bg-white px-4 py-2.5 text-sm font-semibold text-[#8b5e3c] transition hover:bg-[#f3eee9] disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            {isActioning ? "Updating..." : "Reject"}
+                            {isActioning
+                              ? "Updating..."
+                              : "Reject"}
                           </button>
 
                         </div>
+
                       </div>
+
                     </article>
                   );
                 })}
 
               </div>
             )}
+
           </section>
 
         </section>
+
       </main>
+
     </div>
   );
 }
 
 export default RepairerVerification;
+
+
+

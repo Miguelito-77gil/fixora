@@ -1,4 +1,4 @@
-﻿const API_URL = "http://localhost:8000";
+﻿const API_URL = "";
 
 export async function fetchRepairers() {
   const response = await fetch(`${API_URL}/api/repairers`);
@@ -169,4 +169,5 @@ export async function updateMyRepairerProfile(profile) {
 
   return data;
 }
+
 

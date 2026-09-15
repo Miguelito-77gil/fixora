@@ -1,22 +1,51 @@
-﻿const API_URL = "http://localhost:8000";
+const API_URL = "";
+
+async function parseJsonResponse(response, fallbackMessage) {
+  const text = await response.text();
+
+  if (!text.trim()) {
+    throw new Error(fallbackMessage);
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(fallbackMessage);
+  }
+}
 
 export async function registerUser({ name, email, password }) {
   const response = await fetch(`${API_URL}/api/auth/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Accept: "application/json",
     },
     body: JSON.stringify({ name, email, password }),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(
+    response,
+    "Registration service unavailable."
+  );
 
   if (!response.ok) {
-    throw new Error(data.error || "Registration failed");
+    throw new Error(
+      data.error ||
+      data.message ||
+      "Registration failed"
+    );
   }
 
-  localStorage.setItem("fixora_token", data.token);
-  localStorage.setItem("fixora_user", JSON.stringify(data.user));
+  localStorage.setItem(
+    "fixora_token",
+    data.token || ""
+  );
+
+  localStorage.setItem(
+    "fixora_user",
+    JSON.stringify(data.user)
+  );
 
   return data;
 }
@@ -26,18 +55,33 @@ export async function loginUser({ email, password }) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Accept: "application/json",
     },
     body: JSON.stringify({ email, password }),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(
+    response,
+    "Login service unavailable."
+  );
 
   if (!response.ok) {
-    throw new Error(data.error || "Login failed");
+    throw new Error(
+      data.error ||
+      data.message ||
+      "Invalid email or password."
+    );
   }
 
-  localStorage.setItem("fixora_token", data.token);
-  localStorage.setItem("fixora_user", JSON.stringify(data.user));
+  localStorage.setItem(
+    "fixora_token",
+    data.token || ""
+  );
+
+  localStorage.setItem(
+    "fixora_user",
+    JSON.stringify(data.user)
+  );
 
   return data.user;
 }
@@ -52,8 +96,7 @@ export function getCurrentUser() {
   try {
     return JSON.parse(storedUser);
   } catch {
-    localStorage.removeItem("fixora_user");
-    localStorage.removeItem("fixora_token");
+    logoutUser();
     return null;
   }
 }
@@ -76,17 +119,22 @@ export async function fetchCurrentUserFromServer() {
 
   const response = await fetch(`${API_URL}/api/auth/me`, {
     headers: {
+      Accept: "application/json",
       Authorization: `Bearer ${token}`,
     },
   });
+
+  const data = await parseJsonResponse(
+    response,
+    "Authentication service unavailable."
+  );
 
   if (!response.ok) {
     logoutUser();
     return null;
   }
 
-  const data = await response.json();
-  return data.user;
+  return data.user || null;
 }
 
 export async function applyAsRepairer({
@@ -100,7 +148,7 @@ export async function applyAsRepairer({
   const token = getToken();
 
   if (!token) {
-    throw new Error("You must be logged in to apply");
+    throw new Error("You must be logged in to apply.");
   }
 
   const response = await fetch(`${API_URL}/api/repairers/apply`, {
@@ -120,27 +168,47 @@ export async function applyAsRepairer({
     }),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(
+    response,
+    "Repairer application service unavailable."
+  );
 
   if (!response.ok) {
-    throw new Error(data.error || data.message || "Application failed");
+    throw new Error(
+      data.error ||
+      data.message ||
+      "Application failed."
+    );
   }
 
   return data;
 }
+
 export async function fetchMyProfile() {
   const token = getToken();
 
+  if (!token) {
+    throw new Error("Not logged in.");
+  }
+
   const response = await fetch(`${API_URL}/api/users/me`, {
     headers: {
+      Accept: "application/json",
       Authorization: `Bearer ${token}`,
     },
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(
+    response,
+    "Profile service unavailable."
+  );
 
   if (!response.ok) {
-    throw new Error(data.error || "Failed to fetch profile");
+    throw new Error(
+      data.error ||
+      data.message ||
+      "Failed to fetch profile."
+    );
   }
 
   return data.user || data;
@@ -149,22 +217,32 @@ export async function fetchMyProfile() {
 export async function updateMyPhone(phone) {
   const token = getToken();
 
+  if (!token) {
+    throw new Error("Not logged in.");
+  }
+
   const response = await fetch(`${API_URL}/api/users/me`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
+      Accept: "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ phone }),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(
+    response,
+    "Profile service unavailable."
+  );
 
   if (!response.ok) {
-    throw new Error(data.error || "Failed to update mobile number");
+    throw new Error(
+      data.error ||
+      data.message ||
+      "Failed to update mobile number."
+    );
   }
 
   return data.user || data;
 }
-
-
