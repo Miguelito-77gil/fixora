@@ -12,6 +12,7 @@ return [
     'allowed_origins' => [
         'http://localhost:5174',
         'http://127.0.0.1:5174',
+        'https://fixora-navy.vercel.app',
     ],
 
     'allowed_origins_patterns' => [],
