@@ -14,61 +14,101 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Remove temporary repairer test accounts
+        |--------------------------------------------------------------------------
+        */
+
+        $temporaryEmails = [
+            'juan@fixora.com',
+            'mark@fixora.com',
+            'carlo@fixora.com',
+            'miguel@fixora.com',
+            'pedro@fixora.com',
+        ];
+
+        $temporaryUsers = User::whereIn('email', $temporaryEmails)->get();
+
+        foreach ($temporaryUsers as $user) {
+            RepairerProfile::where('user_id', $user->id)->delete();
+            $user->tokens()->delete();
+            $user->delete();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Account
+        |--------------------------------------------------------------------------
+        */
+
+        User::updateOrCreate(
+            ['email' => 'admin@fixora.com'],
+            [
+                'name' => 'Fixora Administrator',
+                'password' => Hash::make('Admin123!'),
+                'role' => 'admin',
+                'verification_status' => 'verified',
+                'phone' => null,
+            ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Customer Test Account
+        |--------------------------------------------------------------------------
+        */
+
+        User::updateOrCreate(
+            ['email' => 'customer@fixora.com'],
+            [
+                'name' => 'Test Customer',
+                'password' => Hash::make('Customer123!'),
+                'role' => 'customer',
+                'verification_status' => 'verified',
+                'phone' => '09170000000',
+            ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Test Repairers
+        |--------------------------------------------------------------------------
+        */
+
         $repairers = [
             [
-                'name' => 'Juan Dela Cruz',
-                'email' => 'juan@fixora.com',
-                'category' => 'Electronics',
-                'bio' => 'Experienced electronics repairer specializing in TVs, speakers, and other electronic devices.',
-                'years_experience' => 8,
+                'name' => 'Alex Reyes',
+                'email' => 'repairer1@fixora.com',
+                'category' => 'Computer',
+                'bio' => 'Computer and laptop repair specialist.',
+                'years_experience' => 6,
                 'location' => 'Cebu City',
                 'price' => 500,
-                'phone' => '09171234567',
-                'photo_url' => null,
+                'phone' => '09170000001',
+                'verification_status' => 'verified',
             ],
             [
-                'name' => 'Mark Santos',
-                'email' => 'mark@fixora.com',
-                'category' => 'Computer',
-                'bio' => 'Computer repair specialist handling laptops, desktops, software, and hardware problems.',
-                'years_experience' => 6,
-                'location' => 'Mandaue City',
-                'price' => 400,
-                'phone' => '09181234567',
-                'photo_url' => null,
-            ],
-            [
-                'name' => 'Carlo Reyes',
-                'email' => 'carlo@fixora.com',
+                'name' => 'Brian Santos',
+                'email' => 'repairer2@fixora.com',
                 'category' => 'Electrical',
-                'bio' => 'Professional electrical repairer for residential and small business electrical concerns.',
-                'years_experience' => 10,
-                'location' => 'Lapu-Lapu City',
+                'bio' => 'Experienced electrical repair specialist.',
+                'years_experience' => 8,
+                'location' => 'Mandaue City',
                 'price' => 600,
-                'phone' => '09191234567',
-                'photo_url' => null,
+                'phone' => '09170000002',
+                'verification_status' => 'verified',
             ],
             [
-                'name' => 'Miguel Garcia',
-                'email' => 'miguel@fixora.com',
-                'category' => 'Motorcycle',
-                'bio' => 'Motorcycle repair specialist with experience in maintenance, troubleshooting, and repairs.',
-                'years_experience' => 7,
-                'location' => 'Talisay City',
-                'price' => 450,
-                'phone' => '09201234567',
-                'photo_url' => null,
-            ],
-            [
-                'name' => 'Pedro Ramos',
-                'email' => 'pedro@fixora.com',
+                'name' => 'Chris Garcia',
+                'email' => 'repairer3@fixora.com',
                 'category' => 'Plumbing',
-                'bio' => 'Reliable plumbing repairer for leaks, pipe problems, fixtures, and general plumbing work.',
-                'years_experience' => 9,
-                'location' => 'Cebu City',
-                'price' => 550,
-                'phone' => '09211234567',
-                'photo_url' => null,
+                'bio' => 'Plumbing specialist currently awaiting verification.',
+                'years_experience' => 4,
+                'location' => 'Lapu-Lapu City',
+                'price' => 450,
+                'phone' => '09170000003',
+                'verification_status' => 'pending',
             ],
         ];
 
@@ -77,9 +117,9 @@ class DatabaseSeeder extends Seeder
                 ['email' => $data['email']],
                 [
                     'name' => $data['name'],
-                    'password' => Hash::make('password123'),
+                    'password' => Hash::make('Repairer123!'),
                     'role' => 'repairer',
-                    'verification_status' => 'verified',
+                    'verification_status' => $data['verification_status'],
                     'phone' => $data['phone'],
                 ]
             );
@@ -93,7 +133,7 @@ class DatabaseSeeder extends Seeder
                     'location' => $data['location'],
                     'price' => $data['price'],
                     'phone' => $data['phone'],
-                    'photo_url' => $data['photo_url'],
+                    'photo_url' => null,
                     'available' => true,
                 ]
             );
