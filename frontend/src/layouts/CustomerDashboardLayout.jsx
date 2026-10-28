@@ -81,46 +81,21 @@ function CustomerDashboardLayout() {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[270px] flex-col border-r border-[#e7e0da] bg-[#fbfaf8] shadow-2xl transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 lg:shadow-none ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[250px] flex-col border-r border-[#e7e0da] bg-[#fbfaf8] shadow-2xl transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 lg:shadow-none ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="border-b border-[#e7e0da] px-6 py-6">
-          <NavLink
-            to="/customer/dashboard"
-            onClick={() => setSidebarOpen(false)}
-            className="flex items-center gap-3"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#8b5e3c] text-lg font-bold text-white shadow-sm">
-              F
-            </div>
-
-            <div className="min-w-0">
-              <div className="text-xl font-bold tracking-tight text-[#8b5e3c]">
-                Fixora
-              </div>
-              <div className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-[#b9825f]">
-                Repair Services
-              </div>
-            </div>
-          </NavLink>
-
+        <div className="flex h-[76px] items-center justify-end px-5">
           <button
             type="button"
             onClick={() => setSidebarOpen(false)}
-            className="ml-auto hidden h-9 w-9 items-center justify-center rounded-xl text-[#75675f] transition hover:bg-[#f5e9e0] hover:text-[#8b5e3c] lg:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-[#75675f] transition hover:bg-[#f5e9e0] hover:text-[#8b5e3c] lg:hidden"
             aria-label="Close menu"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
               <path strokeLinecap="round" d="M6 6l12 12M18 6 6 18" />
             </svg>
           </button>
-        </div>
-
-        <div className="px-6 pt-7">
-          <p className="px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#9a918a]">
-            Main Menu
-          </p>
         </div>
 
         <nav className="flex flex-1 flex-col px-4 py-4">
@@ -175,16 +150,7 @@ function CustomerDashboardLayout() {
             Menu
           </button>
 
-          <div className="hidden lg:block">
-            <p className="text-sm font-semibold text-[#75675f]">
-              Customer Dashboard
-            </p>
-            <p className="mt-0.5 text-xs text-[#9a918a]">
-              Manage your repair services
-            </p>
-          </div>
-
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center">
             <button
               type="button"
               className="relative flex h-10 w-10 items-center justify-center rounded-xl text-[#75675f] transition hover:bg-[#f5e9e0] hover:text-[#8b5e3c]"
@@ -195,24 +161,6 @@ function CustomerDashboardLayout() {
               </svg>
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#b9825f]" />
             </button>
-
-            <NavLink
-              to="/customer/account"
-              className="flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-[#f5e9e0]"
-            >
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#8b5e3c] text-sm font-bold text-white shadow-sm">
-                C
-              </div>
-
-              <div className="hidden text-left sm:block">
-                <p className="text-sm font-semibold text-[#17202a]">
-                  Customer
-                </p>
-                <p className="text-xs text-[#8a817b]">
-                  My Account
-                </p>
-              </div>
-            </NavLink>
           </div>
         </header>
 
