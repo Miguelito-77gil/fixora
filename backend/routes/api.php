@@ -15,9 +15,6 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 
 Route::get('/repairers', [RepairerController::class, 'index']);
-Route::get('/repairers/{repairerId}/portfolio', [PortfolioController::class, 'repairer']);
-Route::get('/repairers/{repairerId}/reviews', [ReviewController::class, 'index']);
-
 Route::get('/marketplace/recommended', [MarketplaceController::class, 'recommended']);
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -34,13 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/repairers/me/photo', [RepairerPhotoController::class, 'store']);
 
     Route::post('/repairers/me/portfolio', [PortfolioController::class, 'store']);
-    Route::get('/repairers/me/portfolio', function (Illuminate\Http\Request $request) {
-    return response()->json([
-        'success' => true,
-        'message' => 'Portfolio route works',
-        'user_id' => $request->user()->id,
-    ]);
-});
+    Route::get('/repairers/me/portfolio', [PortfolioController::class, 'mine']);
     Route::delete('/repairers/me/portfolio/{id}', [PortfolioController::class, 'destroy']);
 
     Route::post('/repair-requests', [RepairRequestController::class, 'store']);
@@ -51,8 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/admin/repairers', [AdminController::class, 'pendingRepairers']);
     Route::put('/admin/repairers/{id}/verify', [AdminController::class, 'verifyRepairer']);
-
     Route::get('/admin/users', [AdminController::class, 'users']);
+    Route::get('/admin/dashboard', [MarketplaceController::class, 'adminDashboard']);
 
     Route::post('/marketplace/favorites/{repairerId}', [MarketplaceController::class, 'favorite']);
     Route::get('/marketplace/favorites', [MarketplaceController::class, 'favorites']);
@@ -75,6 +66,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/marketplace/notifications', [MarketplaceController::class, 'notifications']);
     Route::patch('/marketplace/notifications/{id}/read', [MarketplaceController::class, 'markNotificationRead']);
-
-    Route::get('/admin/dashboard', [MarketplaceController::class, 'adminDashboard']);
 });
+
+Route::get('/repairers/{repairerId}/portfolio', [PortfolioController::class, 'repairer']);
+Route::get('/repairers/{repairerId}/reviews', [ReviewController::class, 'index']);
