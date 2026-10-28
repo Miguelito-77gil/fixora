@@ -1,4 +1,4 @@
-﻿const API_URL = "";
+﻿const API_URL = import.meta.env.VITE_API_URL || "";
 
 export async function apiGet(endpoint) {
   const response = await fetch(`${API_URL}${endpoint}`);
@@ -27,4 +27,3 @@ export async function apiPost(endpoint, data) {
 }
 
 export { API_URL };
-
