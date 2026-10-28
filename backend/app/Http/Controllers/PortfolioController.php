@@ -6,6 +6,7 @@ use App\Models\PortfolioItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PortfolioController extends Controller
 {
@@ -39,24 +40,19 @@ class PortfolioController extends Controller
         ], 201);
     }
 
-    public function mine(Request $request)
+   public function mine(Request $request)
 {
     try {
-        $user = $request->user();
-
-        $items = PortfolioItem::where('user_id', $user->id)
+        $items = DB::table('portfolio_items')
+            ->where('user_id', $request->user()->id)
             ->orderByDesc('created_at')
             ->get();
 
         return response()->json($items);
-
     } catch (\Throwable $e) {
         return response()->json([
-            'error' => 'Portfolio endpoint failed',
-            'exception' => get_class($e),
+            'error' => 'Portfolio database error',
             'message' => $e->getMessage(),
-            'file' => basename($e->getFile()),
-            'line' => $e->getLine(),
         ], 500);
     }
 }
