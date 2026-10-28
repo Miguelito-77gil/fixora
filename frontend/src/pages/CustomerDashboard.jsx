@@ -121,7 +121,7 @@ function CustomerDashboard() {
 
             <Link
               to="/repairers"
-              className="inline-flex w-fit items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#8B5E3C] transition hover:bg-[#f5eee8]"
+              className="inline-flex w-fit items-center justify-center rounded-xl bg-[#8B5E3C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#754B2F]"
             >
               Find a Repairer
             </Link>
