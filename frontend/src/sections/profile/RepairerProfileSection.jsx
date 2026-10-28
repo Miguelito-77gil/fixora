@@ -2,8 +2,8 @@
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
-const API_BASE = "/api";
-const BACKEND_BASE = "";
+const API_BASE = "https://fixora-backend-kw9p.onrender.com/api";
+const BACKEND_BASE = "https://fixora-backend-kw9p.onrender.com";
 
 function resolvePhotoUrl(photoUrl) {
   if (!photoUrl) return null;
@@ -44,7 +44,7 @@ function RepairerProfileSection() {
     repairer &&
     String(repairer.id) === String(user.id);
 
-  useEffect(() => {
+    useEffect(() => {
     let mounted = true;
 
     async function loadRepairer() {
@@ -52,24 +52,36 @@ function RepairerProfileSection() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(`${API_BASE}/repairers`);
+        const response = await fetch(
+          `https://fixora-backend-kw9p.onrender.com/api/repairers`
+        );
+
+        const text = await response.text();
 
         if (!response.ok) {
-          throw new Error("Failed to load repairers.");
+          throw new Error(`Failed to load repairers: ${response.status}`);
         }
 
-        const result = await response.json();
+        let result;
+
+        try {
+          result = JSON.parse(text);
+        } catch {
+          throw new Error("Backend returned invalid JSON.");
+        }
 
         const list = Array.isArray(result)
           ? result
-          : result.data || [];
+          : Array.isArray(result.data)
+            ? result.data
+            : [];
 
         const found = list.find(
           (item) => String(item.id) === String(repairerId)
         );
 
         if (!found) {
-          throw new Error("Repairer not found.");
+          throw new Error(`Repairer ${repairerId} not found.`);
         }
 
         if (mounted) {
