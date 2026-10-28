@@ -1,6 +1,6 @@
-﻿import { getToken } from "@/services/authService";
+import { getToken } from "@/services/authService";
 
-const API_URL = "";
+const API_URL = import.meta.env.VITE_API_URL || "https://fixora-backend-kw9p.onrender.com";
 
 export async function fetchPendingRepairers() {
   const token = getToken();

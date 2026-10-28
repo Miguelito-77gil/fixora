@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -25,7 +25,7 @@ const CATEGORIES = [
   "Furniture",
 ];
 
-const API_URL = "";
+const API_URL = import.meta.env.VITE_API_URL || "https://fixora-backend-kw9p.onrender.com";
 
 function resolveMediaUrl(url) {
   if (!url) return "";

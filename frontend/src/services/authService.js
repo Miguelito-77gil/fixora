@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = import.meta.env.VITE_API_URL || "https://fixora-backend-kw9p.onrender.com";
 
 async function parseJsonResponse(response, fallbackMessage) {
   const text = await response.text();

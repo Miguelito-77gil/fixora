@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import VerificationBadge from "@/components/features/VerificationBadge";
@@ -8,7 +8,7 @@ import {
   fetchFavorites,
 } from "@/services/marketplaceService";
 
-const API_URL = "";
+const API_URL = import.meta.env.VITE_API_URL || "https://fixora-backend-kw9p.onrender.com";
 
 function RepairerCard({ repairer }) {
   const [isFavorite, setIsFavorite] = useState(false);
