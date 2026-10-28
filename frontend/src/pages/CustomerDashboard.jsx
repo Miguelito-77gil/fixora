@@ -102,7 +102,7 @@ function CustomerDashboard() {
   return (
     <div className="min-h-full bg-[#f7f7f5] text-[#17202a]">
       <section className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <div className="rounded-3xl bg-[#172554] px-6 py-8 text-white shadow-sm sm:px-8 sm:py-10">
+        <div className="rounded-3xl bg-[#8B5E3C] px-6 py-8 text-white shadow-sm sm:px-8 sm:py-10">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#d7b39b]">
             Customer Dashboard
           </p>
@@ -121,7 +121,7 @@ function CustomerDashboard() {
 
             <Link
               to="/repairers"
-              className="inline-flex w-fit items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#172554] transition hover:bg-[#f5eee8]"
+              className="inline-flex w-fit items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#8B5E3C] transition hover:bg-[#f5eee8]"
             >
               Find a Repairer
             </Link>
@@ -131,7 +131,7 @@ function CustomerDashboard() {
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
           <div className="rounded-2xl border border-[#e7e0da] bg-white p-5">
             <p className="text-xs font-medium text-[#8a817b]">Total Requests</p>
-            <p className="mt-2 text-3xl font-bold text-[#172554]">
+            <p className="mt-2 text-3xl font-bold text-[#8B5E3C]">
               {requests.length}
             </p>
           </div>
@@ -145,7 +145,7 @@ function CustomerDashboard() {
 
           <div className="rounded-2xl border border-[#e7e0da] bg-white p-5">
             <p className="text-xs font-medium text-[#8a817b]">Active</p>
-            <p className="mt-2 text-3xl font-bold text-[#172554]">
+            <p className="mt-2 text-3xl font-bold text-[#8B5E3C]">
               {activeCount}
             </p>
           </div>
@@ -234,7 +234,7 @@ function CustomerDashboard() {
 
                 <Link
                   to="/repairers"
-                  className="mt-5 inline-flex rounded-xl bg-[#172554] px-5 py-3 text-sm font-semibold text-white hover:bg-[#101b3f]"
+                  className="mt-5 inline-flex rounded-xl bg-[#8B5E3C] px-5 py-3 text-sm font-semibold text-white hover:bg-[#754B2F]"
                 >
                   Browse Repairers
                 </Link>
@@ -268,7 +268,7 @@ function CustomerDashboard() {
                     className="block rounded-2xl border border-[#e7e0da] bg-white p-5 transition hover:-translate-y-0.5 hover:border-[#d6c5b7] hover:shadow-sm"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#172554] text-lg font-bold text-white">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#8B5E3C] text-lg font-bold text-white">
                         {repairer.name?.charAt(0)?.toUpperCase() || "R"}
                       </div>
 
@@ -292,7 +292,7 @@ function CustomerDashboard() {
                         ₱{repairer.price || 0}
                       </span>
 
-                      <span className="text-xs font-medium text-[#172554]">
+                      <span className="text-xs font-medium text-[#8B5E3C]">
                         View Profile
                       </span>
                     </div>
