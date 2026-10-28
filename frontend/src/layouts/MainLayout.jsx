@@ -6,6 +6,10 @@ function MainLayout() {
   const location = useLocation();
 
   const isAdminArea = location.pathname.startsWith("/admin");
+  const isCustomerArea = location.pathname.startsWith("/customer");
+  const isRepairerArea = location.pathname.startsWith("/repairer");
+
+  const hideGlobalLayout = isCustomerArea || isRepairerArea;
 
   return (
     <div
@@ -15,19 +19,19 @@ function MainLayout() {
           : "flex min-h-screen flex-col bg-[#f7f7f5] text-[#17202a]"
       }
     >
-      <Navbar />
+      {!hideGlobalLayout && <Navbar />}
 
       <main
         className={
-          isAdminArea
-            ? "min-h-0 flex-1 overflow-hidden"
+          isAdminArea || hideGlobalLayout
+            ? "min-h-0 flex-1"
             : "flex-1"
         }
       >
         <Outlet />
       </main>
 
-      <Footer />
+      {!hideGlobalLayout && <Footer />}
     </div>
   );
 }

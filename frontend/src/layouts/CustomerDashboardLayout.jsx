@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
+import logo from "@/assets/luh.png";
 import { useAuth } from "@/context/AuthContext";
 
 function CustomerDashboardLayout() {
@@ -85,14 +86,41 @@ function CustomerDashboardLayout() {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-[76px] items-center justify-end px-5">
+        <div className="flex h-[76px] items-center border-b border-[#e7e0da] px-5">
+          <NavLink
+            to="/customer/dashboard"
+            onClick={() => setSidebarOpen(false)}
+            className="flex items-center gap-3"
+          >
+            <img
+              src={logo}
+              alt="Fixora"
+              className="h-10 w-auto object-contain"
+            />
+
+            <div className="leading-tight">
+              <p className="text-base font-bold text-[#17202a]">
+                Fixora
+              </p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8a817b]">
+                Services
+              </p>
+            </div>
+          </NavLink>
+
           <button
             type="button"
             onClick={() => setSidebarOpen(false)}
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-[#75675f] transition hover:bg-[#f5e9e0] hover:text-[#8b5e3c] lg:hidden"
+            className="ml-auto flex h-9 w-9 items-center justify-center rounded-xl text-[#75675f] transition hover:bg-[#f5e9e0] hover:text-[#17202a] lg:hidden"
             aria-label="Close menu"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="h-5 w-5"
+            >
               <path strokeLinecap="round" d="M6 6l12 12M18 6 6 18" />
             </svg>
           </button>
@@ -106,10 +134,9 @@ function CustomerDashboardLayout() {
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
                 className={({ isActive }) =>
-                  `group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${
-                    isActive
-                      ? "bg-[#8b5e3c] text-white shadow-sm"
-                      : "text-[#5f5751] hover:bg-[#f5e9e0] hover:text-[#8b5e3c]"
+                  `group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${isActive
+                    ? "bg-[#f5e9e0] text-[#17202a] shadow-sm ring-1 ring-[#e7e0da]"
+                    : "text-[#5f5751] hover:bg-[#f7f2ee] hover:text-[#17202a]"
                   }`
                 }
               >
@@ -117,20 +144,31 @@ function CustomerDashboardLayout() {
                 <span>{item.label}</span>
               </NavLink>
             ))}
-          </div>
-
-          <div className="mt-auto pt-6">
-            <div className="mb-4 border-t border-[#e7e0da]" />
 
             <button
               type="button"
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold text-[#75675f] transition hover:bg-[#f5e9e0] hover:text-[#8b5e3c]"
+              className="group flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold text-[#5f5751] transition hover:bg-[#f7f2ee] hover:text-[#17202a]"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 6.75 20.25 12 15 17.25M20 12H9" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4.5v15" />
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 6.75 20.25 12 15 17.25M20 12H9"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 4.5v15"
+                />
               </svg>
+
               <span>Log Out</span>
             </button>
           </div>
@@ -151,16 +189,16 @@ function CustomerDashboardLayout() {
           </button>
 
           <div className="ml-auto flex items-center">
-            <button
-              type="button"
-              className="relative flex h-10 w-10 items-center justify-center rounded-xl text-[#75675f] transition hover:bg-[#f5e9e0] hover:text-[#8b5e3c]"
+            <NavLink
+              to="/customer/notifications"
               aria-label="Notifications"
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl text-[#75675f] transition hover:bg-[#f5e9e0] hover:text-[#8b5e3c]"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M18 9a6 6 0 00-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4" />
               </svg>
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#b9825f]" />
-            </button>
+            </NavLink>
           </div>
         </header>
 

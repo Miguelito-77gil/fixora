@@ -56,9 +56,7 @@ function CustomerDashboard() {
       "Are you sure you want to cancel this repair request?"
     );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     try {
       setCancellingId(requestId);
@@ -100,97 +98,149 @@ function CustomerDashboard() {
   const recentRequests = requests.slice(0, 3);
 
   return (
-    <div className="min-h-full bg-[#f7f7f5] text-[#17202a]">
-      <section className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <div className="rounded-3xl bg-[#8B5E3C] px-6 py-8 text-white shadow-sm sm:px-8 sm:py-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#d7b39b]">
-            Customer Dashboard
-          </p>
-
-          <div className="mt-3 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+    <div className="min-h-full bg-[#f7f7f5]">
+      <section className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <div className="rounded-3xl border border-[#e7e0da] bg-white px-6 py-7 shadow-sm sm:px-8 sm:py-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#75675f]">
+                Customer Dashboard
+              </p>
+
+              <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#17202a] sm:text-4xl">
                 Welcome back
               </h1>
 
-              <p className="mt-3 max-w-xl text-sm leading-6 text-white/75">
-                Find trusted repairers, manage your repair requests, and keep
-                track of your service activity.
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#75675f] sm:text-base">
+                Manage your repair requests and find trusted repairers for your
+                next service.
               </p>
             </div>
 
             <Link
               to="/repairers"
-              className="inline-flex w-fit items-center justify-center rounded-xl bg-[#8B5E3C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#754B2F]"
+              className="inline-flex w-fit items-center justify-center rounded-xl border border-[#e7e0da] bg-[#f5e9e0] px-5 py-3 text-sm font-semibold text-[#17202a] transition hover:bg-[#f0e2d7]"
             >
               Find a Repairer
             </Link>
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <div className="rounded-2xl border border-[#e7e0da] bg-white p-5">
-            <p className="text-xs font-medium text-[#8a817b]">Total Requests</p>
-            <p className="mt-2 text-3xl font-bold text-[#8B5E3C]">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl border border-[#e7e0da] bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-[#75675f]">
+                Total Requests
+              </p>
+
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f7f2ee] text-[#5f5751]">
+                <span className="text-sm font-bold">01</span>
+              </div>
+            </div>
+
+            <p className="mt-5 text-3xl font-bold text-[#17202a]">
               {requests.length}
             </p>
+
+            <p className="mt-1 text-xs text-[#8a817b]">
+              All repair requests
+            </p>
           </div>
 
-          <div className="rounded-2xl border border-[#e7e0da] bg-white p-5">
-            <p className="text-xs font-medium text-[#8a817b]">Pending</p>
-            <p className="mt-2 text-3xl font-bold text-[#b9825f]">
+          <div className="rounded-2xl border border-[#e7e0da] bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-[#75675f]">
+                Pending
+              </p>
+
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f5e9e0] text-[#5f5751]">
+                <span className="text-sm font-bold">02</span>
+              </div>
+            </div>
+
+            <p className="mt-5 text-3xl font-bold text-[#17202a]">
               {pendingCount}
             </p>
-          </div>
 
-          <div className="rounded-2xl border border-[#e7e0da] bg-white p-5">
-            <p className="text-xs font-medium text-[#8a817b]">Active</p>
-            <p className="mt-2 text-3xl font-bold text-[#8B5E3C]">
-              {activeCount}
+            <p className="mt-1 text-xs text-[#8a817b]">
+              Waiting for response
             </p>
           </div>
 
-          <div className="rounded-2xl border border-[#e7e0da] bg-white p-5">
-            <p className="text-xs font-medium text-[#8a817b]">Completed</p>
-            <p className="mt-2 text-3xl font-bold text-[#2f7d5c]">
+          <div className="rounded-2xl border border-[#e7e0da] bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-[#75675f]">
+                Active
+              </p>
+
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f7f2ee] text-[#5f5751]">
+                <span className="text-sm font-bold">03</span>
+              </div>
+            </div>
+
+            <p className="mt-5 text-3xl font-bold text-[#17202a]">
+              {activeCount}
+            </p>
+
+            <p className="mt-1 text-xs text-[#8a817b]">
+              Ongoing services
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-[#e7e0da] bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-[#75675f]">
+                Completed
+              </p>
+
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f7f2ee] text-[#5f5751]">
+                <span className="text-sm font-bold">04</span>
+              </div>
+            </div>
+
+            <p className="mt-5 text-3xl font-bold text-[#17202a]">
               {completedCount}
+            </p>
+
+            <p className="mt-1 text-xs text-[#8a817b]">
+              Finished services
             </p>
           </div>
         </div>
 
         {error && (
-          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="mt-6 rounded-2xl border border-[#e7e0da] bg-white px-5 py-4">
+            <p className="text-sm text-[#5f5751]">{error}</p>
+
             <button
               type="button"
               onClick={loadDashboard}
-              className="mt-3 rounded-lg bg-[#8b5e3c] px-4 py-2 text-sm font-medium text-white"
+              className="mt-3 rounded-xl border border-[#e7e0da] bg-[#f5e9e0] px-4 py-2 text-sm font-semibold text-[#17202a] transition hover:bg-[#f0e2d7]"
             >
               Try Again
             </button>
           </div>
         )}
 
-        <div className="mt-8 grid gap-8 xl:grid-cols-[1fr_360px]">
+        <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_380px]">
           <div>
-            <div className="flex items-end justify-between">
+            <div className="flex items-end justify-between gap-4">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#9a6541]">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#75675f]">
                   Repair Activity
                 </p>
 
-                <h2 className="mt-2 text-xl font-bold tracking-tight text-[#17202a]">
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-[#17202a]">
                   Recent Requests
                 </h2>
               </div>
 
-              <button
-                type="button"
-                onClick={loadDashboard}
-                className="rounded-lg border border-[#d6c5b7] px-4 py-2 text-sm font-medium text-[#8b5e3c] hover:bg-[#f5eee8]"
+              <Link
+                to="/customer/requests"
+                className="hidden rounded-xl border border-[#e7e0da] bg-white px-4 py-2.5 text-sm font-semibold text-[#5f5751] transition hover:bg-[#f7f2ee] sm:inline-flex"
               >
-                Refresh
-              </button>
+                View All
+              </Link>
             </div>
 
             {loading ? (
@@ -206,12 +256,12 @@ function CustomerDashboard() {
                     <RepairRequestCard request={request} />
 
                     {request.status === "pending" && (
-                      <div className="flex justify-end rounded-b-2xl border-x border-b border-[#e1d5ca] bg-white px-5 py-4">
+                      <div className="flex justify-end rounded-b-2xl border-x border-b border-[#e7e0da] bg-white px-5 py-4">
                         <button
                           type="button"
                           disabled={cancellingId === request.id}
                           onClick={() => handleCancelRequest(request.id)}
-                          className="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+                          className="rounded-xl border border-[#e7e0da] bg-white px-4 py-2 text-sm font-semibold text-[#5f5751] transition hover:bg-[#f7f2ee] disabled:opacity-60"
                         >
                           {cancellingId === request.id
                             ? "Cancelling..."
@@ -224,7 +274,20 @@ function CustomerDashboard() {
               </div>
             ) : (
               <div className="mt-5 rounded-2xl border border-dashed border-[#d8c8bc] bg-white px-6 py-16 text-center">
-                <h3 className="font-semibold text-[#17202a]">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f7f2ee] text-[#5f5751]">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    className="h-6 w-6"
+                  >
+                    <rect x="4" y="4" width="16" height="16" rx="2" />
+                    <path strokeLinecap="round" d="M8 9h8M8 13h8M8 17h5" />
+                  </svg>
+                </div>
+
+                <h3 className="mt-4 font-semibold text-[#17202a]">
                   No repair requests yet
                 </h3>
 
@@ -234,7 +297,7 @@ function CustomerDashboard() {
 
                 <Link
                   to="/repairers"
-                  className="mt-5 inline-flex rounded-xl bg-[#8B5E3C] px-5 py-3 text-sm font-semibold text-white hover:bg-[#754B2F]"
+                  className="mt-5 inline-flex rounded-xl border border-[#e7e0da] bg-[#f5e9e0] px-5 py-3 text-sm font-semibold text-[#17202a] transition hover:bg-[#f0e2d7]"
                 >
                   Browse Repairers
                 </Link>
@@ -243,14 +306,16 @@ function CustomerDashboard() {
           </div>
 
           <div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#9a6541]">
-                Recommended
-              </p>
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#75675f]">
+                  Recommended
+                </p>
 
-              <h2 className="mt-2 text-xl font-bold tracking-tight text-[#17202a]">
-                Repairers
-              </h2>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-[#17202a]">
+                  Repairers
+                </h2>
+              </div>
             </div>
 
             {loadingRepairers ? (
@@ -265,14 +330,14 @@ function CustomerDashboard() {
                   <Link
                     key={repairer.id}
                     to={`/repairer/${repairer.id}`}
-                    className="block rounded-2xl border border-[#e7e0da] bg-white p-5 transition hover:-translate-y-0.5 hover:border-[#d6c5b7] hover:shadow-sm"
+                    className="block rounded-2xl border border-[#e7e0da] bg-white p-5 shadow-sm transition hover:border-[#d8c8bc] hover:bg-[#fdfcfb]"
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#8B5E3C] text-lg font-bold text-white">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f5e9e0] text-sm font-bold text-[#17202a]">
                         {repairer.name?.charAt(0)?.toUpperCase() || "R"}
                       </div>
 
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <h3 className="truncate font-semibold text-[#17202a]">
                           {repairer.name}
                         </h3>
@@ -280,21 +345,29 @@ function CustomerDashboard() {
                         <p className="mt-1 text-xs text-[#8a817b]">
                           {repairer.category || "General Repair"}
                         </p>
-
-                        <p className="mt-2 text-xs text-[#75675f]">
-                          {repairer.location || "Cebu"}
-                        </p>
                       </div>
+
+                      <span className="text-[#75675f]">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          className="h-5 w-5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m9 18 6-6-6-6"
+                          />
+                        </svg>
+                      </span>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between border-t border-[#eee7e1] pt-4">
-                      <span className="text-sm font-semibold text-[#8b5e3c]">
-                        ₱{repairer.price || 0}
-                      </span>
-
-                      <span className="text-xs font-medium text-[#8B5E3C]">
-                        View Profile
-                      </span>
+                    <div className="mt-4 border-t border-[#eee7e1] pt-4">
+                      <p className="text-xs text-[#75675f]">
+                        {repairer.location || "Cebu"}
+                      </p>
                     </div>
                   </Link>
                 ))}
@@ -309,7 +382,7 @@ function CustomerDashboard() {
 
             <Link
               to="/repairers"
-              className="mt-4 flex w-full items-center justify-center rounded-xl border border-[#d6c5b7] bg-white px-4 py-3 text-sm font-semibold text-[#8b5e3c] hover:bg-[#f5eee8]"
+              className="mt-4 flex w-full items-center justify-center rounded-xl border border-[#e7e0da] bg-white px-4 py-3 text-sm font-semibold text-[#17202a] transition hover:bg-[#f5e9e0]"
             >
               View All Repairers
             </Link>

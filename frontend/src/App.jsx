@@ -16,6 +16,9 @@ import BecomeRepairer from "@/pages/BecomeRepairer";
 import CustomerDashboard from "@/pages/CustomerDashboard";
 import RepairerDashboard from "@/pages/RepairerDashboard";
 import AdminLayout from "@/layouts/AdminLayout";
+import CustomerRequests from "@/pages/CustomerRequests";
+import CustomerFavorites from "@/pages/CustomerFavorites";
+import CustomerNotifications from "@/pages/CustomerNotifications";
 
 import Account from "@/pages/Account";
 import EditProfile from "@/pages/EditProfile";
@@ -57,11 +60,14 @@ function App() {
         {/* CUSTOMER AREA */}
         <Route path="/customer" element={<CustomerDashboardLayout />}>
           <Route path="dashboard" element={<CustomerDashboard />} />
+          <Route path="requests" element={<CustomerRequests />} />
+          <Route path="favorites" element={<CustomerFavorites />} />
+          <Route path="notifications" element={<CustomerNotifications />} />
           <Route path="messages" element={<Messages />} />
           <Route path="messages/:userId" element={<Messages />} />
           <Route path="account" element={<Account />} />
         </Route>
-
+       
         {/* OTHER USER PAGES */}
         <Route path="/account" element={<Account />} />
         <Route path="/edit-profile" element={<EditProfile />} />

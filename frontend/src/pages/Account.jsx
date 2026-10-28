@@ -1,261 +1,185 @@
-import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import logo from "@/assets/luh.png";
-import profileImage from "@/assets/akoni.jpg";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://fixora-backend-kw9p.onrender.com";
+
 function Account() {
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
-  const [name, setName] = useState(user?.name || "");
-  const [phone, setPhone] = useState(user?.phone || "");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState(profileImage);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const navClass = ({ isActive }) =>
-    `flex items-center rounded-xl px-4 py-3 text-sm font-medium transition ${
-      isActive
-        ? "border border-[#d8c8bc] bg-[#f3eee9] text-[#2f241e]"
-        : "text-[#5f5148] hover:bg-[#f8f5f2]"
-    }`;
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        setLoading(true);
+        setError("");
 
-  function handleLogout() {
-    logout();
-    navigate("/");
-  }
+        const response = await fetch(`${API_URL}/api/users/me`, {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${localStorage.getItem("fixora_token")}`,
+          },
+        });
 
-  function handlePhotoChange(event) {
-    const file = event.target.files?.[0];
+        const text = await response.text();
 
-    if (!file) {
-      return;
+        let data;
+
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error("Failed to load account information.");
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            data?.message ||
+              data?.error ||
+              `Server returned ${response.status}`
+          );
+        }
+
+        const profile = data?.user || data?.data || data;
+
+        setName(profile?.name || user?.name || "");
+        setPhone(profile?.phone || user?.phone || "");
+        setEmail(profile?.email || user?.email || "");
+      } catch (err) {
+        setError(err.message || "Failed to load account information.");
+        setName(user?.name || "");
+        setPhone(user?.phone || "");
+        setEmail(user?.email || "");
+      } finally {
+        setLoading(false);
+      }
     }
 
-    if (!file.type.startsWith("image/")) {
-      setMessage("Please select an image file.");
-      return;
-    }
+    loadProfile();
+  }, [user]);
 
-    if (file.size > 5 * 1024 * 1024) {
-      setMessage("Image must be smaller than 5MB.");
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      setPhotoPreview(reader.result);
-      setMessage("Profile photo selected. Click Save Profile Changes to apply it.");
-    };
-
-    reader.readAsDataURL(file);
-  }
-  function handleSaveProfile(event) {
+  async function handleSaveProfile(event) {
     event.preventDefault();
-    setMessage("Profile changes saved.");
-  }
 
-  function handleChangePassword(event) {
-    event.preventDefault();
-
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      setMessage("Please complete all password fields.");
+    if (!name.trim()) {
+      setError("Full name is required.");
+      setMessage("");
       return;
     }
 
-    if (newPassword !== confirmPassword) {
-      setMessage("New password and confirmation do not match.");
-      return;
+    try {
+      setSaving(true);
+      setError("");
+      setMessage("");
+
+      const response = await fetch(`${API_URL}/api/users/me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${localStorage.getItem("fixora_token")}`,
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          phone: phone.trim(),
+        }),
+      });
+
+      const text = await response.text();
+
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Failed to update profile.");
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message ||
+            data?.error ||
+            `Server returned ${response.status}`
+        );
+      }
+
+      const updatedUser = data?.user || data?.data || data;
+
+      if (updatedUser?.name) {
+        setName(updatedUser.name);
+      }
+
+      if (updatedUser?.phone) {
+        setPhone(updatedUser.phone);
+      }
+
+      setMessage("Profile changes saved successfully.");
+    } catch (err) {
+      setError(err.message || "Failed to save profile.");
+    } finally {
+      setSaving(false);
     }
-
-    setMessage("Password change is ready for backend integration.");
-
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f5f2] text-[#2f241e]">
+    <section className="min-h-full bg-[#f7f7f5] text-[#17202a]">
+      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <div>
+          <p className="text-sm font-medium text-[#8a817b]">
+            Account Settings
+          </p>
 
-      {/* MOBILE HEADER */}
-      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-[#e8dfd8] bg-white/95 px-5 py-4 backdrop-blur lg:hidden">
-        <img
-          src={logo}
-          alt="Fixora"
-          className="h-9 w-auto object-contain"
-        />
-
-        <button
-          type="button"
-          onClick={() => setSidebarOpen(true)}
-          className="rounded-xl border border-[#d8c8bc] bg-white px-4 py-2 text-sm font-medium text-[#5f5148]"
-        >
-          Menu
-        </button>
-      </div>
-
-      {/* MOBILE OVERLAY */}
-      {sidebarOpen && (
-        <button
-          type="button"
-          aria-label="Close menu"
-          onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
-        />
-      )}
-
-      {/* SIDEBAR */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[218px] flex-col border-r border-[#e4ddd7] bg-white transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-
-        {/* LOGO */}
-        <div className="flex items-center justify-between border-b border-[#eee7e2] px-6 py-6">
-          <img
-            src={logo}
-            alt="Fixora"
-            className="h-10 w-auto object-contain"
-          />
-
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(false)}
-            className="rounded-lg px-2 py-1 text-sm text-[#8a7a70] hover:bg-[#f3eee9] lg:hidden"
-          >
-            Close
-          </button>
-        </div>
-
-        {/* MENU */}
-        <nav className="flex-1 space-y-2 px-4 py-6">
-
-          <NavLink
-            to="/customer/dashboard"
-            onClick={() => setSidebarOpen(false)}
-            className={navClass}
-          >
-            Dashboard
-          </NavLink>
-
-          <NavLink
-            to="/"
-            onClick={() => setSidebarOpen(false)}
-            className={navClass}
-          >
-            Home
-          </NavLink>
-
-          <NavLink
-            to="/repairers"
-            onClick={() => setSidebarOpen(false)}
-            className={navClass}
-          >
-            Find a Repairer
-          </NavLink>
-
-          <NavLink
-            to="/customer/account"
-            onClick={() => setSidebarOpen(false)}
-            className={navClass}
-          >
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#17202a]">
             My Account
-          </NavLink>
+          </h1>
 
-        </nav>
-
-        {/* LOGOUT */}
-        <div className="border-t border-[#eee7e2] p-4">
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex w-full items-center rounded-xl px-4 py-3 text-left text-sm font-medium text-[#5f5148] transition hover:bg-[#f3eee9]"
-          >
-            Log Out
-          </button>
+          <p className="mt-2 text-sm text-[#75675f]">
+            Manage your profile information and account details.
+          </p>
         </div>
-      </aside>
 
-      {/* MAIN */}
-      <main className="lg:pl-64">
-        <section className="mx-auto max-w-5xl px-6 py-10 sm:py-14">
+        {message && (
+          <div className="mt-6 rounded-2xl border border-[#e7e0da] bg-white px-5 py-4 text-sm text-[#75675f]">
+            {message}
+          </div>
+        )}
 
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#9a6541]">
-              Account Settings
-            </p>
+        {error && (
+          <div className="mt-6 rounded-2xl border border-[#e7e0da] bg-white px-5 py-4 text-sm text-[#75675f]">
+            {error}
+          </div>
+        )}
 
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#2f241e] sm:text-4xl">
-              My Account
-            </h1>
+        <div className="mt-8 rounded-3xl border border-[#e7e0da] bg-white p-6 shadow-sm sm:p-8">
+          <div className="border-b border-[#eee9e5] pb-6">
+            <h2 className="text-xl font-semibold text-[#17202a]">
+              Profile Information
+            </h2>
 
-            <p className="mt-3 text-[#75675f]">
-              Manage your profile information and account security.
+            <p className="mt-1 text-sm text-[#75675f]">
+              Update your personal information.
             </p>
           </div>
 
-          {message && (
-            <div className="mt-6 rounded-xl border border-[#d8c8bc] bg-white px-5 py-4 text-sm text-[#6f5747]">
-              {message}
+          {loading ? (
+            <div className="py-10 text-center text-sm text-[#8a817b]">
+              Loading account information...
             </div>
-          )}
-
-          {/* PROFILE */}
-          <div className="mt-10 rounded-3xl border border-[#e1d8d1] bg-white p-6 shadow-sm sm:p-8">
-
-            <div className="flex items-center gap-5 border-b border-[#eee7e2] pb-6">
-
-              <div className="flex flex-col items-center">
-                <img
-                  src={photoPreview}
-                  alt="Profile"
-                  className="h-20 w-20 rounded-full border-2 border-[#d8c8bc] object-cover"
-                />
-
-                <label
-                  htmlFor="profile-photo"
-                  className="mt-2 cursor-pointer text-xs font-semibold text-[#8b5e3c] hover:text-[#754b2f]"
-                >
-                  Change Photo
-                </label>
-
-                <input
-                  id="profile-photo"
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoChange}
-                  className="hidden"
-                />
-              </div>
-
-              <div>
-                <h2 className="text-xl font-semibold text-[#2f241e]">
-                  Profile
-                </h2>
-
-                <p className="mt-1 text-sm text-[#75675f]">
-                  Update your personal information.
-                </p>
-              </div>
-
-            </div>
-
+          ) : (
             <form
               onSubmit={handleSaveProfile}
               className="mt-8 space-y-6"
             >
-
               <div>
-                <label className="block text-sm font-medium text-[#4f433c]">
+                <label className="block text-sm font-medium text-[#4f4843]">
                   Full Name
                 </label>
 
@@ -263,12 +187,12 @@ function Account() {
                   type="text"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-[#d8c8bc] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#9a6541] focus:ring-2 focus:ring-[#9a6541]/10"
+                  className="mt-2 w-full rounded-xl border border-[#e1d9d2] bg-white px-4 py-3 text-sm text-[#17202a] outline-none transition focus:border-[#cfc2b7] focus:ring-2 focus:ring-[#f5e9e0]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#4f433c]">
+                <label className="block text-sm font-medium text-[#4f4843]">
                   Mobile Number
                 </label>
 
@@ -277,117 +201,64 @@ function Account() {
                   value={phone}
                   onChange={(event) => setPhone(event.target.value)}
                   placeholder="09XXXXXXXXX"
-                  className="mt-2 w-full rounded-xl border border-[#d8c8bc] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#9a6541] focus:ring-2 focus:ring-[#9a6541]/10"
+                  className="mt-2 w-full rounded-xl border border-[#e1d9d2] bg-white px-4 py-3 text-sm text-[#17202a] outline-none transition focus:border-[#cfc2b7] focus:ring-2 focus:ring-[#f5e9e0]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#4f433c]">
+                <label className="block text-sm font-medium text-[#4f4843]">
                   Email
                 </label>
 
                 <input
                   type="email"
-                  value={user?.email || ""}
+                  value={email}
                   disabled
-                  className="mt-2 w-full cursor-not-allowed rounded-xl border border-[#e5ddd7] bg-[#f7f5f3] px-4 py-3 text-sm text-[#8a7a70]"
+                  className="mt-2 w-full cursor-not-allowed rounded-xl border border-[#e7e0da] bg-[#f7f5f3] px-4 py-3 text-sm text-[#8a817b]"
                 />
 
-                <p className="mt-2 text-xs text-[#8a7a70]">
+                <p className="mt-2 text-xs text-[#8a817b]">
                   Email address cannot be changed here.
                 </p>
               </div>
 
               <button
                 type="submit"
-                className="rounded-xl bg-[#8b5e3c] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#754b2f]"
+                disabled={saving}
+                className="rounded-xl border border-[#e1d8d0] bg-[#f5e9e0] px-5 py-3 text-sm font-semibold text-[#17202a] transition hover:bg-[#f7f2ee] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Save Profile Changes
+                {saving ? "Saving..." : "Save Profile Changes"}
               </button>
-
             </form>
+          )}
+        </div>
+
+        <div className="mt-6 rounded-3xl border border-[#e7e0da] bg-white p-6 shadow-sm sm:p-8">
+          <div>
+            <h2 className="text-xl font-semibold text-[#17202a]">
+              Account Security
+            </h2>
+
+            <p className="mt-1 text-sm text-[#75675f]">
+              Your account security is managed through your Fixora login.
+            </p>
           </div>
 
-          {/* SECURITY */}
-          <div className="mt-6 rounded-3xl border border-[#e1d8d1] bg-white p-6 shadow-sm sm:p-8">
+          <div className="mt-6 rounded-2xl border border-[#eee9e5] bg-[#faf9f7] p-5">
+            <p className="text-sm font-medium text-[#17202a]">
+              Password
+            </p>
 
-            <div className="border-b border-[#eee7e2] pb-6">
-              <h2 className="text-xl font-semibold text-[#2f241e]">
-                Security
-              </h2>
-
-              <p className="mt-1 text-sm text-[#75675f]">
-                Change your account password.
-              </p>
-            </div>
-
-            <form
-              onSubmit={handleChangePassword}
-              className="mt-8 space-y-6"
-            >
-
-              <div>
-                <label className="block text-sm font-medium text-[#4f433c]">
-                  Current Password
-                </label>
-
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(event) =>
-                    setCurrentPassword(event.target.value)
-                  }
-                  className="mt-2 w-full rounded-xl border border-[#d8c8bc] px-4 py-3 text-sm outline-none focus:border-[#9a6541]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#4f433c]">
-                  New Password
-                </label>
-
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(event) =>
-                    setNewPassword(event.target.value)
-                  }
-                  className="mt-2 w-full rounded-xl border border-[#d8c8bc] px-4 py-3 text-sm outline-none focus:border-[#9a6541]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#4f433c]">
-                  Confirm New Password
-                </label>
-
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(event) =>
-                    setConfirmPassword(event.target.value)
-                  }
-                  className="mt-2 w-full rounded-xl border border-[#d8c8bc] px-4 py-3 text-sm outline-none focus:border-[#9a6541]"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="rounded-xl border border-[#cdb5a2] bg-transparent px-5 py-3 text-sm font-medium text-[#8b5e3c] transition hover:bg-[#f3e5da]"
-              >
-                Change Password
-              </button>
-
-            </form>
+            <p className="mt-1 text-sm leading-6 text-[#75675f]">
+              Your current account password is protected and cannot be
+              changed from this page until a dedicated password-update
+              endpoint is available.
+            </p>
           </div>
-
-        </section>
-      </main>
-    </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
 export default Account;
-
-
-
