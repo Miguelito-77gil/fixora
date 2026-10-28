@@ -34,7 +34,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/repairers/me/photo', [RepairerPhotoController::class, 'store']);
 
     Route::post('/repairers/me/portfolio', [PortfolioController::class, 'store']);
-    Route::get('/repairers/me/portfolio', [PortfolioController::class, 'mine']);
+    Route::get('/repairers/me/portfolio', function (Illuminate\Http\Request $request) {
+    return response()->json([
+        'success' => true,
+        'message' => 'Portfolio route works',
+        'user_id' => $request->user()->id,
+    ]);
+});
     Route::delete('/repairers/me/portfolio/{id}', [PortfolioController::class, 'destroy']);
 
     Route::post('/repair-requests', [RepairRequestController::class, 'store']);
