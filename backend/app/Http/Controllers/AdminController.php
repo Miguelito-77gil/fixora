@@ -23,10 +23,11 @@ class AdminController extends Controller
                 'email',
                 'role',
                 'phone',
+                'verification_status',
                 'created_at',
             ])
             ->with([
-                'repairerProfile:id,user_id,category,bio,years_experience,location,price,phone,photo_url,available,verification_status',
+                'repairerProfile:id,user_id,category,bio,years_experience,location,price,phone,photo_url,available',
             ])
             ->orderByDesc('created_at')
             ->get()
@@ -54,6 +55,7 @@ class AdminController extends Controller
                     'email' => $user->email,
                     'role' => $user->role,
                     'phone' => $phone,
+                    'verification_status' => $user->verification_status,
                     'created_at' => $user->created_at,
 
                     /*
@@ -70,7 +72,6 @@ class AdminController extends Controller
                             'phone' => $repairerProfile->phone,
                             'photo_url' => $repairerProfile->photo_url,
                             'available' => $repairerProfile->available,
-                            'verification_status' => $repairerProfile->verification_status,
                         ]
                         : null,
                 ];
@@ -116,15 +117,12 @@ class AdminController extends Controller
             ->where('role', 'repairer')
             ->firstOrFail();
 
+        /*
+         * verification_status belongs to the users table,
+         * not repairer_profiles.
+         */
         $repairer->verification_status = $validated['status'];
         $repairer->save();
-
-        if ($repairer->repairerProfile) {
-            $repairer->repairerProfile->verification_status =
-                $validated['status'];
-
-            $repairer->repairerProfile->save();
-        }
 
         return response()->json([
             'message' => 'Repairer status updated successfully.',
