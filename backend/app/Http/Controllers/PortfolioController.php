@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PortfolioItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class PortfolioController extends Controller
 {
@@ -40,11 +41,36 @@ class PortfolioController extends Controller
 
     public function mine(Request $request)
     {
-        $items = PortfolioItem::where('user_id', $request->user()->id)
-            ->orderByDesc('created_at')
-            ->get();
+        try {
+            $user = $request->user();
 
-        return response()->json($items);
+            Log::info('PORTFOLIO MINE START', [
+                'user_id' => $user?->id,
+                'role' => $user?->role,
+            ]);
+
+            $items = PortfolioItem::where('user_id', $user->id)
+                ->orderByDesc('created_at')
+                ->get();
+
+            Log::info('PORTFOLIO MINE SUCCESS', [
+                'count' => $items->count(),
+            ]);
+
+            return response()->json($items);
+
+        } catch (\Throwable $e) {
+            Log::error('PORTFOLIO MINE ERROR', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'error' => 'Portfolio loading failed.',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function destroy(Request $request, $id)
