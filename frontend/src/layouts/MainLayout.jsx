@@ -7,9 +7,16 @@ function MainLayout() {
 
   const isAdminArea = location.pathname.startsWith("/admin");
   const isCustomerArea = location.pathname.startsWith("/customer");
-  const isRepairerArea = location.pathname.startsWith("/repairer");
 
-  const hideGlobalLayout = isCustomerArea || isRepairerArea;
+  const isRepairerArea =
+    location.pathname === "/repairer/dashboard" ||
+    location.pathname.startsWith("/repairer/messages") ||
+    location.pathname === "/repairer/profile" ||
+    location.pathname.startsWith("/repairer/services") ||
+    location.pathname.startsWith("/repairer/portfolio");
+
+  const hideGlobalLayout =
+    isCustomerArea || isRepairerArea;
 
   return (
     <div

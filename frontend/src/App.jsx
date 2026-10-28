@@ -15,7 +15,6 @@ import BecomeRepairer from "@/pages/BecomeRepairer";
 
 import CustomerDashboard from "@/pages/CustomerDashboard";
 import RepairerDashboard from "@/pages/RepairerDashboard";
-import AdminLayout from "@/layouts/AdminLayout";
 import CustomerRequests from "@/pages/CustomerRequests";
 import CustomerFavorites from "@/pages/CustomerFavorites";
 import CustomerNotifications from "@/pages/CustomerNotifications";
@@ -30,6 +29,7 @@ import UserManagement from "@/pages/UserManagement";
 import RepairerVerification from "@/pages/RepairerVerification";
 
 import PortfolioManagement from "@/pages/PortfolioManagement";
+import RepairerServices from "@/pages/RepairerServices";
 
 function App() {
   return (
@@ -80,12 +80,9 @@ function App() {
           <Route path="dashboard" element={<RepairerDashboard />} />
           <Route path="messages" element={<Messages />} />
           <Route path="profile" element={<EditProfile />} />
+          <Route path="services" element={<RepairerServices />} />
+          <Route path="portfolio" element={<PortfolioManagement />} />
         </Route>
-
-        <Route
-          path="/repairer/portfolio"
-          element={<PortfolioManagement />}
-        />
 
         {/* ADMIN AREA */}
         <Route path="/admin" element={<AdminDashboard />} />

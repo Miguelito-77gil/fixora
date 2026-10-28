@@ -1,5 +1,6 @@
 ﻿import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
+import logo from "@/assets/luh.png";
 import { useAuth } from "@/context/AuthContext";
 
 function RepairerDashboardLayout() {
@@ -14,10 +15,35 @@ function RepairerDashboardLayout() {
 
   const menuItems = [
     {
+      label: "Home",
+      path: "/",
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="m4 10 8-6 8 6v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1v-9Z"
+          />
+        </svg>
+      ),
+    },
+    {
       label: "Dashboard",
       path: "/repairer/dashboard",
       icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5 shrink-0">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+        >
           <rect x="4" y="4" width="6" height="6" rx="1" />
           <rect x="14" y="4" width="6" height="6" rx="1" />
           <rect x="4" y="14" width="6" height="6" rx="1" />
@@ -26,28 +52,16 @@ function RepairerDashboardLayout() {
       ),
     },
     {
-      label: "Home",
-      path: "/",
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5 shrink-0">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="m4.5 10.5 7.5-6 7.5 6v8.25A1.75 1.75 0 0 1 17.75 20h-11.5A1.75 1.75 0 0 1 4.5 18.75V10.5Z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9 20v-5.5h6V20"
-          />
-        </svg>
-      ),
-    },
-    {
       label: "Messages",
       path: "/repairer/messages",
       icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5 shrink-0">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -61,7 +75,13 @@ function RepairerDashboardLayout() {
       label: "My Profile",
       path: "/repairer/profile",
       icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5 shrink-0">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+        >
           <circle cx="12" cy="8" r="3.25" />
           <path
             strokeLinecap="round"
@@ -71,55 +91,134 @@ function RepairerDashboardLayout() {
         </svg>
       ),
     },
+    {
+      label: "Services",
+      path: "/repairer/services",
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4.5 16.5a2.12 2.12 0 0 0 3 3l4.8-4.8a4 4 0 0 0 5.4-5.4l-2.1 2.1-3-3 2.1-2.1Z"
+          />
+        </svg>
+      ),
+    },
+    {
+      label: "Portfolio",
+      path: "/repairer/portfolio",
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+        >
+          <rect x="4" y="5" width="16" height="14" rx="2" />
+          <circle cx="9" cy="10" r="1.5" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="m5.5 17 4.5-4.5 3 3 2-2 3.5 3.5"
+          />
+        </svg>
+      ),
+    },
   ];
 
   return (
-    <div className="flex min-h-0 flex-1 overflow-hidden bg-[#f7f7f5] text-[#17202a]">
+    <div className="flex min-h-screen bg-[#f7f7f5] text-[#17202a]">
       {sidebarOpen && (
         <button
           type="button"
           aria-label="Close menu"
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+          className="fixed inset-0 z-40 bg-[#17202a]/35 backdrop-blur-[2px] lg:hidden"
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[218px] flex-col border-r border-[#e4ddd7] bg-white transition-transform duration-200 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[250px] flex-col border-r border-[#e7e0da] bg-[#fbfaf8] shadow-2xl transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 lg:shadow-none ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:static lg:z-auto lg:translate-x-0`}
+        }`}
       >
-        <nav className="flex min-h-0 flex-1 flex-col px-4 py-5 lg:py-6">
-          <div className="space-y-1">
+        <div className="flex h-[76px] items-center border-b border-[#e7e0da] px-5">
+          <NavLink
+            to="/repairer/dashboard"
+            onClick={() => setSidebarOpen(false)}
+            className="flex items-center gap-3"
+          >
+            <img
+              src={logo}
+              alt="Fixora"
+              className="h-10 w-auto object-contain"
+            />
+
+            <div className="leading-tight">
+              <p className="text-base font-bold text-[#17202a]">Fixora</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8a817b]">
+                Services
+              </p>
+            </div>
+          </NavLink>
+
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(false)}
+            className="ml-auto flex h-9 w-9 items-center justify-center rounded-xl text-[#75675f] transition hover:bg-[#f5e9e0] hover:text-[#17202a] lg:hidden"
+            aria-label="Close menu"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="h-5 w-5"
+            >
+              <path strokeLinecap="round" d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </div>
+
+        <nav className="flex flex-1 flex-col px-4 py-4">
+          <div className="space-y-2">
             {menuItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
+                end={item.path === "/" || item.path === "/repairer/dashboard"}
                 onClick={() => setSidebarOpen(false)}
                 className={({ isActive }) =>
-                  isActive
-                    ? "group flex items-center gap-3 rounded-lg bg-[#f5e9e0] px-4 py-3 text-sm font-medium text-[#8b5e3c] transition"
-                    : "group flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-[#17202a] transition hover:bg-[#f3eee9] hover:text-[#8b5e3c]"
+                  `group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${
+                    isActive
+                      ? "bg-[#f5e9e0] text-[#17202a] shadow-sm ring-1 ring-[#e7e0da]"
+                      : "text-[#5f5751] hover:bg-[#f7f2ee] hover:text-[#17202a]"
+                  }`
                 }
               >
                 {item.icon}
                 <span>{item.label}</span>
               </NavLink>
             ))}
-          </div>
 
-          <div className="mt-auto border-t border-[#eee5df] pt-4">
             <button
               type="button"
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium text-[#17202a] transition hover:bg-[#f3eee9] hover:text-[#8b5e3c]"
+              className="group flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold text-[#5f5751] transition hover:bg-[#f7f2ee] hover:text-[#17202a]"
             >
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.8"
-                className="h-5 w-5 shrink-0"
+                className="h-5 w-5"
               >
                 <path
                   strokeLinecap="round"
@@ -139,12 +238,12 @@ function RepairerDashboardLayout() {
         </nav>
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <div className="flex h-12 shrink-0 items-center border-b border-[#e8dfd8] bg-white px-4 lg:hidden">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex h-[76px] shrink-0 items-center justify-between border-b border-[#e7e0da] bg-[#fbfaf8]/95 px-4 backdrop-blur sm:px-6 lg:px-8">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[#17202a] transition hover:bg-[#f3eee9] hover:text-[#8b5e3c]"
+            className="flex h-10 items-center gap-2 rounded-xl border border-[#dccfc5] bg-white px-3 text-sm font-semibold text-[#5f5751] transition hover:bg-[#f5e9e0] hover:text-[#5f5751] lg:hidden"
           >
             <svg
               viewBox="0 0 24 24"
@@ -155,14 +254,51 @@ function RepairerDashboardLayout() {
             >
               <path strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" />
             </svg>
-
             Menu
           </button>
-        </div>
+        </header>
 
-        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">
-          <Outlet />
+        <main className="min-w-0 flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-[1500px]">
+            <Outlet />
+          </div>
         </main>
+
+        <nav className="sticky bottom-0 z-30 flex h-[72px] items-center justify-around border-t border-[#e7e0da] bg-[#fbfaf8] px-2 shadow-[0_-4px_20px_rgba(23,32,42,0.04)] lg:hidden">
+          {menuItems.slice(0, 4).map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.path === "/" || item.path === "/repairer/dashboard"}
+              className={({ isActive }) =>
+                `flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-2 text-[10px] font-semibold transition ${
+                  isActive
+                    ? "bg-[#f5e9e0] text-[#8b5e3c]"
+                    : "text-[#75675f] hover:text-[#8b5e3c]"
+                }`
+              }
+            >
+              {item.icon}
+              <span>
+                {item.label === "My Profile" ? "Profile" : item.label}
+              </span>
+            </NavLink>
+          ))}
+
+          <NavLink
+            to="/repairer/portfolio"
+            className={({ isActive }) =>
+              `flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-2 text-[10px] font-semibold transition ${
+                isActive
+                  ? "bg-[#f5e9e0] text-[#8b5e3c]"
+                  : "text-[#75675f] hover:text-[#8b5e3c]"
+              }`
+            }
+          >
+            {menuItems[5].icon}
+            <span>Portfolio</span>
+          </NavLink>
+        </nav>
       </div>
     </div>
   );

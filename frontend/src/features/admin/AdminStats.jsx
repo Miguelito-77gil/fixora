@@ -7,7 +7,10 @@ function AdminStats() {
   useEffect(() => {
     fetchAdminDashboard()
       .then(setStats)
-      .catch(() => setStats(null));
+      .catch((error) => {
+        console.error("Failed to load admin statistics:", error);
+        setStats(null);
+      });
   }, []);
 
   if (!stats) {
@@ -39,8 +42,9 @@ function AdminStats() {
           <p className="text-xs font-bold uppercase tracking-wider text-[#90979d]">
             {label}
           </p>
+
           <p className="mt-3 text-3xl font-black text-[#17202a]">
-            {value}
+            {value ?? 0}
           </p>
         </div>
       ))}
@@ -49,4 +53,3 @@ function AdminStats() {
 }
 
 export default AdminStats;
-

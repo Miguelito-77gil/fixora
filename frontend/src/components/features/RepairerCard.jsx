@@ -158,7 +158,7 @@ function RepairerCard({ repairer }) {
         </p>
 
         <Button
-          to={`/repairer/${repairer.id}`}
+          to={`/repairers/${repairer.id}`}
           variant="secondary"
           className="mt-3 w-full"
         >

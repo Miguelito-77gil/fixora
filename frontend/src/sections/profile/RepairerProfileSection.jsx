@@ -2,8 +2,10 @@
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
-const API_BASE = "https://fixora-backend-kw9p.onrender.com/api";
-const BACKEND_BASE = "https://fixora-backend-kw9p.onrender.com";
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://fixora-backend-kw9p.onrender.com";
+
+const API_BASE = `${API_URL}/api`;
 
 function resolvePhotoUrl(photoUrl) {
   if (!photoUrl) return null;
@@ -16,24 +18,25 @@ function resolvePhotoUrl(photoUrl) {
   }
 
   if (photoUrl.startsWith("/storage/")) {
-    return `${BACKEND_BASE}${photoUrl}`;
+    return `${API_URL}${photoUrl}`;
   }
 
   if (photoUrl.startsWith("storage/")) {
-    return `${BACKEND_BASE}/${photoUrl}`;
+    return `${API_URL}/${photoUrl}`;
   }
 
   if (photoUrl.startsWith("/")) {
-    return `${BACKEND_BASE}${photoUrl}`;
+    return `${API_URL}${photoUrl}`;
   }
 
-  return `${BACKEND_BASE}/storage/${photoUrl}`;
+  return `${API_URL}/storage/${photoUrl}`;
 }
 
 function RepairerProfileSection() {
   const { user } = useAuth();
-  const params = useParams();
-  const repairerId = params.id ?? params.slug;
+  const { id, slug } = useParams();
+
+  const repairerId = id ?? slug;
 
   const [repairer, setRepairer] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +47,7 @@ function RepairerProfileSection() {
     repairer &&
     String(repairer.id) === String(user.id);
 
-    useEffect(() => {
+  useEffect(() => {
     let mounted = true;
 
     async function loadRepairer() {
@@ -52,9 +55,7 @@ function RepairerProfileSection() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          `https://fixora-backend-kw9p.onrender.com/api/repairers`
-        );
+        const response = await fetch(`${API_BASE}/repairers`);
 
         const text = await response.text();
 
@@ -139,7 +140,7 @@ function RepairerProfileSection() {
 
             <Link
               to="/repairers"
-              className="mt-6 inline-flex rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-semibold text-white"
+              className="mt-6 inline-flex rounded-xl bg-[#f5e9e0] px-5 py-3 text-sm font-semibold text-[#17202a] transition hover:bg-[#f0e2d7]"
             >
               Back to Repairers
             </Link>
@@ -189,8 +190,8 @@ function RepairerProfileSection() {
 
   const photoUrl = resolvePhotoUrl(
     repairer.photo_url ||
-    repairer.photo ||
-    repairer.profile_photo
+      repairer.photo ||
+      repairer.profile_photo
   );
 
   const initials = name
@@ -203,15 +204,10 @@ function RepairerProfileSection() {
   return (
     <section className="bg-[#f7f7f5] px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-5">
-
-        {/* PROFILE HEADER */}
         <div className="overflow-hidden rounded-2xl border border-[#e5dfd8] bg-white shadow-sm">
-
           <div className="p-6 sm:p-7">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-
               <div className="flex min-w-0 items-center gap-4">
-
                 {photoUrl ? (
                   <img
                     src={photoUrl}
@@ -220,37 +216,44 @@ function RepairerProfileSection() {
                     onError={(event) => {
                       const image = event.currentTarget;
 
-                      const rawPhoto =
-                        repairer.photo_url ||
-                        repairer.photo ||
-                        repairer.profile_photo;
+                      if (!image.dataset.fallback) {
+                        image.dataset.fallback = "true";
 
-                      if (
-                        rawPhoto &&
-                        !image.dataset.storageFallback
-                      ) {
-                        image.dataset.storageFallback = "true";
+                        const rawPhoto =
+                          repairer.photo_url ||
+                          repairer.photo ||
+                          repairer.profile_photo;
 
-                        const cleanPath = String(rawPhoto).replace(/^\/+/, "");
+                        if (rawPhoto) {
+                          const cleanPath = String(rawPhoto).replace(
+                            /^\/+/,
+                            ""
+                          );
 
-                        image.src =
-                          cleanPath.startsWith("storage/")
-                            ? `${BACKEND_BASE}/${cleanPath}`
-                            : `${BACKEND_BASE}/storage/${cleanPath}`;
+                          image.src = cleanPath.startsWith("storage/")
+                            ? `${API_URL}/${cleanPath}`
+                            : `${API_URL}/storage/${cleanPath}`;
 
-                        return;
+                          return;
+                        }
                       }
 
                       image.style.display = "none";
 
-                      if (image.nextElementSibling) {
-                        image.nextElementSibling.style.display = "flex";
+                      const fallback =
+                        image.parentElement?.querySelector(
+                          "[data-photo-fallback]"
+                        );
+
+                      if (fallback) {
+                        fallback.style.display = "flex";
                       }
                     }}
                   />
                 ) : null}
 
                 <div
+                  data-photo-fallback
                   className={`h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-[#eee7e1] text-2xl font-semibold text-[#8b6046] ${
                     photoUrl ? "hidden" : "flex"
                   }`}
@@ -260,62 +263,52 @@ function RepairerProfileSection() {
 
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-
                     <h1 className="text-2xl font-semibold text-[#17202a]">
                       {name}
                     </h1>
 
                     {repairer.verification_status === "verified" && (
-                      <span className="rounded-full border border-[#cde8d8] bg-[#eefaf2] px-2.5 py-1 text-xs font-medium text-[#28734b]">
+                      <span className="rounded-full border border-[#e5dfd8] bg-[#f7f2ee] px-2.5 py-1 text-xs font-medium text-[#75675f]">
                         Verified
                       </span>
                     )}
-
                   </div>
 
-                  <p className="mt-1 text-sm font-medium text-[#b9825f]">
+                  <p className="mt-1 text-sm font-medium text-[#8b6046]">
                     {category}
                   </p>
 
                   <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#667085]">
-
                     <span>{location}</span>
 
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-[#4ea66b]" />
-
+                    <span>
                       {repairer.available
                         ? "Available now"
                         : "Currently unavailable"}
                     </span>
-
                   </div>
 
                   <div className="mt-3 flex items-center gap-2 text-sm">
-
                     <span className="font-medium text-[#17202a]">
                       {rating}
                     </span>
 
-                    <span className="text-[#b9825f]">
+                    <span className="text-[#8b6046]">
                       rating
                     </span>
 
                     <span className="text-[#98a2b3]">
                       ({reviews} reviews)
                     </span>
-
                   </div>
                 </div>
               </div>
 
-              {/* ACTIONS */}
               {!isOwnRepairerProfile && (
                 <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
-
                   <Link
                     to={`/repairer/${repairer.id}/request`}
-                    className="inline-flex items-center justify-center rounded-xl bg-[#b9825f] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                    className="inline-flex items-center justify-center rounded-xl bg-[#f5e9e0] px-5 py-3 text-sm font-semibold text-[#17202a] transition hover:bg-[#f0e2d7]"
                   >
                     Request Repairer
                   </Link>
@@ -326,16 +319,12 @@ function RepairerProfileSection() {
                   >
                     Message Repairer
                   </Link>
-
                 </div>
               )}
-
             </div>
           </div>
 
-          {/* STATS */}
           <div className="grid grid-cols-1 border-t border-[#eee8e2] sm:grid-cols-3">
-
             <div className="border-b border-[#eee8e2] p-5 text-center sm:border-b-0 sm:border-r">
               <p className="text-xl font-semibold text-[#17202a]">
                 {experience}
@@ -365,17 +354,12 @@ function RepairerProfileSection() {
                 Average rating
               </p>
             </div>
-
           </div>
         </div>
 
-        {/* ABOUT + SERVICES */}
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-
-          {/* ABOUT */}
           <div className="rounded-2xl border border-[#e5dfd8] bg-white p-6 shadow-sm">
-
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#b9825f]">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#8b6046]">
               About
             </p>
 
@@ -388,7 +372,6 @@ function RepairerProfileSection() {
             </p>
 
             <div className="mt-6 grid grid-cols-1 gap-5 border-t border-[#eee8e2] pt-5 sm:grid-cols-2">
-
               <div>
                 <p className="text-sm text-[#667085]">
                   Location
@@ -408,14 +391,11 @@ function RepairerProfileSection() {
                   {experience} years
                 </p>
               </div>
-
             </div>
           </div>
 
-          {/* SERVICES */}
           <div className="rounded-2xl border border-[#e5dfd8] bg-white p-6 shadow-sm">
-
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#b9825f]">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#8b6046]">
               Services
             </p>
 
@@ -425,7 +405,6 @@ function RepairerProfileSection() {
 
             <div className="mt-5">
               <div className="rounded-xl border border-[#eee8e2] bg-[#faf8f6] p-4">
-
                 <p className="text-sm font-semibold text-[#17202a]">
                   {category}
                 </p>
@@ -433,17 +412,13 @@ function RepairerProfileSection() {
                 <p className="mt-1 text-xs text-[#667085]">
                   No specific services listed yet.
                 </p>
-
               </div>
             </div>
           </div>
         </div>
 
-        {/* PRICE / RATING */}
         <div className="rounded-2xl border border-[#e5dfd8] bg-white p-6 shadow-sm">
-
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-
             <div>
               <p className="text-sm text-[#667085]">
                 Starting price
@@ -473,14 +448,11 @@ function RepairerProfileSection() {
                 {reviews}
               </p>
             </div>
-
           </div>
         </div>
 
-        {/* ACCOUNT */}
         <div className="rounded-2xl border border-[#e5dfd8] bg-white p-6 shadow-sm">
-
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#b9825f]">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#8b6046]">
             Account
           </p>
 
@@ -489,9 +461,7 @@ function RepairerProfileSection() {
           </h2>
 
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-
             <div className="rounded-xl border border-[#eee8e2] bg-[#faf8f6] p-4">
-
               <p className="text-xs text-[#667085]">
                 Account Number
               </p>
@@ -503,11 +473,9 @@ function RepairerProfileSection() {
               <p className="mt-1 text-xs text-[#98a2b3]">
                 Unique Fixora account number
               </p>
-
             </div>
 
             <div className="rounded-xl border border-[#eee8e2] bg-[#faf8f6] p-4">
-
               <p className="text-xs text-[#667085]">
                 Email
               </p>
@@ -519,16 +487,12 @@ function RepairerProfileSection() {
               <p className="mt-1 text-xs text-[#98a2b3]">
                 Repairer contact email
               </p>
-
             </div>
-
           </div>
         </div>
 
-        {/* CONTACT */}
         <div className="rounded-2xl border border-[#e5dfd8] bg-white p-6 shadow-sm">
-
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#b9825f]">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#8b6046]">
             Contact
           </p>
 
@@ -537,9 +501,7 @@ function RepairerProfileSection() {
           </h2>
 
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-
             <div className="rounded-xl border border-[#eee8e2] bg-[#faf8f6] p-4">
-
               <p className="text-xs text-[#667085]">
                 Phone
               </p>
@@ -547,11 +509,9 @@ function RepairerProfileSection() {
               <p className="mt-2 break-all text-sm font-semibold text-[#17202a]">
                 {phone}
               </p>
-
             </div>
 
             <div className="rounded-xl border border-[#eee8e2] bg-[#faf8f6] p-4">
-
               <p className="text-xs text-[#667085]">
                 Email
               </p>
@@ -559,13 +519,10 @@ function RepairerProfileSection() {
               <p className="mt-2 break-all text-sm font-semibold text-[#17202a]">
                 {email}
               </p>
-
             </div>
-
           </div>
         </div>
 
-        {/* BACK */}
         <div className="pb-6">
           <Link
             to="/repairers"
@@ -574,11 +531,9 @@ function RepairerProfileSection() {
             Back to Find a Repairer
           </Link>
         </div>
-
       </div>
     </section>
   );
 }
 
 export default RepairerProfileSection;
-

@@ -25,7 +25,9 @@ const CATEGORIES = [
   "Furniture",
 ];
 
-const API_URL = import.meta.env.VITE_API_URL || "https://fixora-backend-kw9p.onrender.com";
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://fixora-backend-kw9p.onrender.com";
 
 function resolveMediaUrl(url) {
   if (!url) return "";
@@ -76,7 +78,7 @@ function EditProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState("");
 
   const [photoUrl, setPhotoUrl] = useState("");
   const [photoUploading, setPhotoUploading] = useState(false);
@@ -151,8 +153,10 @@ function EditProfile() {
 
           setPhotoUrl(
             resolveMediaUrl(
-              repairerData?.profile?.photo_url || repairerData?.profile?.photo || repairerData?.profile?.profile_photo ||
-              ""
+              repairerData?.profile?.photo_url ||
+                repairerData?.profile?.photo ||
+                repairerData?.profile?.profile_photo ||
+                ""
             )
           );
 
@@ -196,6 +200,14 @@ function EditProfile() {
       setPhotoUrl(
         resolveMediaUrl(result.photo_url)
       );
+
+      setSuccess(
+        "Profile photo updated successfully."
+      );
+
+      setTimeout(() => {
+        setSuccess("");
+      }, 3000);
     } catch (err) {
       setPhotoError(
         err?.message ||
@@ -227,6 +239,14 @@ function EditProfile() {
       ]);
 
       setPortfolioCaption("");
+
+      setSuccess(
+        "Portfolio photo added successfully."
+      );
+
+      setTimeout(() => {
+        setSuccess("");
+      }, 3000);
     } catch (err) {
       setPortfolioError(
         err?.message ||
@@ -249,6 +269,14 @@ function EditProfile() {
           (item) => item.id !== id
         )
       );
+
+      setSuccess(
+        "Portfolio photo deleted successfully."
+      );
+
+      setTimeout(() => {
+        setSuccess("");
+      }, 3000);
     } catch (err) {
       setPortfolioError(
         err?.message ||
@@ -261,7 +289,7 @@ function EditProfile() {
     e.preventDefault();
 
     setError("");
-    setSuccess(false);
+    setSuccess("");
 
     if (isRepairer) {
       if (!category) {
@@ -311,11 +339,13 @@ function EditProfile() {
         );
       }
 
-      setSuccess(true);
+      setSuccess(
+        "Profile updated successfully."
+      );
 
       setTimeout(() => {
         navigate("/repairer/profile");
-      }, 800);
+      }, 1500);
     } catch (err) {
       setError(
         err?.message ||
@@ -347,10 +377,18 @@ function EditProfile() {
   }
 
   return (
-    <section className="fixora-container py-10 sm:py-14 lg:py-16">
-      <div className="mx-auto w-full max-w-5xl">
+    <section className="relative fixora-container py-10 sm:py-14 lg:py-16">
+      {success && (
+        <div className="fixed right-5 top-5 z-[100] flex items-center gap-3 rounded-2xl border border-[#e7e0da] bg-white px-5 py-4 text-sm text-[#17202a] shadow-[0_12px_35px_rgba(47,36,30,0.12)]">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f5e9e0] text-[#8b5e3c]">
+            ✓
+          </span>
 
-        {/* PAGE HEADER */}
+          <span>{success}</span>
+        </div>
+      )}
+
+      <div className="mx-auto w-full max-w-5xl">
         <div className="mb-9 sm:mb-10">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b9825f]">
             {isRepairer
@@ -369,24 +407,14 @@ function EditProfile() {
           </p>
         </div>
 
-        {/* ERROR */}
         {error && (
           <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm leading-6 text-red-700">
             {error}
           </div>
         )}
 
-        {/* SUCCESS */}
-        {success && (
-          <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm leading-6 text-green-700">
-            Profile updated successfully.
-          </div>
-        )}
-
-        {/* CUSTOMER */}
         {!isRepairer ? (
           <div className="rounded-3xl border border-[#e4ded7] bg-white p-6 shadow-[0_12px_40px_rgba(47,36,30,0.06)] sm:p-8 lg:p-9">
-
             <div className="border-b border-[#eee9e3] pb-5">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
                 Account Information
@@ -449,9 +477,7 @@ function EditProfile() {
           </div>
         ) : (
           <>
-            {/* PROFILE PHOTO */}
             <div className="rounded-3xl border border-[#e4ded7] bg-white p-6 shadow-[0_12px_40px_rgba(47,36,30,0.06)] sm:p-8 lg:p-9">
-
               <div className="border-b border-[#eee9e3] pb-5">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
                   Profile Photo
@@ -467,8 +493,6 @@ function EditProfile() {
               </div>
 
               <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-center">
-
-                {/* PHOTO PREVIEW */}
                 <div className="shrink-0">
                   <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#90979d]">
                     Current Photo
@@ -489,9 +513,7 @@ function EditProfile() {
                   </div>
                 </div>
 
-                {/* PHOTO CONTROLS */}
                 <div className="min-w-0 flex-1">
-
                   <p className="text-sm font-bold text-[#2f241e]">
                     {photoUploading
                       ? "Updating your profile photo..."
@@ -525,14 +547,11 @@ function EditProfile() {
                       {photoError}
                     </p>
                   )}
-
                 </div>
               </div>
             </div>
 
-            {/* REPAIR INFORMATION */}
             <div className="mt-6 rounded-3xl border border-[#e4ded7] bg-white p-6 shadow-[0_12px_40px_rgba(47,36,30,0.06)] sm:p-8 lg:p-9">
-
               <div className="border-b border-[#eee9e3] pb-5">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
                   Repair Information
@@ -551,8 +570,6 @@ function EditProfile() {
                 onSubmit={handleSubmit}
                 className="mt-6 space-y-5"
               >
-
-                {/* CATEGORY */}
                 <div>
                   <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[#8f796b]">
                     Category
@@ -595,7 +612,6 @@ function EditProfile() {
                   </p>
                 </div>
 
-                {/* CUSTOM CATEGORY */}
                 {category === "Other" && (
                   <div className="rounded-2xl border border-[#e4ded7] bg-[#faf8f5] p-5 sm:p-6">
                     <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[#8f796b]">
@@ -618,7 +634,6 @@ function EditProfile() {
                   </div>
                 )}
 
-                {/* ABOUT */}
                 <div>
                   <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-[#8f796b]">
                     About You
@@ -640,7 +655,6 @@ function EditProfile() {
                   </div>
                 </div>
 
-                {/* EXPERIENCE + LOCATION */}
                 <div className="grid gap-5 sm:grid-cols-2">
                   <Input
                     label="Years of Experience"
@@ -669,7 +683,6 @@ function EditProfile() {
                   />
                 </div>
 
-                {/* PRICE + PHONE */}
                 <div className="grid gap-5 sm:grid-cols-2">
                   <Input
                     label="Starting Price (PHP)"
@@ -695,10 +708,8 @@ function EditProfile() {
                   />
                 </div>
 
-                {/* AVAILABILITY */}
                 <div className="rounded-2xl border border-[#e4ded7] bg-[#faf8f5] p-5 sm:p-6">
                   <div className="flex items-center justify-between gap-5">
-
                     <div>
                       <p className="text-sm font-bold text-[#2f241e]">
                         Available for Jobs
@@ -747,7 +758,6 @@ function EditProfile() {
                   </p>
                 </div>
 
-                {/* ACTIONS */}
                 <div className="flex flex-col gap-3 border-t border-[#eee9e3] pt-6 sm:flex-row">
                   <Button
                     type="submit"
@@ -773,9 +783,7 @@ function EditProfile() {
               </form>
             </div>
 
-            {/* PORTFOLIO */}
             <div className="mt-6 rounded-3xl border border-[#e4ded7] bg-white p-6 shadow-[0_12px_40px_rgba(47,36,30,0.06)] sm:p-8 lg:p-9">
-
               <div className="border-b border-[#eee9e3] pb-5">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
                   Portfolio
@@ -798,14 +806,15 @@ function EditProfile() {
 
               {portfolio.length > 0 ? (
                 <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-
                   {portfolio.map((item) => (
                     <div
                       key={item.id}
                       className="group relative aspect-square overflow-hidden rounded-2xl border border-[#e4ded7] bg-[#faf8f5] shadow-sm"
                     >
                       <img
-                        src={resolveMediaUrl(item.image_url)}
+                        src={resolveMediaUrl(
+                          item.image_url
+                        )}
                         alt={
                           item.caption ||
                           "Portfolio repair work"
@@ -833,9 +842,7 @@ function EditProfile() {
                     </div>
                   ))}
 
-                  {/* ADD PHOTO TILE */}
                   <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-[#d7c9bd] bg-[#faf8f5] text-center transition hover:border-[#b9825f] hover:bg-[#f8f1eb]">
-
                     <span className="text-3xl font-light text-[#b9825f]">
                       +
                     </span>
@@ -859,9 +866,7 @@ function EditProfile() {
                 </div>
               ) : (
                 <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-
                   <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-[#d7c9bd] bg-[#faf8f5] text-center transition hover:border-[#b9825f] hover:bg-[#f8f1eb]">
-
                     <span className="text-3xl font-light text-[#b9825f]">
                       +
                     </span>
@@ -885,9 +890,7 @@ function EditProfile() {
                 </div>
               )}
 
-              {/* PORTFOLIO CAPTION */}
               <div className="mt-6 rounded-xl border border-[#e4ded7] bg-[#faf8f5] p-5">
-
                 <p className="text-sm font-bold text-[#2f241e]">
                   Add Portfolio Photo
                 </p>
@@ -909,7 +912,6 @@ function EditProfile() {
                 />
 
                 <label className="mt-3 inline-flex cursor-pointer rounded-xl border border-[#b9825f] bg-white px-5 py-2.5 text-sm font-semibold text-[#8b5e3c] transition hover:bg-[#b9825f] hover:text-white">
-
                   {portfolioUploading
                     ? "Uploading..."
                     : "Choose Photo"}
@@ -936,8 +938,3 @@ function EditProfile() {
 }
 
 export default EditProfile;
-
-
-
-
-

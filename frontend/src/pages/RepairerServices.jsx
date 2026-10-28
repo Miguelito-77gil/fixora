@@ -4,7 +4,9 @@ import { useAuth } from "@/context/AuthContext";
 import { getToken } from "@/services/authService";
 import { fetchRepairerServices } from "@/services/marketplaceService";
 
-const API_URL = "";
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://fixora-backend-kw9p.onrender.com";
 
 function RepairerServices() {
   const navigate = useNavigate();

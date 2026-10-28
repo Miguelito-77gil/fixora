@@ -197,7 +197,7 @@ function BecomeRepairer() {
           />
 
           <Input
-            label="Starting price (â‚±)"
+            label="Starting price (₱)"
             type="number"
             min="0"
             placeholder="e.g. 500"
