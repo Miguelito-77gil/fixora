@@ -40,21 +40,13 @@ class PortfolioController extends Controller
         ], 201);
     }
 
-   public function mine(Request $request)
+  public function mine(Request $request)
 {
-    try {
-        $items = DB::table('portfolio_items')
-            ->where('user_id', $request->user()->id)
-            ->orderByDesc('created_at')
-            ->get();
-
-        return response()->json($items);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'error' => 'Portfolio database error',
-            'message' => $e->getMessage(),
-        ], 500);
-    }
+    return response()->json([
+        'success' => true,
+        'message' => 'Portfolio endpoint is working',
+        'user_id' => $request->user()->id,
+    ]);
 }
 
     public function destroy(Request $request, $id)
