@@ -63,18 +63,44 @@ function RepairerCard({ repairer }) {
   }
 
   function getPhotoUrl() {
-    if (!repairer.photo_url) {
+    const photo =
+      repairer?.repairer_profile?.photo_url ||
+      repairer?.repairer_profile?.photo ||
+      repairer?.photo_url ||
+      repairer?.profile_photo ||
+      repairer?.photo;
+
+    if (!photo) {
+      return null;
+    }
+
+    const value = String(photo).trim();
+
+    if (!value) {
       return null;
     }
 
     if (
-      repairer.photo_url.startsWith("http://") ||
-      repairer.photo_url.startsWith("https://")
+      value.startsWith("http://") ||
+      value.startsWith("https://") ||
+      value.startsWith("data:")
     ) {
-      return repairer.photo_url;
+      return value;
     }
 
-    return `${API_URL}${repairer.photo_url}`;
+    if (value.startsWith("/storage/")) {
+      return `${API_URL}${value}`;
+    }
+
+    if (value.startsWith("storage/")) {
+      return `${API_URL}/${value}`;
+    }
+
+    if (value.startsWith("/")) {
+      return `${API_URL}${value}`;
+    }
+
+    return `${API_URL}/storage/${value}`;
   }
 
   const photoUrl = getPhotoUrl();
