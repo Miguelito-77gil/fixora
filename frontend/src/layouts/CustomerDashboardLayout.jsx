@@ -18,7 +18,13 @@ function CustomerDashboardLayout() {
       label: "Dashboard",
       path: "/customer/dashboard",
       icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+        >
           <rect x="4" y="4" width="6" height="6" rx="1" />
           <rect x="14" y="4" width="6" height="6" rx="1" />
           <rect x="4" y="14" width="6" height="6" rx="1" />
@@ -27,33 +33,21 @@ function CustomerDashboardLayout() {
       ),
     },
     {
-      label: "Home",
-      path: "/",
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 10.5 7.5-6 7.5 6v8.25A1.75 1.75 0 0 1 17.75 20h-11.5A1.75 1.75 0 0 1 4.5 18.75V10.5Z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 20v-5.5h6V20" />
-        </svg>
-      ),
-    },
-    {
-      label: "Find a Repairer",
-      path: "/repairers",
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-          <circle cx="9" cy="8" r="3" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 19.5a5.25 5.25 0 0 1 10.5 0" />
-          <circle cx="17" cy="9" r="2.25" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.25a4.25 4.25 0 0 1 4.5 4.25" />
-        </svg>
-      ),
-    },
-    {
       label: "Messages",
       path: "/customer/messages",
       icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 5.75h14A1.75 1.75 0 0 1 20.75 7.5v8A1.75 1.75 0 0 1 19 17.25H10l-4.75 3v-3.15A1.75 1.75 0 0 1 3.25 15.5v-8A1.75 1.75 0 0 1 5 5.75Z" />
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M5 5.75h14A1.75 1.75 0 0 1 20.75 7.5v8A1.75 1.75 0 0 1 19 17.25H10l-4.75 3v-3.15A1.75 1.75 0 0 1 3.25 15.5v-8A1.75 1.75 0 0 1 5 5.75Z"
+          />
           <path strokeLinecap="round" d="M7.5 10h9M7.5 13.25h6" />
         </svg>
       ),
@@ -62,9 +56,19 @@ function CustomerDashboardLayout() {
       label: "My Account",
       path: "/customer/account",
       icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+        >
           <circle cx="12" cy="8" r="3.25" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5.5 19.25a6.5 6.5 0 0 1 13 0" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M5.5 19.25a6.5 6.5 0 0 1 13 0"
+          />
         </svg>
       ),
     },
@@ -127,6 +131,7 @@ function CustomerDashboardLayout() {
         </div>
 
         <nav className="flex flex-1 flex-col px-4 py-4">
+          {/* Customer Navigation */}
           <div className="space-y-2">
             {menuItems.map((item) => (
               <NavLink
@@ -144,6 +149,77 @@ function CustomerDashboardLayout() {
                 <span>{item.label}</span>
               </NavLink>
             ))}
+          </div>
+
+          {/* Website Navigation */}
+          <div className="my-5 border-t border-[#eee7e2]" />
+
+          <div className="space-y-2">
+            <NavLink
+              to="/"
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) =>
+                `group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${isActive
+                  ? "bg-[#f5e9e0] text-[#17202a] shadow-sm ring-1 ring-[#e7e0da]"
+                  : "text-[#5f5751] hover:bg-[#f7f2ee] hover:text-[#17202a]"
+                }`
+              }
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m4.5 10.5 7.5-6 7.5 6v8.25A1.75 1.75 0 0 1 17.75 20h-11.5A1.75 1.75 0 0 1 4.5 18.75V10.5Z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 20v-5.5h6V20"
+                />
+              </svg>
+
+              <span>Home</span>
+            </NavLink>
+
+            <NavLink
+              to="/repairers"
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) =>
+                `group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${isActive
+                  ? "bg-[#f5e9e0] text-[#17202a] shadow-sm ring-1 ring-[#e7e0da]"
+                  : "text-[#5f5751] hover:bg-[#f7f2ee] hover:text-[#17202a]"
+                }`
+              }
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+              >
+                <circle cx="9" cy="8" r="3" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 19.5a5.25 5.25 0 0 1 10.5 0"
+                />
+                <circle cx="17" cy="9" r="2.25" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 15.25a4.25 4.25 0 0 1 4.5 4.25"
+                />
+              </svg>
+
+              <span>Find a Repairer</span>
+            </NavLink>
 
             <button
               type="button"

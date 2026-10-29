@@ -223,49 +223,42 @@ function AdminDashboard() {
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-[#f8f5f2] text-[#2f241e] lg:flex-row">
       {/* DESKTOP SIDEBAR */}
       <aside className="hidden h-full w-[250px] shrink-0 flex-col border-r border-[#e8dfd8] bg-white lg:flex">
-        <nav className="flex-1 space-y-1 px-4 py-6">
-          <NavLink
-            to="/admin/dashboard"
-            className={navClass}
-          >
-            Dashboard
-          </NavLink>
+        <nav className="flex-1 px-4 py-6">
+          {/* Admin Navigation */}
+          <div className="space-y-1">
+            <NavLink to="/admin/dashboard" className={navClass}>
+              Dashboard
+            </NavLink>
 
-          <NavLink
-            to="/admin/users"
-            className={navClass}
-          >
-            User Management
-          </NavLink>
+            <NavLink to="/admin/users" className={navClass}>
+              User Management
+            </NavLink>
 
-          <NavLink
-            to="/admin/repairers"
-            className={navClass}
-          >
-            Repairer Verification
-          </NavLink>
+            <NavLink to="/admin/repairers" className={navClass}>
+              Repairer Verification
+            </NavLink>
+          </div>
 
-          <NavLink
-            to="/"
-            className={navClass}
-          >
-            Home
-          </NavLink>
+          {/* Website Navigation */}
+          <div className="my-5 border-t border-[#eee7e2]" />
 
-          <NavLink
-            to="/repairers"
-            className={navClass}
-          >
-            Find a Repairer
-          </NavLink>
+          <div className="space-y-1">
+            <NavLink to="/" className={navClass}>
+              Home
+            </NavLink>
 
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex w-full items-center rounded-xl px-4 py-3 text-left text-sm font-medium text-[#5f5148] transition hover:bg-[#f3eee9]"
-          >
-            Log Out
-          </button>
+            <NavLink to="/repairers" className={navClass}>
+              Find a Repairer
+            </NavLink>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex w-full items-center rounded-xl px-4 py-3 text-left text-sm font-medium text-[#5f5148] transition hover:bg-[#f8f5f2]"
+            >
+              Log Out
+            </button>
+          </div>
         </nav>
       </aside>
 

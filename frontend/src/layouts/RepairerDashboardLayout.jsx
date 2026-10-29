@@ -15,25 +15,6 @@ function RepairerDashboardLayout() {
 
   const menuItems = [
     {
-      label: "Home",
-      path: "/",
-      icon: (
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          className="h-5 w-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="m4 10 8-6 8 6v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1v-9Z"
-          />
-        </svg>
-      ),
-    },
-    {
       label: "Dashboard",
       path: "/repairer/dashboard",
       icon: (
@@ -188,18 +169,18 @@ function RepairerDashboardLayout() {
         </div>
 
         <nav className="flex flex-1 flex-col px-4 py-4">
+          {/* Repairer Navigation */}
           <div className="space-y-2">
             {menuItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === "/" || item.path === "/repairer/dashboard"}
+                end={item.path === "/repairer/dashboard"}
                 onClick={() => setSidebarOpen(false)}
                 className={({ isActive }) =>
-                  `group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${
-                    isActive
-                      ? "bg-[#f5e9e0] text-[#17202a] shadow-sm ring-1 ring-[#e7e0da]"
-                      : "text-[#5f5751] hover:bg-[#f7f2ee] hover:text-[#17202a]"
+                  `group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${isActive
+                    ? "bg-[#f5e9e0] text-[#17202a] shadow-sm ring-1 ring-[#e7e0da]"
+                    : "text-[#5f5751] hover:bg-[#f7f2ee] hover:text-[#17202a]"
                   }`
                 }
               >
@@ -207,6 +188,72 @@ function RepairerDashboardLayout() {
                 <span>{item.label}</span>
               </NavLink>
             ))}
+          </div>
+
+          {/* Website Navigation */}
+          <div className="my-5 border-t border-[#eee7e2]" />
+
+          <div className="space-y-2">
+            <NavLink
+              to="/"
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) =>
+                `group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${isActive
+                  ? "bg-[#f5e9e0] text-[#17202a] shadow-sm ring-1 ring-[#e7e0da]"
+                  : "text-[#5f5751] hover:bg-[#f7f2ee] hover:text-[#17202a]"
+                }`
+              }
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m4 10 8-6 8 6v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1v-9Z"
+                />
+              </svg>
+
+              <span>Home</span>
+            </NavLink>
+
+            <NavLink
+              to="/repairers"
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) =>
+                `group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${isActive
+                  ? "bg-[#f5e9e0] text-[#17202a] shadow-sm ring-1 ring-[#e7e0da]"
+                  : "text-[#5f5751] hover:bg-[#f7f2ee] hover:text-[#17202a]"
+                }`
+              }
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+              >
+                <circle cx="9" cy="8" r="3" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 19.5a5.25 5.25 0 0 1 10.5 0"
+                />
+                <circle cx="17" cy="9" r="2.25" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 15.25a4.25 4.25 0 0 1 4.5 4.25"
+                />
+              </svg>
+
+              <span>Find a Repairer</span>
+            </NavLink>
 
             <button
               type="button"
@@ -288,14 +335,28 @@ function RepairerDashboardLayout() {
           <NavLink
             to="/repairer/portfolio"
             className={({ isActive }) =>
-              `flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-2 text-[10px] font-semibold transition ${
-                isActive
-                  ? "bg-[#f5e9e0] text-[#8b5e3c]"
-                  : "text-[#75675f] hover:text-[#8b5e3c]"
+              `flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-2 text-[10px] font-semibold transition ${isActive
+                ? "bg-[#f5e9e0] text-[#8b5e3c]"
+                : "text-[#75675f] hover:text-[#8b5e3c]"
               }`
             }
           >
-            {menuItems[5].icon}
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="h-5 w-5"
+            >
+              <rect x="4" y="5" width="16" height="14" rx="2" />
+              <circle cx="9" cy="10" r="1.5" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m5.5 17 4.5-4.5 3 3 2-2 3.5 3.5"
+              />
+            </svg>
+
             <span>Portfolio</span>
           </NavLink>
         </nav>
