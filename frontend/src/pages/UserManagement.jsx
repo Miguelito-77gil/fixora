@@ -58,8 +58,15 @@ function getPhone(user) {
   );
 }
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://fixora-backend-kw9p.onrender.com";
+
 function getProfilePhotoUrl(user) {
-  const photo = user?.repairer_profile?.photo_url;
+  const photo =
+    user?.repairer_profile?.photo_url ||
+    user?.photo_url ||
+    user?.photo ||
+    user?.profile_photo;
 
   if (!photo) {
     return null;
@@ -69,7 +76,19 @@ function getProfilePhotoUrl(user) {
     return photo;
   }
 
-  return `${photo.startsWith("/") ? "" : "/"}${photo}`;
+  if (photo.startsWith("/storage/")) {
+    return `${API_URL}${photo}`;
+  }
+
+  if (photo.startsWith("storage/")) {
+    return `${API_URL}/${photo}`;
+  }
+
+  if (photo.startsWith("/")) {
+    return `${API_URL}${photo}`;
+  }
+
+  return `${API_URL}/storage/${photo}`;
 }
 function UserManagement() {
   const [users, setUsers] = useState([]);
