@@ -23,18 +23,44 @@ function getInitials(name = "") {
   );
 }
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://fixora-backend-kw9p.onrender.com";
+
 function getRepairerPhotoUrl(repairer) {
-  const photo = repairer?.repairer_profile?.photo_url || repairer?.photo_url;
+  const photo =
+    repairer?.repairer_profile?.photo_url ||
+    repairer?.repairer_profile?.photo ||
+    repairer?.photo_url ||
+    repairer?.profile_photo ||
+    repairer?.photo;
 
   if (!photo) return null;
 
-  if (photo.startsWith("http://") || photo.startsWith("https://")) {
-    return photo;
+  const value = String(photo).trim();
+
+  if (!value) return null;
+
+  if (
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("data:")
+  ) {
+    return value;
   }
 
-  return `${
-    photo.startsWith("/") ? "" : "/"
-  }${photo}`;
+  if (value.startsWith("/storage/")) {
+    return `${API_URL}${value}`;
+  }
+
+  if (value.startsWith("storage/")) {
+    return `${API_URL}/${value}`;
+  }
+
+  if (value.startsWith("/")) {
+    return `${API_URL}${value}`;
+  }
+
+  return `${API_URL}/storage/${value}`;
 }
 
 function PendingBadge() {
@@ -232,9 +258,7 @@ function AdminDashboard() {
           >
             Find a Repairer
           </NavLink>
-        </nav>
 
-        <div className="border-t border-[#eee7e2] p-4">
           <button
             type="button"
             onClick={handleLogout}
@@ -242,7 +266,7 @@ function AdminDashboard() {
           >
             Log Out
           </button>
-        </div>
+        </nav>
       </aside>
 
       {/* MAIN AREA */}
@@ -811,9 +835,9 @@ function AdminDashboard() {
                       >
                         <div className="flex min-w-0 items-center gap-3">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#f0e6de] text-sm font-bold text-[#8b5e3c]">
-                            {item.repairer_profile?.photo_url ? (
+                            {getRepairerPhotoUrl(item) ? (
                               <img
-                                src={`${item.repairer_profile.photo_url}`}
+                                src={getRepairerPhotoUrl(item)}
                                 alt={item.name || "User"}
                                 className="h-full w-full object-cover"
                               />
