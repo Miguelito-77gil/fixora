@@ -12,6 +12,8 @@ import RepairRequest from "@/pages/RepairRequest";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import BecomeRepairer from "@/pages/BecomeRepairer";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 
 import CustomerDashboard from "@/pages/CustomerDashboard";
 import RepairerDashboard from "@/pages/RepairerDashboard";
@@ -54,8 +56,9 @@ function App() {
         />
 
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/become-repairer" element={<BecomeRepairer />} />
 
         {/* CUSTOMER AREA */}
         <Route path="/customer" element={<CustomerDashboardLayout />}>

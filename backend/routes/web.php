@@ -21,3 +21,10 @@ Route::get('/media/{path}', function ($path) {
 
     return response()->file($fullPath);
 })->where('path', '.*');
+
+Route::get('/password/reset/{token}', function (string $token) {
+    return redirect(
+        config('app.frontend_url') .
+        '/reset-password?token=' . urlencode($token)
+    );
+})->name('password.reset');

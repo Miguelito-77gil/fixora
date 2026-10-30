@@ -17,6 +17,14 @@ function Account() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newPasswordConfirmation, setNewPasswordConfirmation] =
+    useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
   useEffect(() => {
     async function loadProfile() {
       try {
@@ -129,6 +137,80 @@ function Account() {
     }
   }
 
+  async function handleChangePassword(event) {
+    event.preventDefault();
+
+    setPasswordMessage("");
+    setPasswordError("");
+
+    if (!currentPassword || !newPassword || !newPasswordConfirmation) {
+      setPasswordError("Please fill in all password fields.");
+      return;
+    }
+
+    if (newPassword.length < 4) {
+      setPasswordError("New password must be at least 4 characters.");
+      return;
+    }
+
+    if (newPassword !== newPasswordConfirmation) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+
+    try {
+      setChangingPassword(true);
+
+      const response = await fetch(`${API_URL}/api/auth/change-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${localStorage.getItem("fixora_token")}`,
+        },
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword,
+          new_password_confirmation: newPasswordConfirmation,
+        }),
+      });
+
+      const text = await response.text();
+
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Failed to change password.");
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message ||
+            data?.error ||
+            data?.errors?.current_password?.[0] ||
+            data?.errors?.new_password?.[0] ||
+            `Server returned ${response.status}`
+        );
+      }
+
+      setCurrentPassword("");
+      setNewPassword("");
+      setNewPasswordConfirmation("");
+
+      setPasswordMessage(
+        data?.message || "Password changed successfully."
+      );
+    } catch (err) {
+      setPasswordError(
+        err.message || "Failed to change password."
+      );
+    } finally {
+      setChangingPassword(false);
+    }
+  }
+
   return (
     <section className="min-h-full bg-[#f7f7f5] text-[#17202a]">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
@@ -234,27 +316,97 @@ function Account() {
         </div>
 
         <div className="mt-6 rounded-3xl border border-[#e7e0da] bg-white p-6 shadow-sm sm:p-8">
-          <div>
+          <div className="border-b border-[#eee9e5] pb-6">
             <h2 className="text-xl font-semibold text-[#17202a]">
               Account Security
             </h2>
 
             <p className="mt-1 text-sm text-[#75675f]">
-              Your account security is managed through your Fixora login.
+              Manage your account password securely.
             </p>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-[#eee9e5] bg-[#faf9f7] p-5">
-            <p className="text-sm font-medium text-[#17202a]">
-              Password
-            </p>
+          <form
+            onSubmit={handleChangePassword}
+            className="mt-8 space-y-5"
+          >
+            {passwordMessage && (
+              <div className="fixed right-4 top-4 z-[9999] w-[calc(100%-2rem)] max-w-sm">
+                <div className="rounded-2xl border border-[#d8c5b8] bg-[#f5e9e0] px-5 py-4 text-[#4f4038] shadow-lg">
+                  <div className="flex items-start gap-3">
+                    <span className="text-lg">✓</span>
 
-            <p className="mt-1 text-sm leading-6 text-[#75675f]">
-              Your current account password is protected and cannot be
-              changed from this page until a dedicated password-update
-              endpoint is available.
-            </p>
-          </div>
+                    <div>
+                      <p className="text-sm font-medium">Success</p>
+                      <p className="mt-1 text-sm text-[#75675f]">
+                        {passwordMessage}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {passwordError && (
+              <div className="rounded-2xl border border-[#e7e0da] bg-[#faf9f7] px-4 py-3 text-sm text-[#75675f]">
+                {passwordError}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-[#4f4843]">
+                Current Password
+              </label>
+
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(event) =>
+                  setCurrentPassword(event.target.value)
+                }
+                className="mt-2 w-full rounded-xl border border-[#e1d9d2] bg-white px-4 py-3 text-sm text-[#17202a] outline-none transition focus:border-[#cfc2b7] focus:ring-2 focus:ring-[#f5e9e0]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#4f4843]">
+                New Password
+              </label>
+
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(event) =>
+                  setNewPassword(event.target.value)
+                }
+                className="mt-2 w-full rounded-xl border border-[#e1d9d2] bg-white px-4 py-3 text-sm text-[#17202a] outline-none transition focus:border-[#cfc2b7] focus:ring-2 focus:ring-[#f5e9e0]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#4f4843]">
+                Confirm New Password
+              </label>
+
+              <input
+                type="password"
+                value={newPasswordConfirmation}
+                onChange={(event) =>
+                  setNewPasswordConfirmation(event.target.value)
+                }
+                className="mt-2 w-full rounded-xl border border-[#e1d9d2] bg-white px-4 py-3 text-sm text-[#17202a] outline-none transition focus:border-[#cfc2b7] focus:ring-2 focus:ring-[#f5e9e0]"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={changingPassword}
+              className="w-full rounded-xl border border-[#e1d8d0] bg-[#f5e9e0] px-5 py-3 text-sm font-semibold text-[#17202a] transition hover:bg-[#f7f2ee] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            >
+              {changingPassword
+                ? "Changing Password..."
+                : "Change Password"}
+            </button>
+          </form>
         </div>
       </div>
     </section>
