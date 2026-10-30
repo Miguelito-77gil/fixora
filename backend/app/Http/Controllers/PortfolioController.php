@@ -4,13 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\PortfolioItem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
+use App\Services\CloudinaryService;
 
 class PortfolioController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request, CloudinaryService $cloudinary)
     {
         $request->validate([
             'photo' => ['required', 'image', 'max:5120'],
@@ -25,11 +23,14 @@ class PortfolioController extends Controller
             ], 403);
         }
 
-        $path = $request->file('photo')->store('portfolio', 'public');
+        $result = $cloudinary->upload(
+            $request->file('photo'),
+            'fixora/portfolio'
+        );
 
         $item = PortfolioItem::create([
             'user_id' => $user->id,
-            'image_url' => '/storage/' . $path,
+            'image_url' => $result['secure_url'],
             'caption' => $request->input('caption'),
             'created_at' => now(),
         ]);
@@ -40,14 +41,14 @@ class PortfolioController extends Controller
         ], 201);
     }
 
-  public function mine(Request $request)
-{
-    return response()->json([
-        'success' => true,
-        'message' => 'Portfolio endpoint is working',
-        'user_id' => $request->user()->id,
-    ]);
-}
+    public function mine(Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Portfolio endpoint is working',
+            'user_id' => $request->user()->id,
+        ]);
+    }
 
     public function destroy(Request $request, $id)
     {
@@ -59,12 +60,6 @@ class PortfolioController extends Controller
             return response()->json([
                 'error' => 'Portfolio item not found.',
             ], 404);
-        }
-
-        $path = str_replace('/storage/', '', $item->image_url);
-
-        if ($path) {
-            Storage::disk('public')->delete($path);
         }
 
         $item->delete();

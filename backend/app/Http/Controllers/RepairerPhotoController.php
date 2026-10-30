@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use App\Services\CloudinaryService;
 
 class RepairerPhotoController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request, CloudinaryService $cloudinary)
     {
         $request->validate([
             'photo' => ['required', 'image', 'max:5120'],
@@ -29,14 +29,12 @@ class RepairerPhotoController extends Controller
             ], 404);
         }
 
-        if ($profile->photo_url) {
-            $oldPath = str_replace('/storage/', '', $profile->photo_url);
-            Storage::disk('public')->delete($oldPath);
-        }
+        $result = $cloudinary->upload(
+            $request->file('photo'),
+            'fixora/repairers'
+        );
 
-        $path = $request->file('photo')->store('repairers', 'public');
-
-        $profile->photo_url = '/storage/' . $path;
+        $profile->photo_url = $result['secure_url'];
         $profile->save();
 
         return response()->json([
