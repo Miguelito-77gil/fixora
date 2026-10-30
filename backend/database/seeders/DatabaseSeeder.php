@@ -16,29 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         /*
         |--------------------------------------------------------------------------
-        | Remove temporary repairer test accounts
-        |--------------------------------------------------------------------------
-        */
-
-        $temporaryEmails = [
-            'juan@fixora.com',
-            'mark@fixora.com',
-            'carlo@fixora.com',
-            'miguel@fixora.com',
-            'pedro@fixora.com',
-        ];
-
-        $temporaryUsers = User::whereIn('email', $temporaryEmails)->get();
-
-        foreach ($temporaryUsers as $user) {
-            RepairerProfile::where('user_id', $user->id)->delete();
-            $user->tokens()->delete();
-            $user->delete();
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Admin Account
+        | Remove old test repairer
         |--------------------------------------------------------------------------
         */
 
@@ -72,7 +50,7 @@ class DatabaseSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | Test Repairers
+        | Featured Repairers
         |--------------------------------------------------------------------------
         */
 
@@ -87,6 +65,7 @@ class DatabaseSeeder extends Seeder
                 'price' => 500,
                 'phone' => '09170000001',
                 'verification_status' => 'verified',
+                'photo_url' => 'https://res.cloudinary.com/uuxfnqxo/image/upload/v1793344214/fixora/repairers/urvqv1bhkqdhevmoekor.webp',
             ],
             [
                 'name' => 'Brian Santos',
@@ -98,17 +77,19 @@ class DatabaseSeeder extends Seeder
                 'price' => 600,
                 'phone' => '09170000002',
                 'verification_status' => 'verified',
+                'photo_url' => null,
             ],
             [
-                'name' => 'Chris Garcia',
-                'email' => 'repairer3@fixora.com',
-                'category' => 'Plumbing',
-                'bio' => 'Plumbing specialist currently awaiting verification.',
-                'years_experience' => 4,
-                'location' => 'Lapu-Lapu City',
-                'price' => 450,
-                'phone' => '09170000003',
-                'verification_status' => 'pending',
+                'name' => 'Edward Sugarol',
+                'email' => 'edgar@gmail.com',
+                'category' => 'Electronics',
+                'bio' => 'Magaling to promise.',
+                'years_experience' => 5,
+                'location' => 'Talisay Cebu',
+                'price' => 500,
+                'phone' => '09080704051',
+                'verification_status' => 'verified',
+                'photo_url' => null,
             ],
         ];
 
@@ -133,7 +114,7 @@ class DatabaseSeeder extends Seeder
                     'location' => $data['location'],
                     'price' => $data['price'],
                     'phone' => $data['phone'],
-                    'photo_url' => null,
+                    'photo_url' => $data['photo_url'],
                     'available' => true,
                 ]
             );
