@@ -52,7 +52,7 @@ export async function fetchMyRepairerProfile() {
     throw new Error(data.error || "Failed to fetch your profile");
   }
 
-  return data;
+  return data.profile;
 }
 
 export async function uploadMyRepairerPhoto(file) {
