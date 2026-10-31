@@ -11,9 +11,6 @@ import {
   fetchMyRepairerProfile,
   updateMyRepairerProfile,
   uploadMyRepairerPhoto,
-  fetchMyPortfolio,
-  addPortfolioItem,
-  deletePortfolioItem,
 } from "@/services/repairerService";
 
 const CATEGORIES = [
@@ -65,6 +62,7 @@ function EditProfile() {
     user?.role === "admin";
 
   const [profile, setProfile] = useState(null);
+  const [originalRepairerProfile, setOriginalRepairerProfile] = useState(null);
 
   const [category, setCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
@@ -84,12 +82,6 @@ function EditProfile() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState("");
 
-  const [portfolio, setPortfolio] = useState([]);
-  const [portfolioCaption, setPortfolioCaption] = useState("");
-  const [portfolioUploading, setPortfolioUploading] =
-    useState(false);
-  const [portfolioError, setPortfolioError] = useState("");
-
   useEffect(() => {
     if (!user) {
       setLoading(false);
@@ -107,11 +99,10 @@ function EditProfile() {
         setPhone(userData?.phone || "");
 
         if (isRepairer) {
-          const [repairerData, portfolioData] =
-            await Promise.all([
-              fetchMyRepairerProfile(),
-              fetchMyPortfolio(),
-            ]);
+          const repairerData =
+            await fetchMyRepairerProfile();
+
+             setOriginalRepairerProfile(repairerData);
 
           const savedCategory =
             repairerData?.category || "";
@@ -148,7 +139,7 @@ function EditProfile() {
           );
 
           setAvailable(
-            repairerData?.available !== 0
+            Number(repairerData?.available) === 1
           );
 
           setPhotoUrl(
@@ -158,12 +149,6 @@ function EditProfile() {
                 repairerData?.profile?.profile_photo ||
                 ""
             )
-          );
-
-          setPortfolio(
-            Array.isArray(portfolioData)
-              ? portfolioData
-              : []
           );
         }
       } catch (err) {
@@ -219,86 +204,15 @@ function EditProfile() {
     }
   }
 
-  async function handlePortfolioUpload(e) {
-    const file = e.target.files?.[0];
-
-    if (!file) return;
-
-    setPortfolioError("");
-    setPortfolioUploading(true);
-
-    try {
-      const item = await addPortfolioItem(
-        file,
-        portfolioCaption
-      );
-
-      setPortfolio((prev) => [
-        item,
-        ...prev,
-      ]);
-
-      setPortfolioCaption("");
-
-      setSuccess(
-        "Portfolio photo added successfully."
-      );
-
-      setTimeout(() => {
-        setSuccess("");
-      }, 3000);
-    } catch (err) {
-      setPortfolioError(
-        err?.message ||
-          "Unable to upload portfolio photo."
-      );
-    } finally {
-      setPortfolioUploading(false);
-      e.target.value = "";
-    }
-  }
-
-  async function handlePortfolioDelete(id) {
-    try {
-      setPortfolioError("");
-
-      await deletePortfolioItem(id);
-
-      setPortfolio((prev) =>
-        prev.filter(
-          (item) => item.id !== id
-        )
-      );
-
-      setSuccess(
-        "Portfolio photo deleted successfully."
-      );
-
-      setTimeout(() => {
-        setSuccess("");
-      }, 3000);
-    } catch (err) {
-      setPortfolioError(
-        err?.message ||
-          "Unable to delete portfolio photo."
-      );
-    }
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
+
+    console.log("SAVE BUTTON CLICKED");
 
     setError("");
     setSuccess("");
 
     if (isRepairer) {
-      if (!category) {
-        setError(
-          "Please select a repair category."
-        );
-        return;
-      }
-
       if (
         category === "Other" &&
         !customCategory.trim()
@@ -319,21 +233,86 @@ function EditProfile() {
             ? customCategory.trim()
             : category;
 
-        await updateMyRepairerProfile({
-          category: finalCategory,
-          bio: bio.trim(),
-          years_experience:
-            yearsExperience
-              ? Number(yearsExperience)
-              : null,
-          location: location.trim(),
-          price: price
-            ? Number(price)
-            : null,
-          phone: phone.trim(),
-          available,
-        });
-      } else {
+        const originalCategory =
+          originalRepairerProfile?.category || "";
+
+        const originalBio =
+          originalRepairerProfile?.bio || "";
+
+        const originalYears =
+          originalRepairerProfile?.years_experience == null
+            ? null
+            : Number(originalRepairerProfile.years_experience);
+
+        const originalLocation =
+          originalRepairerProfile?.location || "";
+
+        const originalPrice =
+          originalRepairerProfile?.price == null
+            ? null
+            : Number(originalRepairerProfile.price);
+
+        const originalPhone =
+          originalRepairerProfile?.phone ||
+          profile?.phone ||
+          "";
+
+          const originalAvailable =
+            Number(originalRepairerProfile?.available) === 1;
+        
+          const updates = {};
+
+        if (finalCategory !== originalCategory) {
+          updates.category = finalCategory;
+        }
+
+        if (bio.trim() !== originalBio) {
+          updates.bio = bio.trim();
+        }
+
+        const newYears =
+          yearsExperience === ""
+            ? null
+            : Number(yearsExperience);
+
+        if (newYears !== originalYears) {
+          updates.years_experience = newYears;
+        }
+
+        if (location.trim() !== originalLocation) {
+          updates.location = location.trim();
+        }
+
+        const newPrice =
+          price === ""
+            ? null
+            : Number(price);
+
+        if (newPrice !== originalPrice) {
+          updates.price = newPrice;
+        }
+
+        if (phone.trim() !== originalPhone) {
+          updates.phone = phone.trim();
+        }
+
+        if (available !== originalAvailable) {
+          updates.available = available;
+        }
+
+        console.log("AVAILABLE:", available);
+        console.log("ORIGINAL AVAILABLE:", originalAvailable);
+        console.log("UPDATES:", updates);
+
+        if (Object.keys(updates).length > 0) {
+          const result = await updateMyRepairerProfile(updates);
+
+          if (result?.profile) {
+            setOriginalRepairerProfile(result.profile);
+          }
+        }
+     
+} else {
         await updateMyPhone(
           phone.trim()
         );
@@ -586,18 +565,14 @@ function EditProfile() {
                         setCustomCategory("");
                       }
                     }}
-                    className="w-full rounded-xl border border-[#dcd0c7] bg-white px-4 py-3 text-sm text-[#2f241e] shadow-sm outline-none transition focus:border-[#b9825f] focus:ring-2 focus:ring-[#b9825f]/10"
-                    required
+                    className="w-full rounded-xl border border-[#dcd0c7] bg-white px-4 py-3 text-sm text-[#2f241e] shadow-sm outline-none transition focus:border-[#b9825f] focus:ring-2 focus:ring-[#b9825f]/10"                 
                   >
                     <option value="" disabled>
                       Select a category
                     </option>
 
                     {CATEGORIES.map((item) => (
-                      <option
-                        key={item}
-                        value={item}
-                      >
+                      <option key={item} value={item}>
                         {item}
                       </option>
                     ))}
@@ -622,9 +597,7 @@ function EditProfile() {
                       type="text"
                       value={customCategory}
                       onChange={(e) =>
-                        setCustomCategory(
-                          e.target.value
-                        )
+                        setCustomCategory(e.target.value)
                       }
                       placeholder="Example: Computer Repair"
                       maxLength={100}
@@ -662,9 +635,7 @@ function EditProfile() {
                     min="0"
                     value={yearsExperience}
                     onChange={(e) =>
-                      setYearsExperience(
-                        e.target.value
-                      )
+                      setYearsExperience(e.target.value)
                     }
                     placeholder="Example: 5"
                   />
@@ -674,27 +645,23 @@ function EditProfile() {
                     type="text"
                     value={location}
                     onChange={(e) =>
-                      setLocation(
-                        e.target.value
-                      )
+                      setLocation(e.target.value)
                     }
                     placeholder="Example: Cebu City"
-                    required
                   />
                 </div>
 
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Input
-                    label="Starting Price (PHP)"
-                    type="number"
-                    min="0"
-                    value={price}
-                    onChange={(e) =>
-                      setPrice(e.target.value)
-                    }
-                    placeholder="Example: 500"
-                    required
-                  />
+                    <Input
+                      label="Starting Price (PHP)"
+                      type="number"
+                      min="0"
+                      value={price}
+                      onChange={(e) =>
+                        setPrice(e.target.value)
+                      }
+                      placeholder="Example: 500"
+                    />
 
                   <Input
                     label="Phone Number"
@@ -723,9 +690,7 @@ function EditProfile() {
                     <button
                       type="button"
                       onClick={() =>
-                        setAvailable(
-                          (value) => !value
-                        )
+                        setAvailable((value) => !value)
                       }
                       disabled={saving}
                       aria-pressed={available}
@@ -773,162 +738,12 @@ function EditProfile() {
                     type="button"
                     variant="outline"
                     className="flex-1"
-                    onClick={() =>
-                      navigate(-1)
-                    }
+                    onClick={() => navigate(-1)}
                   >
                     Cancel
                   </Button>
                 </div>
               </form>
-            </div>
-
-            <div className="mt-6 rounded-3xl border border-[#e4ded7] bg-white p-6 shadow-[0_12px_40px_rgba(47,36,30,0.06)] sm:p-8 lg:p-9">
-              <div className="border-b border-[#eee9e3] pb-5">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b9825f]">
-                  Portfolio
-                </p>
-
-                <h2 className="mt-2 text-xl font-bold text-[#17202a]">
-                  Past Work
-                </h2>
-
-                <p className="mt-2 text-sm leading-6 text-[#75675f]">
-                  Show customers examples of repair jobs you have completed.
-                </p>
-              </div>
-
-              {portfolioError && (
-                <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm leading-6 text-red-700">
-                  {portfolioError}
-                </div>
-              )}
-
-              {portfolio.length > 0 ? (
-                <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                  {portfolio.map((item) => (
-                    <div
-                      key={item.id}
-                      className="group relative aspect-square overflow-hidden rounded-2xl border border-[#e4ded7] bg-[#faf8f5] shadow-sm"
-                    >
-                      <img
-                        src={resolveMediaUrl(
-                          item.image_url
-                        )}
-                        alt={
-                          item.caption ||
-                          "Portfolio repair work"
-                        }
-                        className="h-full w-full object-cover"
-                      />
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handlePortfolioDelete(
-                            item.id
-                          )
-                        }
-                        className="absolute right-2 top-2 rounded-lg bg-white/95 px-2.5 py-1.5 text-xs font-semibold text-red-600 opacity-0 shadow-sm transition group-hover:opacity-100"
-                      >
-                        Delete
-                      </button>
-
-                      {item.caption && (
-                        <div className="absolute inset-x-0 bottom-0 bg-black/55 px-3 py-2 text-xs text-white">
-                          {item.caption}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-
-                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-[#d7c9bd] bg-[#faf8f5] text-center transition hover:border-[#b9825f] hover:bg-[#f8f1eb]">
-                    <span className="text-3xl font-light text-[#b9825f]">
-                      +
-                    </span>
-
-                    <span className="mt-1 text-xs font-semibold text-[#777f86]">
-                      Add photo
-                    </span>
-
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={
-                        handlePortfolioUpload
-                      }
-                      disabled={
-                        portfolioUploading
-                      }
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-              ) : (
-                <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-[#d7c9bd] bg-[#faf8f5] text-center transition hover:border-[#b9825f] hover:bg-[#f8f1eb]">
-                    <span className="text-3xl font-light text-[#b9825f]">
-                      +
-                    </span>
-
-                    <span className="mt-1 text-xs font-semibold text-[#777f86]">
-                      Add photo
-                    </span>
-
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={
-                        handlePortfolioUpload
-                      }
-                      disabled={
-                        portfolioUploading
-                      }
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-              )}
-
-              <div className="mt-6 rounded-xl border border-[#e4ded7] bg-[#faf8f5] p-5">
-                <p className="text-sm font-bold text-[#2f241e]">
-                  Add Portfolio Photo
-                </p>
-
-                <p className="mt-1 text-xs leading-6 text-[#75675f]">
-                  Add an optional caption before uploading your next work photo.
-                </p>
-
-                <input
-                  type="text"
-                  value={portfolioCaption}
-                  onChange={(e) =>
-                    setPortfolioCaption(
-                      e.target.value
-                    )
-                  }
-                  placeholder="Example: Laptop motherboard repair"
-                  className="mt-4 w-full rounded-xl border border-[#dcd0c7] bg-white px-4 py-3 text-sm text-[#2f241e] shadow-sm outline-none transition focus:border-[#b9825f] focus:ring-2 focus:ring-[#b9825f]/10"
-                />
-
-                <label className="mt-3 inline-flex cursor-pointer rounded-xl border border-[#b9825f] bg-white px-5 py-2.5 text-sm font-semibold text-[#8b5e3c] transition hover:bg-[#b9825f] hover:text-white">
-                  {portfolioUploading
-                    ? "Uploading..."
-                    : "Choose Photo"}
-
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={
-                      handlePortfolioUpload
-                    }
-                    disabled={
-                      portfolioUploading
-                    }
-                    className="hidden"
-                  />
-                </label>
-              </div>
             </div>
           </>
         )}

@@ -230,10 +230,10 @@ function PortfolioManagementSection() {
               </div>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                {portfolio.map((item) => {
-                  const imageUrl = resolveMediaUrl(item.photo_url);
+                    {portfolio.map((item) => {
+                      const imageUrl = resolveMediaUrl(item.image_url);
 
-                  return (
+                      return (
                     <div
                       key={item.id}
                       className="overflow-hidden rounded-2xl border border-[#e7e0da] bg-white"

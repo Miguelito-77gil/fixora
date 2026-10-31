@@ -140,11 +140,26 @@ function RepairerCard({ repairer }) {
           </div>
 
           <div className="flex items-center gap-3">
-            {repairer.available && (
-              <span className="whitespace-nowrap text-xs font-medium text-[#2b8052]">
-                Available
+            <span className="flex items-center gap-1.5 whitespace-nowrap text-xs font-medium">
+              <span
+                className={`h-2 w-2 rounded-full ${repairer.available
+                    ? "bg-green-500"
+                    : "bg-gray-400"
+                  }`}
+              />
+
+              <span
+                className={
+                  repairer.available
+                    ? "text-[#2b8052]"
+                    : "text-[#777f86]"
+                }
+              >
+                {repairer.available
+                  ? "Available now"
+                  : "Currently unavailable"}
               </span>
-            )}
+            </span>
 
             <button
               type="button"

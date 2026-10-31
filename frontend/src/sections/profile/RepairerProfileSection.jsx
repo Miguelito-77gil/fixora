@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { fetchRepairerPortfolio } from "@/services/repairerService";
 
 const API_URL =
   import.meta.env.VITE_API_URL || "https://fixora-backend-kw9p.onrender.com";
@@ -41,6 +42,8 @@ function RepairerProfileSection() {
   const [repairer, setRepairer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [portfolio, setPortfolio] = useState([]);
+  const [portfolioLoading, setPortfolioLoading] = useState(true);
 
   const isOwnRepairerProfile =
     user?.role === "repairer" &&
@@ -101,8 +104,31 @@ function RepairerProfileSection() {
 
     if (repairerId) {
       loadRepairer();
+
+      async function loadPortfolio() {
+        try {
+          setPortfolioLoading(true);
+
+          const data = await fetchRepairerPortfolio(repairerId);
+
+          if (mounted) {
+            setPortfolio(Array.isArray(data) ? data : []);
+          }
+        } catch {
+          if (mounted) {
+            setPortfolio([]);
+          }
+        } finally {
+          if (mounted) {
+            setPortfolioLoading(false);
+          }
+        }
+      }
+
+      loadPortfolio();
     } else {
       setLoading(false);
+      setPortfolioLoading(false);
       setError("Repairer ID is missing.");
     }
 
@@ -281,10 +307,17 @@ function RepairerProfileSection() {
                   <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#667085]">
                     <span>{location}</span>
 
-                    <span>
-                      {repairer.available
-                        ? "Available now"
-                        : "Currently unavailable"}
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className={`h-2.5 w-2.5 rounded-full ${repairer.available ? "bg-green-500" : "bg-gray-400"
+                          }`}
+                      />
+
+                      <span>
+                        {repairer.available
+                          ? "Available now"
+                          : "Currently unavailable"}
+                      </span>
                     </span>
                   </div>
 
@@ -417,6 +450,51 @@ function RepairerProfileSection() {
           </div>
         </div>
 
+        <div className="rounded-2xl border border-[#e5dfd8] bg-white p-6 shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#8b6046]">
+            Portfolio
+          </p>
+
+          <h2 className="mt-2 text-xl font-semibold text-[#17202a]">
+            Previous Repair Work
+          </h2>
+
+          {portfolioLoading ? (
+            <p className="mt-5 text-sm text-[#667085]">
+              Loading portfolio...
+            </p>
+          ) : portfolio.length === 0 ? (
+            <p className="mt-5 text-sm text-[#667085]">
+              No portfolio images yet.
+            </p>
+          ) : (
+            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {portfolio.map((item) => (
+                <div
+                  key={item.id}
+                  className="overflow-hidden rounded-xl border border-[#eee8e2] bg-[#faf8f6]"
+                >
+                  <div className="aspect-[4/3] overflow-hidden bg-[#f0ebe6]">
+                    <img
+                      src={item.image_url}
+                      alt={item.caption || `${name} repair work`}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+
+                  {item.caption && (
+                    <div className="p-4">
+                      <p className="text-sm text-[#667085]">
+                        {item.caption}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+       
         <div className="rounded-2xl border border-[#e5dfd8] bg-white p-6 shadow-sm">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <div>

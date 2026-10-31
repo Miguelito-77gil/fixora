@@ -43,12 +43,12 @@ class PortfolioController extends Controller
 
     public function mine(Request $request)
     {
-        return response()->json([
-            'success' => true,
-            'message' => 'Portfolio endpoint is working',
-            'user_id' => $request->user()->id,
-        ]);
-    }
+          $items = PortfolioItem::where('user_id', $request->user()->id)
+        ->orderByDesc('created_at')
+         ->get();
+
+            return response()->json($items);
+        }
 
     public function destroy(Request $request, $id)
     {

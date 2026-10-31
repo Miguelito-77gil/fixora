@@ -27,7 +27,7 @@ export async function fetchRepairers() {
     location: r.location || "Not specified",
     price: r.price || 0,
     verified: true,
-    available: r.available !== 0,
+    available: Number(r.available) === 1,
     services: [r.category],
     about: r.bio || "No description provided.",
     photo_url: r.photo_url || null,
