@@ -30,6 +30,7 @@ class RepairerController extends Controller
 
             return [
                 'id' => $user->id,
+                'account_number' => $user->account_number,
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,

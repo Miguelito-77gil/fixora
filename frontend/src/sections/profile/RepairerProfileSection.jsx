@@ -177,10 +177,8 @@ function RepairerProfileSection() {
   }
 
   const accountNumber =
-    repairer.id ??
-    repairer.user_id ??
-    repairer.account_number ??
-    "Not available";
+  repairer.account_number ??
+  "Not available";
 
   const name = repairer.name || "Repairer";
   const email = repairer.email || "Not provided";
@@ -546,10 +544,6 @@ function RepairerProfileSection() {
 
               <p className="mt-2 text-sm font-semibold text-[#17202a]">
                 {accountNumber}
-              </p>
-
-              <p className="mt-1 text-xs text-[#98a2b3]">
-                Unique Fixora account number
               </p>
             </div>
 

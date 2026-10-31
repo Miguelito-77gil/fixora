@@ -33,6 +33,21 @@ class User extends Authenticatable
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::creating(function ($user) {
+            if (!$user->account_number) {
+                do {
+                    $accountNumber = (string) random_int(10000, 99999);
+                } while (
+                    static::where('account_number', $accountNumber)->exists()
+                );
+
+                $user->account_number = $accountNumber;
+            }
+        });
+    }
+
     public function repairerProfile()
     {
         return $this->hasOne(RepairerProfile::class);

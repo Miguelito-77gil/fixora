@@ -1,15 +1,25 @@
-﻿import { useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 
 import RepairerCard from "@/components/features/RepairerCard";
 import RepairerFilters from "@/components/features/RepairerFilters";
 
-import { repairers } from "@/services/repairerData";
+import { fetchRepairers } from "@/services/repairerService";
 
 function FindRepairerSection() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [availableOnly, setAvailableOnly] = useState(false);
+  const [repairers, setRepairers] = useState([]);
+
+  useEffect(() => {
+    fetchRepairers()
+      .then(setRepairers)
+      .catch((error) => {
+        console.error("Failed to load repairers:", error);
+        setRepairers([]);
+      });
+  }, []);
 
   const filteredRepairers = useMemo(() => {
     return repairers.filter((repairer) => {
