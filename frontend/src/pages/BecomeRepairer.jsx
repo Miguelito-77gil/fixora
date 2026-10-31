@@ -46,7 +46,7 @@ function BecomeRepairer() {
     );
   }
 
-  if (user.role === "repairer" || user.role === "admin") {
+    if (user.role === "admin") {
     return (
       <section className="fixora-container flex min-h-[500px] items-center justify-center py-16">
         <div className="w-full max-w-md rounded-2xl border border-[#e4ded7] bg-white p-8 text-center shadow-sm">

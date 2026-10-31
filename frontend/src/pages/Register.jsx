@@ -21,7 +21,12 @@ function Register() {
     setLoading(true);
 
     try {
-      const data = await registerUser({ name, email, password });
+      const data = await registerUser({
+        name,
+        email,
+        password,
+        role: intent,
+      });
       setUser(data.user);
 
       if (intent === "repairer") {

@@ -14,14 +14,14 @@ async function parseJsonResponse(response, fallbackMessage) {
   }
 }
 
-export async function registerUser({ name, email, password }) {
+export async function registerUser({ name, email, password, role }) {
   const response = await fetch(`${API_URL}/api/auth/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ name, email, password, role }),
   });
 
   const data = await parseJsonResponse(

@@ -44,6 +44,7 @@ function App() {
         <Route path="/repairers/:id" element={<RepairerProfile />} />
         <Route path="/repairer/:id" element={<RepairerProfile />} />
 
+
         {/* REPAIR REQUEST */}
         <Route
           path="/repairer/:id/request"
@@ -59,6 +60,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/become-repairer" element={<BecomeRepairer />} />
 
         {/* CUSTOMER AREA */}
         <Route path="/customer" element={<CustomerDashboardLayout />}>
