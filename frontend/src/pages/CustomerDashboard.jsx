@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import RepairRequestCard from "@/components/features/RepairRequestCard";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import {
   fetchMyRepairRequests,
   cancelRepairRequest,
@@ -17,6 +18,7 @@ function CustomerDashboard() {
   const [loadingRepairers, setLoadingRepairers] = useState(true);
   const [error, setError] = useState("");
   const [cancellingId, setCancellingId] = useState(null);
+  const [cancelRequestId, setCancelRequestId] = useState(null);
 
   async function loadDashboard() {
     try {
@@ -52,12 +54,6 @@ function CustomerDashboard() {
   }
 
   async function handleCancelRequest(requestId) {
-    const confirmed = window.confirm(
-      "Are you sure you want to cancel this repair request?"
-    );
-
-    if (!confirmed) return;
-
     try {
       setCancellingId(requestId);
       setError("");
@@ -71,13 +67,15 @@ function CustomerDashboard() {
             : request
         )
       );
+
+      setCancelRequestId(null);
     } catch (err) {
       setError(err.message || "Failed to cancel repair request.");
     } finally {
       setCancellingId(null);
     }
   }
-
+   
   useEffect(() => {
     loadDashboard();
     loadRepairers();
@@ -260,7 +258,7 @@ function CustomerDashboard() {
                         <button
                           type="button"
                           disabled={cancellingId === request.id}
-                          onClick={() => handleCancelRequest(request.id)}
+                          onClick={() => setCancelRequestId(request.id)}
                           className="rounded-xl border border-[#e7e0da] bg-white px-4 py-2 text-sm font-semibold text-[#5f5751] transition hover:bg-[#f7f2ee] disabled:opacity-60"
                         >
                           {cancellingId === request.id
@@ -380,7 +378,7 @@ function CustomerDashboard() {
               </div>
             )}
 
-            <Link
+                       <Link
               to="/repairers"
               className="mt-4 flex w-full items-center justify-center rounded-xl border border-[#e7e0da] bg-white px-4 py-3 text-sm font-semibold text-[#17202a] transition hover:bg-[#f5e9e0]"
             >
@@ -389,6 +387,25 @@ function CustomerDashboard() {
           </div>
         </div>
       </section>
+
+      <ConfirmationModal
+        open={cancelRequestId !== null}
+        title="Cancel Request?"
+        message="Are you sure you want to cancel this repair request? This action cannot be undone."
+        confirmText="Cancel Request"
+        cancelText="Keep Request"
+        loading={cancellingId !== null}
+        onCancel={() => {
+          if (!cancellingId) {
+            setCancelRequestId(null);
+          }
+        }}
+        onConfirm={() => {
+          if (cancelRequestId !== null) {
+            handleCancelRequest(cancelRequestId);
+          }
+        }}
+      />
     </div>
   );
 }

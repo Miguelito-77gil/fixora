@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { getToken } from "@/services/authService";
 import { fetchRepairerServices } from "@/services/marketplaceService";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
@@ -16,6 +17,7 @@ function RepairerServices() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [deleteServiceId, setDeleteServiceId] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [formOpen, setFormOpen] = useState(false);
@@ -205,12 +207,7 @@ function RepairerServices() {
   }
 
   async function handleDelete(id) {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this service?"
-    );
-
-    if (!confirmed) return;
-
+    
     try {
       setDeletingId(id);
       setError("");
@@ -522,8 +519,8 @@ function RepairerServices() {
                     <button
                       type="button"
                       disabled={deletingId === service.id}
-                      onClick={() => handleDelete(service.id)}
-                      className="rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      onClick={() => setDeleteServiceId(service.id)}
+                      className="rounded-xl border border-[#d8c8bc] bg-[#f7f2ee] px-4 py-2.5 text-sm font-medium text-[#8b5e3c] transition hover:bg-[#eee4dc] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {deletingId === service.id
                         ? "Deleting..."
@@ -544,7 +541,22 @@ function RepairerServices() {
           Back to Dashboard
         </button>
       </main>
+
+      <ConfirmationModal
+        open={deleteServiceId !== null}
+        title="Delete Service?"
+        message="Are you sure you want to delete this service?"
+        confirmText="Delete Service"
+        cancelText="Keep Service"
+        loading={deletingId === deleteServiceId}
+        onCancel={() => {
+          if (deletingId) return;
+          setDeleteServiceId(null);
+        }}
+        onConfirm={() => handleDelete(deleteServiceId)}
+      />
     </div>
+
   );
 }
 

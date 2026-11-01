@@ -5,6 +5,7 @@ import {
   cancelRepairRequest,
   createReview,
 } from "@/services/repairService";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 function CustomerRequests() {
   const [requests, setRequests] = useState([]);
@@ -12,6 +13,7 @@ function CustomerRequests() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [cancellingId, setCancellingId] = useState(null);
+  const [cancelRequestId, setCancelRequestId] = useState(null);
   const [reviewingId, setReviewingId] = useState(null);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
@@ -33,12 +35,6 @@ function CustomerRequests() {
   }
 
   async function handleCancel(id) {
-    const confirmed = window.confirm(
-      "Are you sure you want to cancel this repair request?"
-    );
-
-    if (!confirmed) return;
-
     try {
       setCancellingId(id);
       setError("");
@@ -56,9 +52,10 @@ function CustomerRequests() {
       setError(err.message || "Failed to cancel request.");
     } finally {
       setCancellingId(null);
+      setCancelRequestId(null);
     }
   }
-
+  
   function openReview(requestId) {
     setReviewingId(requestId);
     setReviewRating(0);
@@ -510,8 +507,8 @@ function CustomerRequests() {
                     <button
                       type="button"
                       disabled={cancellingId === request.id}
-                      onClick={() => handleCancel(request.id)}
-                      className="rounded-xl border border-[#e7e0da] bg-white px-4 py-2.5 text-sm font-semibold text-[#75675f] transition hover:bg-[#f7f2ee] disabled:opacity-60"
+                      onClick={() => setCancelRequestId(request.id)}
+                    className="rounded-xl border border-[#d8c8bc] bg-[#f7f2ee] px-4 py-2.5 text-sm font-medium text-[#8b5e3c] transition hover:bg-[#eee4dc] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {cancellingId === request.id
                         ? "Cancelling..."
@@ -524,6 +521,20 @@ function CustomerRequests() {
           </div>
         )}
       </div>
+
+      <ConfirmationModal
+        open={cancelRequestId !== null}
+        title="Cancel Request?"
+        message="Are you sure you want to cancel this repair request?"
+        confirmText="Cancel Request"
+        cancelText="Keep Request"
+        loading={cancellingId === cancelRequestId}
+        onCancel={() => {
+          if (cancellingId) return;
+          setCancelRequestId(null);
+        }}
+        onConfirm={() => handleCancel(cancelRequestId)}
+      />
     </div>
   );
 }

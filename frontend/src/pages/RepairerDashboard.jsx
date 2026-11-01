@@ -780,7 +780,7 @@ function RepairerDashboard() {
                                   "accepted"
                                 )
                               }
-                              className="rounded-xl bg-[#17202a] px-5 py-2.5 text-sm text-white transition hover:bg-[#28323b] disabled:cursor-not-allowed disabled:opacity-60"
+                              className="rounded-xl bg-[#b9825f] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#a9704e] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               {isUpdating ? "Updating..." : "Accept Request"}
                             </button>
